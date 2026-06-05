@@ -1,0 +1,24 @@
+[     404ms] The requested module '/src/components/App.tsx?t=1780663561151' does not provide an export named 'default'
+[   25986ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:14337
+[   36499ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:14337
+[   37845ms] ReferenceError: setIframeLoading is not defined
+    at http://localhost:5173/src/components/App.tsx?t=1780663607118:45:3
+    at executeDispatch (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:9141:5)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:851:66)
+    at processDispatchQueue (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:9167:27)
+    at http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:9454:5
+    at batchedUpdates$1 (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:2044:12)
+    at dispatchEventForPluginEventSystem (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:9240:4)
+    at dispatchEvent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:11319:29)
+    at dispatchDiscreteEvent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:11301:56)
+[  268189ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/src/components/App.tsx?t=1780663849487:0
+[  268190ms] [ERROR] [vite] Failed to reload /src/components/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5173/@vite/client:928
+[  329580ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/src/components/App.tsx?t=1780663910711:0
+[  350906ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/src/components/App.tsx?t=1780663932073:0
+[  374918ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/src/components/App.tsx?t=1780663955979:0
+[  411719ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/src/components/App.tsx?t=1780663992755:0
+[  665853ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:14337
+[  697405ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/src/components/App.tsx?t=1780664278601:0
+[  697416ms] [ERROR] [vite] Failed to reload /src/components/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5173/@vite/client:928
+[ 2419684ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/src/components/App.tsx?t=1780666000929:0
+[ 2419691ms] [ERROR] [vite] Failed to reload /src/components/App.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5173/@vite/client:928

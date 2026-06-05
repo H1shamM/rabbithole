@@ -1,0 +1,18 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "StumbleClone" [level=1] [ref=e5]
+    - paragraph [ref=e6]: Discover the web, one page at a time
+  - main [ref=e7]:
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]: https://www.producthunt.com
+        - button "Close iframe" [ref=e16] [cursor=pointer]: ✖
+      - iframe [ref=e17]:
+        - generic [ref=f3e3]:
+          - strong [ref=f3e4]: www.producthunt.com
+          - text: refused to connect.
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - button "Like" [ref=e20] [cursor=pointer]: 👍
+        - button "Dislike" [ref=e21] [cursor=pointer]: 👎
+      - button "➡️ Next Stumble" [ref=e22] [cursor=pointer]

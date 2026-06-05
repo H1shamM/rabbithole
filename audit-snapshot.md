@@ -1,0 +1,27 @@
+- generic [ref=e3] [box=339,0,602,800]:
+  - banner [ref=e4] [box=340,0,600,78]:
+    - heading "StumbleClone" [level=1] [ref=e5] [box=358,26,162,26]
+    - button "Settings" [ref=e6] [cursor=pointer] [box=884,18,38,42]:
+      - img [ref=e7] [box=893,27,20,20]
+  - main [ref=e10] [box=340,78,600,597]:
+    - paragraph [ref=e12] [box=497,225,286,26]: Ready to discover something new?
+    - button "Stumble to next site" [ref=e13] [cursor=pointer] [box=570,287,140,140]:
+      - img [ref=e14] [box=616,321,48,48]
+      - generic [ref=e20] [box=608,378,64,15]: STUMBLE
+    - generic [ref=e21] [box=563,463,154,64]:
+      - button "Like this site" [disabled] [ref=e22] [cursor=pointer] [box=563,463,64,64]:
+        - img [ref=e23] [box=583,483,24,24]
+      - button "Dislike this site" [disabled] [ref=e25] [cursor=pointer] [box=654,463,64,64]:
+        - img [ref=e26] [box=673,483,24,24]
+  - generic [ref=e28] [box=340,675,600,125]:
+    - heading "My Interests" [level=3] [ref=e29] [box=358,694,564,26]
+    - generic [ref=e30] [box=358,736,564,46]:
+      - generic [ref=e31] [cursor=pointer] [box=358,736,117,46]:
+        - checkbox "Space" [checked] [ref=e32] [box=381,751,16,16]
+        - generic [ref=e33] [box=409,746,47,26]: Space
+      - generic [ref=e37] [cursor=pointer] [box=484,736,115,46]:
+        - checkbox "Travel" [checked] [ref=e38] [box=507,751,16,16]
+        - generic [ref=e39] [box=535,746,45,26]: Travel
+      - generic [ref=e34] [cursor=pointer] [box=608,736,91,46]:
+        - checkbox "Art" [checked] [ref=e35] [box=631,751,16,16]
+        - generic [ref=e36] [box=659,746,21,26]: Art

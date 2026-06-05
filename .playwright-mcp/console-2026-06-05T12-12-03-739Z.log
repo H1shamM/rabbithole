@@ -1,0 +1,10 @@
+[     549ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=10422136:14337
+[  125989ms] [ERROR] Unsafe attempt to initiate navigation for frame with origin 'http://localhost:5173' from frame with URL 'https://www.window-swap.com/'. The frame attempting navigation is targeting its top-level window, but is neither same-origin with its target nor has it received a user gesture. See https://www.chromestatus.com/feature/5851021045661696.
+ @ https://www.window-swap.com/main.69f22fe08098b1387c12.js:0
+[  125991ms] SecurityError: Failed to set a named property 'href' on 'Location': The current window does not have permission to navigate the target frame to 'https://www.window-swap.com/'.
+    at a (https://www.window-swap.com/runtime.e2b5cb4c25e2920118a0.js:1:552)
+    at 0 (https://www.window-swap.com/main.69f22fe08098b1387c12.js:1:18945)
+    at a (https://www.window-swap.com/runtime.e2b5cb4c25e2920118a0.js:1:552)
+    at c (https://www.window-swap.com/runtime.e2b5cb4c25e2920118a0.js:1:421)
+    at Array.r [as push] (https://www.window-swap.com/runtime.e2b5cb4c25e2920118a0.js:1:293)
+    at https://www.window-swap.com/main.69f22fe08098b1387c12.js:1:47

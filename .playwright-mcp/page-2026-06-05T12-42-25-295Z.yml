@@ -1,0 +1,15 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "StumbleClone" [level=1] [ref=e5]
+    - paragraph [ref=e6]: Discover the web, one page at a time
+  - main [ref=e7]:
+    - generic [ref=e16]:
+      - paragraph [ref=e17]: This page can't be embedded.
+      - link "Open in new tab ↗" [ref=e18] [cursor=pointer]:
+        - /url: https://www.producthunt.com
+      - button "Close" [ref=e19]
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - button "Like" [ref=e22] [cursor=pointer]: 👍
+        - button "Dislike" [ref=e23] [cursor=pointer]: 👎
+      - button "➡️ Next Stumble" [ref=e24]

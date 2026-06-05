@@ -14,6 +14,9 @@
 | S2-02 | Engineering-Grade Docs | S | Done |
 | S2-03 | Zod Validation & Schema Sync | S | Done |
 | S2-04 | CI Pipeline & Linting | S | Done |
+| S2-05 | Iframe Redesign & Fallback | M | Done |
+| S2-06 | Ratings History Panel | S | Done |
+| S2-07 | Category Filter | S | Done |
 
 ## Backlog
 - [ ] PWA Configuration (Mobile Install)
@@ -24,3 +27,4 @@
 ### Follow-ups
 - [ ] Address lingering `@typescript-eslint/no-explicit-any` warnings in `app/`.
 - [ ] Add `npm test` script to `ui/`.
+| S2-08 | Favorites & Bookmarks | M | Done |

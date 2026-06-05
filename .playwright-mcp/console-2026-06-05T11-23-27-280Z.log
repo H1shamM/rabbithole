@@ -1,0 +1,6 @@
+[     102ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=758d6c21:14337
+[  235715ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/v1/stumble?interests=Space,Art,Travel&history=550e8400-e29b-41d4-a716-446655440002,550e8400-e29b-41d4-a716-446655440001,550e8400-e29b-41d4-a716-446655440000:0
+[  235717ms] [ERROR] Stumble failed: AxiosError: Request failed with status code 404
+    at settle (http://localhost:5173/node_modules/.vite/deps/axios.js?t=1780655928321&v=758d6c21:1752:14)
+    at XMLHttpRequest.onloadend (http://localhost:5173/node_modules/.vite/deps/axios.js?t=1780655928321&v=758d6c21:2105:4) @ http://localhost:5173/@vite/client:524
+[  852297ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5173/@vite/client:992

@@ -1,0 +1,13 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "StumbleClone" [level=1] [ref=e5]
+    - paragraph [ref=e6]: Discover the web, one page at a time
+  - main [ref=e7]:
+    - paragraph [ref=e18]:
+      - text: Click
+      - strong [ref=e19]: Stumble
+      - text: to discover something new
+    - generic [ref=e20]:
+      - paragraph [ref=e21]: ⚠️ Failed to fetch
+      - button "Try Again" [ref=e22] [cursor=pointer]
+    - button "🎲 Stumble" [ref=e23] [cursor=pointer]

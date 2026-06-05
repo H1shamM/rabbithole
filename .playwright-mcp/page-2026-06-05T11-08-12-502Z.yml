@@ -1,0 +1,29 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "StumbleClone" [level=1] [ref=e5]
+    - button [ref=e6] [cursor=pointer]:
+      - img [ref=e7]
+  - main [ref=e10]:
+    - generic [ref=e11]:
+      - heading "WindowSwap" [level=2] [ref=e40]
+      - paragraph [ref=e41]: Travel
+    - button "STUMBLE" [ref=e13] [cursor=pointer]:
+      - img [ref=e42]
+      - generic [ref=e20]: STUMBLE
+    - generic [ref=e21]:
+      - button [ref=e22] [cursor=pointer]:
+        - img [ref=e23]
+      - button [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+  - generic [ref=e28]:
+    - heading "My Interests" [level=3] [ref=e29]
+    - generic [ref=e30]:
+      - generic [ref=e31] [cursor=pointer]:
+        - checkbox "Art" [checked] [ref=e32]
+        - generic [ref=e33]: Art
+      - generic [ref=e34] [cursor=pointer]:
+        - checkbox "Space" [checked] [ref=e35]
+        - generic [ref=e36]: Space
+      - generic [ref=e37] [cursor=pointer]:
+        - checkbox "Travel" [checked] [ref=e38]
+        - generic [ref=e39]: Travel
