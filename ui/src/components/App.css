@@ -77,9 +77,37 @@ main {
   transition: transform 0.1s, box-shadow 0.1s;
 }
 
-.stumble-btn:active {
-  transform: scale(0.95);
-  box-shadow: 0 2px 8px rgba(255, 127, 0, 0.2);
+/* --- Animations --- */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.stumble-btn:not(:disabled) {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.iframe-container {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.history-panel, .favorites-panel {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.rate-btn:active {
+  transform: scale(0.9);
 }
 
 .stumble-btn span {

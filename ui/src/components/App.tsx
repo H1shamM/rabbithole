@@ -2,14 +2,16 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 
 interface StumbleResult {
-  id: number;
+  id: string;
   url: string;
   title?: string;
+  description?: string;
+  category: string;
 }
 
 interface RatedItem extends StumbleResult {
-  rating: 'like' | 'dislike';
-  timestamp: number;
+  rating_val: 'like' | 'dislike';
+  timestamp: Date;
 }
 
 interface FavoriteItem extends StumbleResult {
@@ -18,51 +20,7 @@ interface FavoriteItem extends StumbleResult {
 
 type Category = 'all' | 'tech' | 'art' | 'science' | 'random';
 
-const API_BASE = 'http://localhost:3000';
-const MOCK_MODE = true;
-
-const MOCK_URLS: Record<Exclude<Category, 'all'>, string[]> = {
-  tech: ['https://news.ycombinator.com', 'https://dev.to', 'https://github.com/explore', 'https://stackoverflow.com/questions'],
-  art: ['https://www.thisiscolossal.com', 'https://www.artsy.net', 'https://www.behance.net'],
-  science: ['https://en.wikipedia.org/wiki/Special:Random', 'https://www.nature.com', 'https://www.scientificamerican.com'],
-  random: ['https://www.producthunt.com', 'https://www.boredpanda.com', 'https://www.atlasobscura.com', 'https://www.wikipedia.org'],
-};
-
-function getRandomUrl(category: Category): string {
-  if (category === 'all') {
-    const all = Object.values(MOCK_URLS).flat();
-    return all[Math.floor(Math.random() * all.length)];
-  }
-  const urls = MOCK_URLS[category];
-  return urls[Math.floor(Math.random() * urls.length)];
-}
-
-const HISTORY_KEY = 'stumbleclone_ratings_history';
-const FAVORITES_KEY = 'stumbleclone_favorites';
-
-function loadHistory(): RatedItem[] {
-  try {
-    const raw = localStorage.getItem(HISTORY_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveHistory(items: RatedItem[]): void {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(-20)));
-}
-
-function loadFavorites(): FavoriteItem[] {
-  try {
-    const raw = localStorage.getItem(FAVORITES_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function saveFavorites(items: FavoriteItem[]): void {
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify(items));
-}
-
-declare global { interface Window { __fetchStumble?: () => void; } }
+const API_BASE = 'http://localhost:3000/api/v1';
 
 export default function App() {
   const [current, setCurrent] = useState<StumbleResult | null>(null);
@@ -72,10 +30,10 @@ export default function App() {
   const [iframeError, setIframeError] = useState(false);
   const [rating, setRating] = useState<'like' | 'dislike' | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
-  const [history, setHistory] = useState<RatedItem[]>(loadHistory);
+  const [history, setHistory] = useState<RatedItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [category, setCategory] = useState<Category>('all');
-  const [favorites, setFavorites] = useState<FavoriteItem[]>(loadFavorites);
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     return localStorage.getItem('theme') === 'dark';
@@ -88,6 +46,10 @@ export default function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    
+    // Fetch initial favorites/history
+    fetch(`${API_BASE}/favorites`).then(res => res.json()).then(setFavorites);
+    fetch(`${API_BASE}/history?limit=20`).then(res => res.json()).then(setHistory);
   }, [darkMode]);
 
   const clearIframeTimeout = useCallback(() => {
@@ -116,16 +78,10 @@ export default function App() {
     clearIframeTimeout();
 
     try {
-      if (MOCK_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 600));
-        const url = getRandomUrl(category);
-        setCurrent({ id: Date.now(), url });
-      } else {
-        const res = await fetch(`${API_BASE}/api/v1/stumble?category=${category}`);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data: StumbleResult = await res.json();
-        setCurrent(data);
-      }
+      const res = await fetch(`${API_BASE}/stumble?category=${category}`);
+      if (!res.ok) throw new Error('Failed to fetch stumble');
+      const data: StumbleResult = await res.json();
+      setCurrent(data);
       setShowIframe(true);
       startIframeTimeout();
     } catch (err: unknown) {
@@ -134,10 +90,6 @@ export default function App() {
       setLoading(false);
     }
   }, [category, clearIframeTimeout, startIframeTimeout]);
-
-  useEffect(() => {
-    window.__fetchStumble = fetchStumble;
-  }, [fetchStumble]);
 
   const handleClose = () => {
     setShowIframe(false);
@@ -150,18 +102,15 @@ export default function App() {
     if (!current) return;
     setRateLoading(true);
     try {
-      if (!MOCK_MODE) {
-        await fetch(`${API_BASE}/api/v1/rate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: current.id, rating: type }),
-        });
-      }
+      await fetch(`${API_BASE}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assetId: current.id, isPositive: type === 'like' }),
+      });
+      
       setRating(type);
-      const newItem: RatedItem = { ...current, rating: type, timestamp: Date.now() };
-      const updated = [newItem, ...loadHistory()].slice(0, 20);
-      saveHistory(updated);
-      setHistory(updated);
+      const updatedHistory = await fetch(`${API_BASE}/history?limit=20`).then(res => res.json());
+      setHistory(updatedHistory);
     } catch (err) {
       console.error('Rating failed', err);
     } finally {
@@ -169,24 +118,33 @@ export default function App() {
     }
   };
 
-  const handleToggleFavorite = () => {
+  const handleToggleFavorite = async () => {
     if (!current) return;
-    if (isFavorite) {
-      const updated = favorites.filter(f => f.url !== current.url);
-      setFavorites(updated);
-      saveFavorites(updated);
-    } else {
-      const newFav: FavoriteItem = { ...current, savedAt: Date.now() };
-      const updated = [newFav, ...favorites];
-      setFavorites(updated);
-      saveFavorites(updated);
+    try {
+      if (isFavorite) {
+        await fetch(`${API_BASE}/favorites/${current.id}`, { method: 'DELETE' });
+      } else {
+        await fetch(`${API_BASE}/favorites`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assetId: current.id }),
+        });
+      }
+      const updatedFavorites = await fetch(`${API_BASE}/favorites`).then(res => res.json());
+      setFavorites(updatedFavorites);
+    } catch (err) {
+      console.error('Favorite toggle failed', err);
     }
   };
 
-  const handleRemoveFavorite = (url: string) => {
-    const updated = favorites.filter(f => f.url !== url);
-    setFavorites(updated);
-    saveFavorites(updated);
+  const handleRemoveFavorite = async (assetId: string) => {
+    try {
+      await fetch(`${API_BASE}/favorites/${assetId}`, { method: 'DELETE' });
+      const updatedFavorites = await fetch(`${API_BASE}/favorites`).then(res => res.json());
+      setFavorites(updatedFavorites);
+    } catch (err) {
+      console.error('Favorite removal failed', err);
+    }
   };
 
   const handleNext = () => {
@@ -234,7 +192,7 @@ export default function App() {
 
         {!showIframe && !loading && (
           <div className="empty-state">
-            <p>Click <strong>Stumble</strong> to discover something new</p>
+            <p>✨ Ready to discover? ✨<br/>Click <strong>Stumble</strong> to get started!</p>
           </div>
         )}
 
@@ -303,14 +261,14 @@ export default function App() {
             {showHistory ? '🔽 Hide History' : '📋 View History'} ({history.length})
           </button>
           {showHistory && (
-            <div className="history-panel">
+            <div className="history-panel" data-testid="history-panel">
               {history.length === 0 ? (
-                <p className="history-empty">No ratings yet. Start stumbling!</p>
+                <p className="history-empty">📜 No ratings yet. Start stumbling!</p>
               ) : (
                 <ul className="history-list">
                   {history.slice(0, 10).map((item) => (
-                    <li key={item.timestamp} className="history-item">
-                      <span className="history-rating">{item.rating === 'like' ? '👍' : '👎'}</span>
+                    <li key={item.timestamp.toString()} className="history-item">
+                      <span className="history-rating">{item.rating_val === 'like' ? '👍' : '👎'}</span>
                       <a href={item.url} target="_blank" rel="noopener noreferrer" className="history-url">{item.url}</a>
                     </li>
                   ))}
@@ -327,13 +285,13 @@ export default function App() {
           {showFavorites && (
             <div className="favorites-panel">
               {favorites.length === 0 ? (
-                <p className="favorites-empty">No favorites yet. Save a site you love!</p>
+                <p className="favorites-empty">⭐ No favorites yet. Save a site you love!</p>
               ) : (
                 <ul className="favorites-list">
                   {favorites.map((item) => (
-                    <li key={item.savedAt} className="favorites-item">
+                    <li key={item.id} className="favorites-item">
                       <a href={item.url} target="_blank" rel="noopener noreferrer" className="favorites-url">{item.url}</a>
-                      <button className="btn-remove-fav" onClick={() => handleRemoveFavorite(item.url)} aria-label="Remove from favorites">✖</button>
+                      <button className="btn-remove-fav" onClick={() => handleRemoveFavorite(item.id)} aria-label="Remove from favorites">✖</button>
                     </li>
                   ))}
                 </ul>

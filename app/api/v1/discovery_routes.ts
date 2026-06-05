@@ -3,6 +3,7 @@ import { DiscoveryService } from '../../services/discovery_service.js';
 import type { IStoragePort } from '../../db/storage_port.js';
 
 export function createDiscoveryRouter(discoveryService: DiscoveryService, storage: IStoragePort): Router {
+  const _storage = storage;
   const router = Router();
 
   router.get('/stumble', async (req, res) => {
@@ -69,6 +70,21 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
     try {
       const categories = await discoveryService.get_categories();
       res.json(categories);
+    } catch (error: unknown) {
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  router.post('/seed', async (req, res) => {
+    try {
+      const mock_data = [
+        { id: 't1', url: 'https://news.ycombinator.com', title: 'Hacker News', category: 'tech', source: 'HN', description: 'Tech' },
+        { id: 'a1', url: 'https://www.thisiscolossal.com', title: 'Colossal', category: 'art', source: 'Colossal', description: 'Art' },
+      ];
+      for (const item of mock_data) {
+        await _storage.save_asset({ ...item, rating: 0, created_at: new Date() });
+      }
+      res.json({ message: 'Seeding complete', count: mock_data.length });
     } catch (error: unknown) {
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
