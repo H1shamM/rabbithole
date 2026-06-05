@@ -1,5 +1,5 @@
 import { IStoragePort } from '../db/storage_port';
-import { StumbleAsset } from '../models/asset';
+import type { StumbleAsset } from '../models/asset.js';
 
 export class DiscoveryService {
   constructor(private storage_port: IStoragePort) {}

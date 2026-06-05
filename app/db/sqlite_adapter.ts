@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
-import { IStoragePort } from './storage_port';
-import { StumbleAsset } from '../models/asset';
+import { IStoragePort } from './storage_port.js';
+import type { StumbleAsset } from '../models/asset.js';
 
 export class SqliteAdapter implements IStoragePort {
   private db: Database.Database;

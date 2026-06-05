@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { DiscoveryService } from '../../../services/discovery_service';
+import { DiscoveryService } from '../../services/discovery_service';
 
 export function createDiscoveryRouter(discoveryService: DiscoveryService): Router {
   const router = Router();

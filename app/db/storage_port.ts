@@ -1,4 +1,4 @@
-import { StumbleAsset } from '../models/asset';
+import type { StumbleAsset } from '../models/asset.js';
 
 export interface IStoragePort {
   get_asset_by_id(id: string): Promise<StumbleAsset | null>;

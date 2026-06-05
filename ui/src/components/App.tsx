@@ -18,17 +18,16 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const fetchInterests = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/v1/interests');
+        setInterests(response.data);
+      } catch (error) {
+        console.error('Failed to fetch interests:', error);
+      }
+    };
     fetchInterests();
   }, []);
-
-  const fetchInterests = async () => {
-    try {
-      const response = await axios.get('http://localhost:3000/api/v1/interests');
-      setInterests(response.data);
-    } catch (error) {
-      console.error('Failed to fetch interests:', error);
-    }
-  };
 
   const handleStumble = async () => {
     setLoading(true);

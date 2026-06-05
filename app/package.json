@@ -1,10 +1,11 @@
 {
   "name": "app",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node main.ts",
+    "start": "tsx main.ts",
     "test": "vitest run ../tests",
     "test:watch": "vitest ../tests",
     "lint": "eslint . --ext .ts",
@@ -13,7 +14,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.1",
@@ -25,12 +25,16 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.19",
     "@typescript-eslint/eslint-plugin": "^8.60.1",
     "@typescript-eslint/parser": "^8.60.1",
     "eslint": "^10.4.1",
+    "globals": "^17.6.0",
     "prettier": "^3.8.3",
+    "tsx": "^4.22.4",
+    "typescript-eslint": "^8.59.2",
     "vitest": "^4.1.8"
   }
 }

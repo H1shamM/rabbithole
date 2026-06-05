@@ -18,7 +18,7 @@ const discoveryService = new DiscoveryService(storage);
 app.use('/api/v1', createDiscoveryRouter(discoveryService));
 
 // 3. Health Check (Infrastructure Requirement)
-app.get('/health', (req, res) => res.json({ status: 'healthy', env: settings.ENV }));
+app.get('/health', (_req, res) => res.json({ status: 'healthy', env: settings.ENV }));
 
 // 4. Seeding Logic (Moved from prototype style to internal util)
 async function seed_database() {
