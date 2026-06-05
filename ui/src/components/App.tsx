@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import './App.css';
-
-declare global { interface Window { __fetchStumble?: () => void; } }
+import '../App.css';
 
 interface StumbleResult {
   id: number;
@@ -9,16 +7,38 @@ interface StumbleResult {
   title?: string;
 }
 
+interface RatedItem extends StumbleResult {
+  rating: 'like' | 'dislike';
+  timestamp: number;
+}
+
 const API_BASE = 'http://localhost:3000';
-const MOCK_MODE = true; // keep mock mode enabled for testing
+const MOCK_MODE = true;
 
 const MOCK_URLS = [
-  'https://www.producthunt.com',   // blocked by X-Frame-Options
+  'https://www.producthunt.com',
   'https://en.wikipedia.org/wiki/Special:Random',
   'https://www.boredpanda.com',
   'https://www.thisiscolossal.com',
   'https://www.atlasobscura.com',
 ];
+
+const HISTORY_KEY = 'stumbleclone_ratings_history';
+
+function loadHistory(): RatedItem[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(items: RatedItem[]): void {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(-20)));
+}
+
+declare global { interface Window { __fetchStumble?: () => void; } }
 
 export default function App() {
   const [current, setCurrent] = useState<StumbleResult | null>(null);
@@ -28,6 +48,8 @@ export default function App() {
   const [iframeError, setIframeError] = useState(false);
   const [rating, setRating] = useState<'like' | 'dislike' | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
+  const [history, setHistory] = useState<RatedItem[]>(loadHistory);
+  const [showHistory, setShowHistory] = useState(false);
   const iframeLoadedRef = useRef(false);
   const iframeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -46,42 +68,40 @@ export default function App() {
       }
     }, 5000);
   }, [clearIframeTimeout]);
-const fetchStumble = useCallback(async () => {
-  setLoading(true);
-  setError(null);
-  setShowIframe(false);
-  setIframeError(false);
-  setIframeLoading(true);
-  setRating(null);
-  iframeLoadedRef.current = false;
-  clearIframeTimeout();
 
-  try {
-    if (MOCK_MODE) {
-      await new Promise(resolve => setTimeout(resolve, 600));
-      const randomUrl = MOCK_URLS[Math.floor(Math.random() * MOCK_URLS.length)];
-      setCurrent({ id: Date.now(), url: randomUrl });
-    } else {
-      const res = await fetch(`${API_BASE}/api/v1/stumble`);
-      if (!res.ok) throw new Error('Failed to fetch');
-      const data: StumbleResult = await res.json();
-      setCurrent(data);
+  const fetchStumble = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setShowIframe(false);
+    setIframeError(false);
+    setRating(null);
+    iframeLoadedRef.current = false;
+    clearIframeTimeout();
+
+    try {
+      if (MOCK_MODE) {
+        await new Promise(resolve => setTimeout(resolve, 600));
+        const randomUrl = MOCK_URLS[Math.floor(Math.random() * MOCK_URLS.length)];
+        setCurrent({ id: Date.now(), url: randomUrl });
+      } else {
+        const res = await fetch(`${API_BASE}/api/v1/stumble`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data: StumbleResult = await res.json();
+        setCurrent(data);
+      }
+      setShowIframe(true);
+      startIframeTimeout();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
     }
-    setShowIframe(true);
-    startIframeTimeout(); // start timeout only after showing iframe
-  } catch (err: unknown) {
-    setError(err instanceof Error ? err.message : 'Something went wrong');
-  } finally {
-    setLoading(false);
-  }
-}, [clearIframeTimeout, startIframeTimeout]);
+  }, [clearIframeTimeout, startIframeTimeout]);
 
-// Expose fetchStumble for testing
-useEffect(() => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).__fetchStumble = fetchStumble;
-}, [fetchStumble]);
-
+  // Expose fetchStumble for testing
+  useEffect(() => {
+    window.__fetchStumble = fetchStumble;
+  }, [fetchStumble]);
 
   const handleClose = () => {
     setShowIframe(false);
@@ -102,6 +122,14 @@ useEffect(() => {
         });
       }
       setRating(type);
+      const newItem: RatedItem = {
+        ...current,
+        rating: type,
+        timestamp: Date.now(),
+      };
+      const updated = [newItem, ...loadHistory()].slice(0, 20);
+      saveHistory(updated);
+      setHistory(updated);
     } catch (err) {
       console.error('Rating failed', err);
     } finally {
@@ -120,12 +148,10 @@ useEffect(() => {
   };
 
   const handleIframeError = () => {
-    // This only catches network errors, but we'll still set iframeError
     setIframeError(true);
     clearIframeTimeout();
   };
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => clearIframeTimeout();
   }, [clearIframeTimeout]);
@@ -223,6 +249,40 @@ useEffect(() => {
               >
                 {loading ? '...' : '➡️ Next Stumble'}
               </button>
+            </div>
+          )}
+        </div>
+
+        <div className="history-section">
+          <button
+            className="btn secondary history-toggle"
+            onClick={() => setShowHistory(!showHistory)}
+          >
+            {showHistory ? '🔽 Hide History' : '📋 View History'} ({history.length})
+          </button>
+          {showHistory && (
+            <div className="history-panel">
+              {history.length === 0 ? (
+                <p className="history-empty">No ratings yet. Start stumbling!</p>
+              ) : (
+                <ul className="history-list">
+                  {history.slice(0, 10).map((item) => (
+                    <li key={item.timestamp} className="history-item">
+                      <span className="history-rating">
+                        {item.rating === 'like' ? '👍' : '👎'}
+                      </span>
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="history-url"
+                      >
+                        {item.url}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </div>
