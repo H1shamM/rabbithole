@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import '../App.css';
+import './App.css';
 
 interface StumbleResult {
   id: number;
