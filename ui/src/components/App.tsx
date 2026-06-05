@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import '../App.css';
+import './App.css';
 
 interface StumbleResult {
   id: number;
@@ -12,16 +12,26 @@ interface RatedItem extends StumbleResult {
   timestamp: number;
 }
 
+type Category = 'all' | 'tech' | 'art' | 'science' | 'random';
+
 const API_BASE = 'http://localhost:3000';
 const MOCK_MODE = true;
 
-const MOCK_URLS = [
-  'https://www.producthunt.com',
-  'https://en.wikipedia.org/wiki/Special:Random',
-  'https://www.boredpanda.com',
-  'https://www.thisiscolossal.com',
-  'https://www.atlasobscura.com',
-];
+const MOCK_URLS: Record<Exclude<Category, 'all'>, string[]> = {
+  tech: ['https://news.ycombinator.com', 'https://dev.to', 'https://github.com/explore', 'https://stackoverflow.com/questions'],
+  art: ['https://www.thisiscolossal.com', 'https://www.artsy.net', 'https://www.behance.net'],
+  science: ['https://en.wikipedia.org/wiki/Special:Random', 'https://www.nature.com', 'https://www.scientificamerican.com'],
+  random: ['https://www.producthunt.com', 'https://www.boredpanda.com', 'https://www.atlasobscura.com', 'https://www.wikipedia.org'],
+};
+
+function getRandomUrl(category: Category): string {
+  if (category === 'all') {
+    const all = Object.values(MOCK_URLS).flat();
+    return all[Math.floor(Math.random() * all.length)];
+  }
+  const urls = MOCK_URLS[category];
+  return urls[Math.floor(Math.random() * urls.length)];
+}
 
 const HISTORY_KEY = 'stumbleclone_ratings_history';
 
@@ -50,6 +60,7 @@ export default function App() {
   const [rateLoading, setRateLoading] = useState(false);
   const [history, setHistory] = useState<RatedItem[]>(loadHistory);
   const [showHistory, setShowHistory] = useState(false);
+  const [category, setCategory] = useState<Category>('all');
   const iframeLoadedRef = useRef(false);
   const iframeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -81,10 +92,10 @@ export default function App() {
     try {
       if (MOCK_MODE) {
         await new Promise(resolve => setTimeout(resolve, 600));
-        const randomUrl = MOCK_URLS[Math.floor(Math.random() * MOCK_URLS.length)];
-        setCurrent({ id: Date.now(), url: randomUrl });
+        const url = getRandomUrl(category);
+        setCurrent({ id: Date.now(), url });
       } else {
-        const res = await fetch(`${API_BASE}/api/v1/stumble`);
+        const res = await fetch(`${API_BASE}/api/v1/stumble?category=${category}`);
         if (!res.ok) throw new Error('Failed to fetch');
         const data: StumbleResult = await res.json();
         setCurrent(data);
@@ -96,7 +107,7 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, [clearIframeTimeout, startIframeTimeout]);
+  }, [category, clearIframeTimeout, startIframeTimeout]);
 
   // Expose fetchStumble for testing
   useEffect(() => {
@@ -122,11 +133,7 @@ export default function App() {
         });
       }
       setRating(type);
-      const newItem: RatedItem = {
-        ...current,
-        rating: type,
-        timestamp: Date.now(),
-      };
+      const newItem: RatedItem = { ...current, rating: type, timestamp: Date.now() };
       const updated = [newItem, ...loadHistory()].slice(0, 20);
       saveHistory(updated);
       setHistory(updated);
@@ -164,6 +171,21 @@ export default function App() {
       </header>
 
       <main className="main-content">
+        <div className="category-selector">
+          <label htmlFor="category">Filter by:</label>
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as Category)}
+          >
+            <option value="all">All</option>
+            <option value="tech">Tech</option>
+            <option value="art">Art</option>
+            <option value="science">Science</option>
+            <option value="random">Random</option>
+          </select>
+        </div>
+
         {!showIframe && !loading && (
           <div className="empty-state">
             <p>Click <strong>Stumble</strong> to discover something new</p>
