@@ -25,29 +25,47 @@ describe('App Component', () => {
 
   it('renders initial empty state with Stumble button', () => {
     render(<App />);
-    expect(screen.getByText(/Click Stumble/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Stumble/i })).toBeInTheDocument();
+    expect(screen.getByText(/Click/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /🎲 Stumble/i })).toBeInTheDocument();
   });
 
   it('liking updates history and localStorage', async () => {
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 123, url: 'https://example.com', title: 'Test' })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+      });
+
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /Stumble/i }));
+    fireEvent.click(screen.getByRole('button', { name: /🎲 Stumble/i }));
     
-    // Find like button by aria-label name directly
     const main = screen.getByRole('main');
     await waitFor(() => expect(within(main).getByRole('button', { name: 'Like' })).toBeInTheDocument());
     fireEvent.click(within(main).getByRole('button', { name: 'Like' }));
     
-    expect(localStorage.getItem('stumbleclone_ratings_history')).toContain('like');
+    await waitFor(() => {
+        const history = localStorage.getItem('stumbleclone_ratings_history');
+        expect(history).not.toBeNull();
+        expect(JSON.parse(history!)).toHaveLength(1);
+    });
     
-    fireEvent.click(screen.getByRole('button', { name: /View History/i }));
-    const panel = screen.getByText(/View History/i).parentElement?.nextElementSibling;
-    expect(within(panel!).getByText('👍')).toBeInTheDocument();
+    // Toggle history
+    fireEvent.click(screen.getByRole('button', { name: /History/i }));
+    const panel = screen.getByTestId('history-panel');
+    expect(within(panel).getByText('👍')).toBeInTheDocument();
   });
 
   it('favorites toggle works', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ id: 123, url: 'https://example.com', title: 'Test' })
+    });
+
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /Stumble/i }));
+    fireEvent.click(screen.getByRole('button', { name: /🎲 Stumble/i }));
     
     const main = screen.getByRole('main');
     await waitFor(() => expect(within(main).getByRole('button', { name: 'Save to favorites' })).toBeInTheDocument());
@@ -55,7 +73,10 @@ describe('App Component', () => {
     
     fireEvent.click(favBtn);
     expect(favBtn.textContent).toBe('⭐');
-    expect(localStorage.getItem('stumbleclone_favorites')).not.toBeNull();
+    
+    const favs = localStorage.getItem('stumbleclone_favorites');
+    expect(favs).not.toBeNull();
+    expect(JSON.parse(favs!)).toHaveLength(1);
   });
 
   it('dark mode toggles theme and persists', () => {

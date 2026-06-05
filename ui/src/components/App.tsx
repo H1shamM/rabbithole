@@ -19,7 +19,7 @@ interface FavoriteItem extends StumbleResult {
 type Category = 'all' | 'tech' | 'art' | 'science' | 'random';
 
 const API_BASE = 'http://localhost:3000';
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 const MOCK_URLS: Record<Exclude<Category, 'all'>, string[]> = {
   tech: ['https://news.ycombinator.com', 'https://dev.to', 'https://github.com/explore', 'https://stackoverflow.com/questions'],
@@ -303,7 +303,7 @@ export default function App() {
             {showHistory ? '🔽 Hide History' : '📋 View History'} ({history.length})
           </button>
           {showHistory && (
-            <div className="history-panel">
+            <div className="history-panel" data-testid="history-panel">
               {history.length === 0 ? (
                 <p className="history-empty">No ratings yet. Start stumbling!</p>
               ) : (
