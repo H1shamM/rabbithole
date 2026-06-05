@@ -1,23 +1,44 @@
 import type { IStoragePort } from '../db/storage_port.js';
 import type { StumbleAsset } from '../models/asset.js';
+import type { ContentFetcher } from '../sources/ContentFetcher.js';
 
 export class DiscoveryService {
-  constructor(private storage_port: IStoragePort) {}
+  constructor(
+    private storage_port: IStoragePort,
+    private sources: ContentFetcher[]
+  ) {}
 
   async stumble(category: string, history: string[]): Promise<StumbleAsset> {
-    const asset = await this.storage_port.get_random_asset_by_category(category, history);
-    
-    if (!asset) {
-      throw new Error(`No assets found for category: ${category}`);
+    // 1. Shuffle sources to ensure variety
+    const shuffledSources = [...this.sources].sort(() => Math.random() - 0.5);
+
+    // 2. Waterfall through sources
+    for (const source of shuffledSources) {
+      try {
+        const asset = await source.fetchStumble(category);
+        
+        // 3. Save live fetch to local assets table for future caching/rating
+        // We use INSERT OR IGNORE or similar to avoid duplicates if URL exists
+        // SQLiteAdapter handles INSERT OR REPLACE currently
+        await this.storage_port.save_asset({
+          ...asset,
+          last_visited_at: new Date()
+        });
+
+        return asset;
+      } catch (error) {
+        console.error(`Source ${source.constructor.name} failed:`, error);
+        continue; // Try next source
+      }
     }
 
-    // Update last visited time (async orchestration)
-    this.storage_port.save_asset({
-      ...asset,
-      last_visited_at: new Date()
-    }).catch((err: unknown) => console.error('Failed to update last_visited_at:', err));
+    // 4. Ultimate fallback: retrieve from local DB cache if all external sources fail
+    const fallbackAsset = await this.storage_port.get_random_asset_by_category(category, history);
+    if (fallbackAsset) {
+      return fallbackAsset;
+    }
 
-    return asset;
+    throw new Error(`No content available for category: ${category}`);
   }
 
   async rate(asset_id: string, is_positive: boolean): Promise<void> {

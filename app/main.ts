@@ -5,6 +5,12 @@ import { SqliteAdapter } from './db/sqlite_adapter.js';
 import { DiscoveryService } from './services/discovery_service.js';
 import { createDiscoveryRouter } from './api/v1/discovery_routes.js';
 
+// Sources
+import { WikipediaSource } from './sources/wikipedia.js';
+import { HackerNewsSource } from './sources/hn.js';
+import { RedditSource } from './sources/reddit.js';
+import { DevToSource } from './sources/devto.js';
+
 const app = express();
 
 app.use(cors());
@@ -12,7 +18,13 @@ app.use(express.json());
 
 // 1. Dependency Injection
 const storage = new SqliteAdapter(settings.DB_PATH);
-const discoveryService = new DiscoveryService(storage);
+const sources = [
+  new WikipediaSource(),
+  new HackerNewsSource(),
+  new RedditSource(),
+  new DevToSource()
+];
+const discoveryService = new DiscoveryService(storage, sources);
 
 // 2. Routing Setup
 app.use('/api/v1', createDiscoveryRouter(discoveryService, storage));
@@ -31,6 +43,7 @@ async function seed_database() {
         url: 'https://www.google.com/sky/',
         title: 'Google Sky',
         category: 'science',
+        source: 'Bootstrap',
         rating: 0,
         created_at: new Date()
       },
@@ -39,6 +52,7 @@ async function seed_database() {
         url: 'https://neave.com/strobe/',
         title: 'Strobe Illusion',
         category: 'art',
+        source: 'Bootstrap',
         rating: 0,
         created_at: new Date()
       }
