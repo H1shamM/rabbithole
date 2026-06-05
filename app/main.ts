@@ -13,7 +13,7 @@ import { DevToSource } from './sources/devto.js';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 // 1. Dependency Injection
@@ -30,7 +30,7 @@ const discoveryService = new DiscoveryService(storage, sources);
 app.use('/api/v1', createDiscoveryRouter(discoveryService, storage));
 
 // 3. Health Check
-app.get('/health', (_req, res) => res.json({ status: 'healthy', env: settings.ENV }));
+app.get('/health', (_req, res) => res.json({ ok: true }));
 
 // 4. Bootstrap
 async function bootstrap() {

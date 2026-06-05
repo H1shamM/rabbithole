@@ -1,4 +1,4 @@
-import { ContentFetcher } from './ContentFetcher.js';
+import type { ContentFetcher } from './ContentFetcher.js';
 import type { StumbleAsset } from '../models/asset.js';
 import crypto from 'crypto';
 
