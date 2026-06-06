@@ -1,4 +1,4 @@
-import type { IStoragePort } from '../db/storage_port.js';
+import type { IStoragePort, RatedItem } from '../db/storage_port.js';
 import type { StumbleAsset } from '../models/asset.js';
 import type { ContentFetcher } from '../sources/ContentFetcher.js';
 
@@ -36,8 +36,25 @@ export class DiscoveryService {
   }
 
   async rate(asset_id: string, is_positive: boolean): Promise<void> {
-    const delta = is_positive ? 1 : -1;
-    await this.storage_port.update_rating(asset_id, delta);
+    const rating = is_positive ? 'like' : 'dislike';
+    await this.storage_port.save_rating(asset_id, rating);
+    await this.storage_port.update_rating(asset_id, is_positive ? 1 : -1);
+  }
+
+  async get_history(limit: number): Promise<RatedItem[]> {
+    return this.storage_port.get_history(limit);
+  }
+
+  async addFavorite(asset_id: string): Promise<void> {
+    await this.storage_port.save_favorite(asset_id);
+  }
+
+  async removeFavorite(asset_id: string): Promise<void> {
+    await this.storage_port.remove_favorite(asset_id);
+  }
+
+  async getFavorites(): Promise<StumbleAsset[]> {
+    return this.storage_port.get_favorites();
   }
 
   async get_categories(): Promise<string[]> {

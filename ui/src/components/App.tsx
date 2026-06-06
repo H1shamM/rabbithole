@@ -41,7 +41,7 @@ export default function App() {
   const iframeLoadedRef = useRef(false);
   const iframeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isFavorite = current ? favorites.some(f => f.url === current.url) : false;
+  const isFavorite = current && Array.isArray(favorites) ? favorites.some(f => f.url === current.url) : false;
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
@@ -288,12 +288,13 @@ export default function App() {
                 <p className="favorites-empty">⭐ No favorites yet. Save a site you love!</p>
               ) : (
                 <ul className="favorites-list">
-                  {favorites.map((item) => (
-                    <li key={item.id} className="favorites-item">
+                  {(Array.isArray(favorites) ? favorites : []).map((item) => (
+                    <li key={item.savedAt} className="favorites-item">
                       <a href={item.url} target="_blank" rel="noopener noreferrer" className="favorites-url">{item.url}</a>
-                      <button className="btn-remove-fav" onClick={() => handleRemoveFavorite(item.id)} aria-label="Remove from favorites">✖</button>
+                      <button className="btn-remove-fav" onClick={() => handleRemoveFavorite(item.url)} aria-label="Remove from favorites">✖</button>
                     </li>
                   ))}
+
                 </ul>
               )}
             </div>

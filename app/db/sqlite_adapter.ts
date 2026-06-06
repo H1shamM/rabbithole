@@ -12,6 +12,7 @@ export class SqliteAdapter implements IStoragePort {
   }
 
   private init(): void {
+    console.log('Initializing Database Tables...');
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS assets (
         id TEXT PRIMARY KEY,
@@ -38,6 +39,8 @@ export class SqliteAdapter implements IStoragePort {
         FOREIGN KEY(asset_id) REFERENCES assets(id)
       )
     `);
+    const tables = this.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+    console.log('Tables initialized:', tables);
   }
 
   async get_asset_by_id(id: string): Promise<StumbleAsset | null> {

@@ -34,6 +34,7 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
       const history = await discoveryService.get_history(limit);
       res.json(history);
     } catch (error: unknown) {
+      console.error('Error in /history:', error);
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
@@ -44,6 +45,7 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
       await discoveryService.addFavorite(assetId);
       res.sendStatus(201);
     } catch (error: unknown) {
+      console.error('Error in POST /favorites:', error);
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
@@ -53,6 +55,7 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
       const favorites = await discoveryService.getFavorites();
       res.json(favorites);
     } catch (error: unknown) {
+      console.error('Error in GET /favorites:', error);
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
