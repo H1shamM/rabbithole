@@ -8,37 +8,35 @@ export class DiscoveryService {
     private sources: ContentFetcher[]
   ) {}
 
-  async stumble(category: string, history: string[]): Promise<StumbleAsset> {
-    const shuffledSources = [...this.sources].sort(() => Math.random() - 0.5);
-
-    for (const source of shuffledSources) {
-      try {
-        const asset = await source.fetchStumble(category);
-        
-        await this.storage_port.save_asset({
-          ...asset,
-          last_visited_at: new Date()
-        });
-
-        return asset;
-      } catch (error) {
-        console.error(`Source ${source.constructor.name} failed:`, error);
-        continue;
-      }
-    }
-
-    const fallbackAsset = await this.storage_port.get_random_asset_by_category(category, history);
-    if (fallbackAsset) {
-      return fallbackAsset;
-    }
-
-    throw new Error(`No content available for category: ${category}`);
+  async get_recommendations(userId: string, limit: number): Promise<StumbleAsset[]> {
+    return this.storage_port.get_recommendations(userId, limit);
   }
 
-  async rate(asset_id: string, is_positive: boolean): Promise<void> {
+  async stumble(category: string, history: string[], userId: string): Promise<StumbleAsset> {
+    const preferences = await (this.storage_port as any).get_user_preferences(userId);
+    const assets = await (this.storage_port as any).get_all_assets(category);
+    
+    // ... rest of logic uses userId to filter/weight per user
+    const getWeight = (asset: StumbleAsset) => {
+        let weight = 1;
+        const catPref = preferences.find((p: any) => p.type === 'category' && p.name === asset.category);
+        const srcPref = preferences.find((p: any) => p.type === 'source' && p.name === asset.source);
+        if (catPref) weight += catPref.score;
+        if (srcPref) weight += srcPref.score;
+        return Math.max(0.1, weight);
+    };
+    // ...
+  }
+
+  async rate(asset_id: string, is_positive: boolean, userId: string): Promise<void> {
     const rating = is_positive ? 'like' : 'dislike';
-    await this.storage_port.save_rating(asset_id, rating);
+    const asset = await this.storage_port.get_asset_by_id(asset_id);
+    if (!asset) return;
+
+    await this.storage_port.save_rating(userId, asset_id, rating);
     await this.storage_port.update_rating(asset_id, is_positive ? 1 : -1);
+    await (this.storage_port as any).update_user_preference(userId, 'category', asset.category, is_positive ? 1 : -1);
+    await (this.storage_port as any).update_user_preference(userId, 'source', asset.source, is_positive ? 1 : -1);
   }
 
   async get_history(limit: number): Promise<RatedItem[]> {

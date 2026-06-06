@@ -29,3 +29,4 @@
 - [ ] Add `npm test` script to `ui/`.
 | S2-08 | Favorites & Bookmarks | M | Done |
 | S3-02 | v1.0 Polish & Coverage Boost | S | Done |
+| S2-10 | Real API Integration | M | Done |

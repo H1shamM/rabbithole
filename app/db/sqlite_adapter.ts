@@ -12,8 +12,14 @@ export class SqliteAdapter implements IStoragePort {
   }
 
   private init(): void {
-    console.log('Initializing Database Tables...');
+    console.log('Initializing Database Tables with Auth...');
     this.db.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
       CREATE TABLE IF NOT EXISTS assets (
         id TEXT PRIMARY KEY,
         url TEXT NOT NULL,
@@ -27,20 +33,31 @@ export class SqliteAdapter implements IStoragePort {
       );
       CREATE TABLE IF NOT EXISTS ratings (
         id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
         asset_id TEXT NOT NULL,
         rating TEXT NOT NULL,
+        note TEXT,
         created_at TEXT NOT NULL,
+        FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(asset_id) REFERENCES assets(id)
       );
       CREATE TABLE IF NOT EXISTS favorites (
         id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
         asset_id TEXT NOT NULL,
         created_at TEXT NOT NULL,
+        FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(asset_id) REFERENCES assets(id)
+      );
+      CREATE TABLE IF NOT EXISTS user_preferences (
+        user_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        name TEXT NOT NULL,
+        score INTEGER DEFAULT 0,
+        PRIMARY KEY(user_id, type, name),
+        FOREIGN KEY(user_id) REFERENCES users(id)
       )
     `);
-    const tables = this.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
-    console.log('Tables initialized:', tables);
   }
 
   async get_asset_by_id(id: string): Promise<StumbleAsset | null> {
@@ -49,7 +66,7 @@ export class SqliteAdapter implements IStoragePort {
     return this.map_row_to_asset(row);
   }
 
-  async get_random_asset_by_category(category: string, exclude_ids: string[]): Promise<StumbleAsset | null> {
+  async get_all_assets(category: string): Promise<StumbleAsset[]> {
     let query = 'SELECT * FROM assets WHERE 1=1 ';
     const params: any[] = [];
 
@@ -58,17 +75,8 @@ export class SqliteAdapter implements IStoragePort {
       params.push(category);
     }
 
-    if (exclude_ids.length > 0) {
-      query += `AND id NOT IN (${exclude_ids.map(() => '?').join(',')}) `;
-      params.push(...exclude_ids);
-    }
-
-    query += 'ORDER BY RANDOM() LIMIT 1';
-
-    const row = this.db.prepare(query).get(...params) as any;
-    
-    if (!row) return null;
-    return this.map_row_to_asset(row);
+    const rows = this.db.prepare(query).all(...params) as any[];
+    return rows.map(r => this.map_row_to_asset(r));
   }
 
   async save_asset(asset: StumbleAsset): Promise<void> {
@@ -92,26 +100,36 @@ export class SqliteAdapter implements IStoragePort {
     this.db.prepare('UPDATE assets SET rating = rating + ? WHERE id = ?').run(delta, id);
   }
 
-  async get_all_categories(): Promise<string[]> {
-    const rows = this.db.prepare('SELECT DISTINCT category FROM assets').all() as { category: string }[];
-    return rows.map(r => r.category);
+  async get_recommendations(user_id: string, limit: number): Promise<StumbleAsset[]> {
+    const rows = this.db.prepare(`
+      SELECT a.*
+      FROM assets a
+      LEFT JOIN ratings r ON a.id = r.asset_id AND r.user_id = ?
+      LEFT JOIN user_preferences up ON a.category = up.name AND up.user_id = ? AND up.type = 'category'
+      WHERE r.asset_id IS NULL
+      ORDER BY COALESCE(up.score, 0) + a.rating DESC
+      LIMIT ?
+    `).all(user_id, user_id, limit) as any[];
+
+    return rows.map(r => this.map_row_to_asset(r));
   }
 
-  async save_rating(asset_id: string, rating: 'like' | 'dislike'): Promise<void> {
+  async save_rating(user_id: string, asset_id: string, rating: 'like' | 'dislike'): Promise<void> {
     this.db.prepare(`
-      INSERT INTO ratings (id, asset_id, rating, created_at)
-      VALUES (?, ?, ?, ?)
-    `).run(crypto.randomUUID(), asset_id, rating, new Date().toISOString());
+      INSERT INTO ratings (id, user_id, asset_id, rating, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(crypto.randomUUID(), user_id, asset_id, rating, new Date().toISOString());
   }
 
-  async get_history(limit: number): Promise<RatedItem[]> {
+  async get_history(user_id: string, limit: number): Promise<RatedItem[]> {
     const rows = this.db.prepare(`
       SELECT a.*, r.rating as rating_val, r.created_at as timestamp 
       FROM ratings r
       JOIN assets a ON r.asset_id = a.id
+      WHERE r.user_id = ?
       ORDER BY r.created_at DESC
       LIMIT ?
-    `).all(limit) as any[];
+    `).all(user_id, limit) as any[];
 
     return rows.map(r => ({
       ...this.map_row_to_asset(r),
@@ -120,25 +138,38 @@ export class SqliteAdapter implements IStoragePort {
     }));
   }
 
-  async save_favorite(asset_id: string): Promise<void> {
+  async save_favorite(user_id: string, asset_id: string): Promise<void> {
     this.db.prepare(`
-      INSERT INTO favorites (id, asset_id, created_at)
-      VALUES (?, ?, ?)
-    `).run(crypto.randomUUID(), asset_id, new Date().toISOString());
+      INSERT INTO favorites (id, user_id, asset_id, created_at)
+      VALUES (?, ?, ?, ?)
+    `).run(crypto.randomUUID(), user_id, asset_id, new Date().toISOString());
   }
 
-  async remove_favorite(asset_id: string): Promise<void> {
-    this.db.prepare('DELETE FROM favorites WHERE asset_id = ?').run(asset_id);
+  async remove_favorite(user_id: string, asset_id: string): Promise<void> {
+    this.db.prepare('DELETE FROM favorites WHERE user_id = ? AND asset_id = ?').run(user_id, asset_id);
   }
 
-  async get_favorites(): Promise<StumbleAsset[]> {
+  async get_favorites(user_id: string): Promise<StumbleAsset[]> {
     const rows = this.db.prepare(`
       SELECT a.* 
       FROM favorites f
       JOIN assets a ON f.asset_id = a.id
-    `).all() as any[];
+      WHERE f.user_id = ?
+    `).all(user_id) as any[];
 
     return rows.map(r => this.map_row_to_asset(r));
+  }
+
+  async update_user_preference(user_id: string, type: 'category' | 'source', name: string, delta: number): Promise<void> {
+    this.db.prepare(`
+      INSERT INTO user_preferences (user_id, type, name, score)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(user_id, type, name) DO UPDATE SET score = score + ?
+    `).run(user_id, type, name, delta, delta);
+  }
+
+  async get_user_preferences(user_id: string): Promise<{ type: string; name: string; score: number }[]> {
+    return this.db.prepare('SELECT * FROM user_preferences WHERE user_id = ?').all(user_id) as any[];
   }
 
   private map_row_to_asset(row: any): StumbleAsset {

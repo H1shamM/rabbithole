@@ -6,22 +6,47 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
   const _storage = storage;
   const router = Router();
 
+  router.get('/recommendations', async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const userId = (req as any).user_id;
+      const recommendations = await discoveryService.get_recommendations(userId, limit);
+      res.json(recommendations);
+    } catch (error: unknown) {
+      console.error('Error in /recommendations:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
   router.get('/stumble', async (req, res) => {
     try {
       const category = (req.query.category as string) || 'all';
       const history = (req.query.history as string)?.split(',') || [];
+      const userId = (req as any).user_id;
       
-      const asset = await discoveryService.stumble(category, history);
-      res.json(asset);
+      const asset = await discoveryService.stumble(category, history, userId);
+      
+      res.json({ ...asset, blocked: asset.source === 'ProductHunt' });
     } catch (error: unknown) {
       res.status(404).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  router.post('/preferences', async (req, res) => {
+    try {
+      const { type, name, delta } = req.body;
+      await (discoveryService as any).storage_port.update_preference(type, name, delta);
+      res.sendStatus(204);
+    } catch (error: unknown) {
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
   router.post('/rate', async (req, res) => {
     try {
       const { assetId, isPositive } = req.body;
-      await discoveryService.rate(assetId, isPositive);
+      const userId = (req as any).user_id;
+      await discoveryService.rate(assetId, isPositive, userId);
       res.sendStatus(204);
     } catch (error: unknown) {
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
