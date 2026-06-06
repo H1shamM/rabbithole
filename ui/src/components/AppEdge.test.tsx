@@ -23,7 +23,7 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
  * Helper to setup default fetch mocks.
  */
 const setupFetchMocks = () => {
-    global.fetch = vi.fn().mockImplementation((url) => {
+    window.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes('/auth/register') || url.includes('/auth/login')) {
             return Promise.resolve({ 
                 ok: true, 
@@ -43,6 +43,7 @@ const setupFetchMocks = () => {
 describe('App Component Edge Coverage', () => {
   beforeEach(() => {
     localStorage.clear();
+    localStorage.setItem('token', 'test-token');
     vi.clearAllMocks();
     setupFetchMocks();
   });
@@ -64,7 +65,7 @@ describe('App Component Edge Coverage', () => {
   });
 
   it('covers loading state and API error', async () => {
-    global.fetch = vi.fn().mockImplementation((url) => {
+    window.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes('/stumble')) {
             return Promise.reject(new Error('Network error'));
         }

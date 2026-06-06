@@ -2,7 +2,9 @@
  * @fileoverview Main application component for StumbleClone.
  */
 
-import { useState, useEffect, useCallback, useRef, FormEvent, ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { FormEvent, ChangeEvent } from 'react';
+import { usePWA } from '../hooks/usePWA';
 import './App.css';
 
 /**
@@ -43,6 +45,7 @@ const API_BASE = 'http://localhost:3000/api/v1';
  */
 export function App() {
   // TODO: Add component-level tests for App (rendering, API interaction, state updates)
+  const { isInstallable, showInstallPrompt } = usePWA();
   const [current, setCurrent] = useState<StumbleResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,10 +73,16 @@ export function App() {
   const iframeLoadedRef = useRef(false);
   const iframeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /**
-   * Handles user authentication (login or register).
-   * @param {boolean} isLogin - True for login, false for register.
-   */
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    const token = localStorage.getItem('token');
+    const headers = {
+      ...options.headers,
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+    return fetch(url, { ...options, headers });
+  };
+
   const handleAuth = async (isLogin: boolean): Promise<void> => {
     const endpoint = isLogin ? `${API_BASE}/auth/login` : `${API_BASE}/auth/register`;
     try {
@@ -267,15 +276,6 @@ export function App() {
     }
   };
 
-  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
-    const token = localStorage.getItem('token');
-    const headers = {
-      ...options.headers,
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-    };
-    return fetch(url, { ...options, headers });
-  };
 
   useEffect(() => {
     const initialize = async () => {
@@ -344,6 +344,11 @@ export function App() {
           <button className="btn secondary" onClick={() => setShowAuth(true)}>
             {user ? user.email : 'Login/Register'}
           </button>
+          {isInstallable && (
+            <button className="btn secondary install-btn" onClick={showInstallPrompt} aria-label="Install App">
+              📲 Install
+            </button>
+          )}
         </div>
       </header>
 

@@ -23,7 +23,7 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
  * Helper to setup default fetch mocks.
  */
 const setupFetchMocks = () => {
-    global.fetch = vi.fn().mockImplementation((url) => {
+    window.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes('/auth/register') || url.includes('/auth/login')) {
             return Promise.resolve({ 
                 ok: true, 
@@ -43,6 +43,7 @@ const setupFetchMocks = () => {
 describe('App Component Coverage', () => {
   beforeEach(() => {
     localStorage.clear();
+    localStorage.setItem('token', 'test-token');
     vi.clearAllMocks();
     setupFetchMocks();
   });
@@ -54,7 +55,7 @@ describe('App Component Coverage', () => {
   // TODO: Add test for network failure during initial mount fetches
 
   it('handles API errors', async () => {
-    global.fetch = vi.fn().mockImplementation((url) => {
+    window.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes('/favorites') || url.includes('/history') || url.includes('/recommendations')) {
             return Promise.resolve({ ok: true, json: async () => [] });
         }
@@ -66,11 +67,11 @@ describe('App Component Coverage', () => {
     
     await waitFor(() => expect(screen.getByText(/Failed to fetch/i)).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /Try Again/i }));
-    expect(global.fetch).toHaveBeenCalled();
+    expect(window.fetch).toHaveBeenCalled();
   });
 
   it('removes favorites', async () => {
-    global.fetch = vi.fn()
+    window.fetch = vi.fn()
         .mockResolvedValueOnce({ ok: true, json: async () => [{ id: '1', url: 'https://test.com', title: 'Test' }] }) // favorites
         .mockResolvedValueOnce({ ok: true, json: async () => [] }) // history
         .mockResolvedValueOnce({ ok: true, json: async () => [] }) // recs
@@ -92,14 +93,15 @@ describe('App Component Coverage', () => {
 
 
   it('stumbles with random category', async () => {
-    global.fetch = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // favorites
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // history
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // recs
-      .mockResolvedValueOnce({ // stumble
-        ok: true,
-        json: async () => ({ id: '456', url: 'https://wikipedia.org/wiki/Random', title: 'Random', category: 'random' })
-      });
+    window.fetch = vi.fn().mockImplementation((url) => {
+      if (url.includes('/stumble')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ id: '456', url: 'https://wikipedia.org/wiki/Random', title: 'Random', category: 'random' })
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => [] });
+    });
     
     render(<App />);
     const select = screen.getByLabelText(/Filter by:/i);
@@ -116,14 +118,15 @@ describe('App Component Coverage', () => {
   });
 
   it('filters by category tech', async () => {
-    global.fetch = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // favorites
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // history
-      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // recs
-      .mockResolvedValueOnce({ // stumble
-        ok: true,
-        json: async () => ({ id: '789', url: 'https://dev.to/post', title: 'Tech', category: 'tech' })
-      });
+    window.fetch = vi.fn().mockImplementation((url) => {
+      if (url.includes('/stumble')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ id: '789', url: 'https://dev.to/post', title: 'Tech', category: 'tech' })
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => [] });
+    });
       
     render(<App />);
     const select = screen.getByLabelText(/Filter by:/i);

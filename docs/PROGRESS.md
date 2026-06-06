@@ -26,8 +26,16 @@
 | S3-02 | v1.0 Polish & Coverage Boost | S | Done |
 | S3-03 | Repo Hygiene Pass | S | Done |
 
+## Sprint 4: Production v2.0 (In Progress)
+| ID | Story | Size | Status |
+|----|-------|------|--------|
+| S4-01 | PWA & Mobile Polish | M | Done |
+| S4-02 | Social Auth (OAuth2) | L | Todo |
+| S4-03 | Community Submissions | L | Todo |
+| S4-04 | Production Infra | M | Todo |
+| S4-05 | AI Vector Search | XL | Todo |
+
 ## Backlog
-- [ ] PWA Configuration (Mobile Install)
 - [ ] User Authentication & Sync (OAuth2)
 - [ ] Community URL Submission
 - [ ] "Stumble of the Day" Email (Email Co-Pilot Integration)

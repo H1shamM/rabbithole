@@ -23,7 +23,7 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
  * Helper to setup default fetch mocks.
  */
 const setupFetchMocks = () => {
-    global.fetch = vi.fn().mockImplementation((url) => {
+    window.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes('/auth/register') || url.includes('/auth/login')) {
             return Promise.resolve({ 
                 ok: true, 
@@ -58,7 +58,7 @@ describe('App Component', () => {
   });
 
   it('liking updates history and localStorage', async () => {
-    global.fetch = vi.fn()
+    window.fetch = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => ({ token: 'test-token', user: { id: 'dev-user', email: 'dev@stumble.local' } }) }) // auth/register
       .mockResolvedValueOnce({ ok: true, json: async () => [] }) // favorites
       .mockResolvedValueOnce({ ok: true, json: async () => [] }) // history
@@ -85,7 +85,7 @@ describe('App Component', () => {
   });
 
   it('favorites toggle works', async () => {
-    global.fetch = vi.fn()
+    window.fetch = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => ({ token: 'test-token', user: { id: 'dev-user', email: 'dev@stumble.local' } }) }) // auth/register
       .mockResolvedValueOnce({ ok: true, json: async () => [] }) // favorites
       .mockResolvedValueOnce({ ok: true, json: async () => [] }) // history

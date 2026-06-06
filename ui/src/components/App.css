@@ -2,32 +2,62 @@
  * @fileoverview Component-specific styles for the App component.
  */
 
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 body {
   margin: 0;
   font-family: var(--sans);
   background-color: var(--bg);
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   color: var(--text);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   max-width: 500px;
   margin: 0 auto;
   border-inline: 1px solid var(--border);
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
 }
 
 .header {
   background-color: var(--accent);
   color: #fff;
-  padding: 0.5rem 1rem;
+  padding: calc(0.5rem + var(--safe-area-inset-top)) 1rem 0.5rem;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+}
+
+.install-btn {
+  background: #fff !important;
+  color: var(--accent) !important;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 600px) {
+  .logo { font-size: 1.1rem; }
+  .tagline { display: none; }
+  .stumble-btn {
+    width: 120px;
+    height: 120px;
+    font-size: 1rem;
+  }
 }
 
 .header-row {
