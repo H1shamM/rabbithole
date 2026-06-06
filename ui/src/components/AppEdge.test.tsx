@@ -17,6 +17,12 @@ describe('App Component Edge Coverage', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    global.fetch = vi.fn().mockImplementation((url) => {
+        if (url.includes('/favorites') || url.includes('/history') || url.includes('/recommendations') || url.includes('/stumble')) {
+            return Promise.resolve({ ok: true, json: async () => [] });
+        }
+        return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
   });
 
   afterEach(() => {
@@ -31,7 +37,12 @@ describe('App Component Edge Coverage', () => {
   });
 
   it('covers loading state and API error', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+    global.fetch = vi.fn().mockImplementation((url) => {
+        if (url.includes('/stumble')) {
+            return Promise.reject(new Error('Network error'));
+        }
+        return Promise.resolve({ ok: true, json: async () => [] });
+    });
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /🎲 Stumble/i }));
     
