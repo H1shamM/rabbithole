@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import type { IStoragePort, RatedItem } from './storage_port.js';
 import type { StumbleAsset } from '../models/asset.js';
 import type { User } from '../models/user.js';
+import type { Submission } from '../models/submission.js';
 
 /**
  * Adapter for SQLite storage.
@@ -73,6 +74,15 @@ export class SqliteAdapter implements IStoragePort {
           name TEXT NOT NULL,
           score INTEGER DEFAULT 0,
           PRIMARY KEY(user_id, type, name),
+          FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+        CREATE TABLE IF NOT EXISTS submissions (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          url TEXT NOT NULL,
+          title TEXT NOT NULL,
+          status TEXT DEFAULT 'pending',
+          created_at TEXT NOT NULL,
           FOREIGN KEY(user_id) REFERENCES users(id)
         )
       `);
@@ -346,9 +356,44 @@ export class SqliteAdapter implements IStoragePort {
       user.created_at instanceof Date ? user.created_at.toISOString() : user.created_at
     );
   }
+/**
+ * @inheritdoc
+ */
+async save_submission(submission: Submission): Promise<void> {
+  this.db.prepare(`
+    INSERT INTO submissions (id, user_id, url, title, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(
+    submission.id,
+    submission.user_id,
+    submission.url,
+    submission.title,
+    submission.status,
+    submission.created_at.toISOString()
+  );
+}
 
-  /**
-   * Maps a database row to a User object.
+/**
+ * @inheritdoc
+ */
+async get_all_submissions(): Promise<Submission[]> {
+  const rows = this.db.prepare('SELECT * FROM submissions ORDER BY created_at DESC').all() as any[];
+  return rows.map(r => ({
+    ...r,
+    created_at: new Date(r.created_at)
+  }));
+}
+
+/**
+ * @inheritdoc
+ */
+async update_submission_status(id: string, status: 'approved' | 'rejected'): Promise<void> {
+  this.db.prepare('UPDATE submissions SET status = ? WHERE id = ?').run(status, id);
+}
+
+/**
+ * Maps a database row to a User object.
+...
    * @param {any} row - The database row.
    * @returns {User}
    */

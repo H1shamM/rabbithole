@@ -11,6 +11,7 @@ import { SqliteAdapter } from './db/sqlite_adapter.js';
 import { DiscoveryService } from './services/discovery_service.js';
 import { createDiscoveryRouter } from './api/v1/discovery_routes.js';
 import { createAuthRouter } from './api/v1/auth_routes.js';
+import { createSubmissionRouter } from './api/v1/submission_routes.js';
 import { createHealthRouter } from './api/v1/health.js';
 import { authenticateJWT } from './middleware/auth.js';
 import { seedDefaultAssets } from './bootstrap.js';
@@ -57,6 +58,7 @@ const discoveryService = new DiscoveryService(storage, sources);
 
 // 2. Routing Setup
 app.use('/api/v1/auth', createAuthRouter(storage));
+app.use('/api/v1/submissions', authenticateJWT, createSubmissionRouter(storage));
 app.use('/api/v1', createHealthRouter());
 app.use('/api/v1', authenticateJWT, createDiscoveryRouter(discoveryService, storage));
 

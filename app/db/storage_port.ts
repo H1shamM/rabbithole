@@ -4,6 +4,7 @@
 
 import type { StumbleAsset } from '../models/asset.js';
 import type { User } from '../models/user.js';
+import type { Submission } from '../models/submission.js';
 
 /**
  * Represents an item from a user's rating history.
@@ -166,4 +167,25 @@ export interface IStoragePort {
    * @returns {Promise<void>}
    */
   save_user(user: User): Promise<void>;
+
+  /**
+   * Saves a new URL submission.
+   * @param {Submission} submission - The submission to save.
+   * @returns {Promise<void>}
+   */
+  save_submission(submission: Submission): Promise<void>;
+
+  /**
+   * Retrieves all submissions.
+   * @returns {Promise<Submission[]>}
+   */
+  get_all_submissions(): Promise<Submission[]>;
+
+  /**
+   * Updates a submission status.
+   * @param {string} id - The submission ID.
+   * @param {'approved' | 'rejected'} status - The new status.
+   * @returns {Promise<void>}
+   */
+  update_submission_status(id: string, status: 'approved' | 'rejected'): Promise<void>;
 }
