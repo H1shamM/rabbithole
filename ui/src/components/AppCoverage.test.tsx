@@ -1,7 +1,14 @@
+/**
+ * @fileoverview Coverage tests for App component.
+ */
+
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from './App';
 
+/**
+ * Mock localStorage for testing.
+ */
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -12,21 +19,30 @@ const localStorageMock = (() => {
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
-describe('App Component Coverage', () => {
-  beforeEach(() => {
-    localStorage.clear();
-    vi.clearAllMocks();
+/**
+ * Helper to setup default fetch mocks.
+ */
+const setupFetchMocks = () => {
     global.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes('/favorites') || url.includes('/history') || url.includes('/recommendations') || url.includes('/stumble')) {
             return Promise.resolve({ ok: true, json: async () => [] });
         }
         return Promise.resolve({ ok: true, json: async () => ({}) });
     });
+};
+
+describe('App Component Coverage', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    setupFetchMocks();
   });
 
   afterEach(() => {
     cleanup();
   });
+
+  // TODO: Add test for network failure during initial mount fetches
 
   it('handles API errors', async () => {
     global.fetch = vi.fn().mockImplementation((url) => {
@@ -45,16 +61,15 @@ describe('App Component Coverage', () => {
   });
 
   it('removes favorites', async () => {
-    // Return a favorite in the initial fetch
     global.fetch = vi.fn()
         .mockResolvedValueOnce({ ok: true, json: async () => [{ id: '1', url: 'https://test.com', title: 'Test' }] }) // favorites
         .mockResolvedValueOnce({ ok: true, json: async () => [] }) // history
         .mockResolvedValueOnce({ ok: true, json: async () => [] }) // recs
         .mockResolvedValueOnce({ ok: true }) // delete fav
         .mockResolvedValueOnce({ ok: true, json: async () => [] }); // get favs after toggle
-
+        
     render(<App />);
-
+    
     // Toggle to open favorites
     await waitFor(() => expect(screen.getByRole('button', { name: /Favorites/i })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /Favorites/i }));
@@ -62,7 +77,7 @@ describe('App Component Coverage', () => {
     // Find and click remove button
     const removeBtn = await screen.findByLabelText(/Remove from favorites/i);
     fireEvent.click(removeBtn);
-
+    
     await waitFor(() => expect(screen.getByText(/No favorites yet/i)).toBeInTheDocument());
   });
 

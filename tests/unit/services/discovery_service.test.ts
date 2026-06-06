@@ -4,7 +4,7 @@ import { IStoragePort } from '../../../app/db/storage_port';
 import { StumbleAsset } from '../../../app/models/asset';
 
 const mockStorage: IStoragePort = {
-  get_asset_by_id: vi.fn(),
+  get_asset_by_id: vi.fn().mockResolvedValue({ id: '1', category: 'tech', source: 'test' } as StumbleAsset),
   get_random_asset_by_interests: vi.fn(),
   save_asset: vi.fn(),
   update_rating: vi.fn(),

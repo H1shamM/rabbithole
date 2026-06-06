@@ -1,84 +1,109 @@
+/**
+ * @fileoverview SQLite implementation of the storage port.
+ */
+
 import Database from 'better-sqlite3';
+import crypto from 'crypto';
 import type { IStoragePort, RatedItem } from './storage_port.js';
 import type { StumbleAsset } from '../models/asset.js';
-import crypto from 'crypto';
 
+/**
+ * Adapter for SQLite storage.
+ */
 export class SqliteAdapter implements IStoragePort {
   private db: Database.Database;
 
+  /**
+   * @param {string} dbPath - Path to the SQLite database file.
+   */
   constructor(dbPath: string = 'stumble.db') {
     this.db = new Database(dbPath);
     this.init();
   }
 
+  /**
+   * Initializes the database schema.
+   */
   private init(): void {
-    console.log('Initializing Database Tables with Auth...');
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        created_at TEXT NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS assets (
-        id TEXT PRIMARY KEY,
-        url TEXT NOT NULL,
-        title TEXT NOT NULL,
-        description TEXT,
-        source TEXT NOT NULL,
-        category TEXT NOT NULL,
-        rating INTEGER DEFAULT 0,
-        created_at TEXT NOT NULL,
-        last_visited_at TEXT
-      );
-      CREATE TABLE IF NOT EXISTS ratings (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        asset_id TEXT NOT NULL,
-        rating TEXT NOT NULL,
-        note TEXT,
-        created_at TEXT NOT NULL,
-        FOREIGN KEY(user_id) REFERENCES users(id),
-        FOREIGN KEY(asset_id) REFERENCES assets(id)
-      );
-      CREATE TABLE IF NOT EXISTS favorites (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        asset_id TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        FOREIGN KEY(user_id) REFERENCES users(id),
-        FOREIGN KEY(asset_id) REFERENCES assets(id)
-      );
-      CREATE TABLE IF NOT EXISTS user_preferences (
-        user_id TEXT NOT NULL,
-        type TEXT NOT NULL,
-        name TEXT NOT NULL,
-        score INTEGER DEFAULT 0,
-        PRIMARY KEY(user_id, type, name),
-        FOREIGN KEY(user_id) REFERENCES users(id)
-      )
-    `);
+    try {
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS users (
+          id TEXT PRIMARY KEY,
+          email TEXT UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS assets (
+          id TEXT PRIMARY KEY,
+          url TEXT NOT NULL,
+          title TEXT NOT NULL,
+          description TEXT,
+          source TEXT NOT NULL,
+          category TEXT NOT NULL,
+          rating INTEGER DEFAULT 0,
+          created_at TEXT NOT NULL,
+          last_visited_at TEXT
+        );
+        CREATE TABLE IF NOT EXISTS ratings (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          asset_id TEXT NOT NULL,
+          rating TEXT NOT NULL,
+          note TEXT,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY(user_id) REFERENCES users(id),
+          FOREIGN KEY(asset_id) REFERENCES assets(id)
+        );
+        CREATE TABLE IF NOT EXISTS favorites (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          asset_id TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY(user_id) REFERENCES users(id),
+          FOREIGN KEY(asset_id) REFERENCES assets(id)
+        );
+        CREATE TABLE IF NOT EXISTS user_preferences (
+          user_id TEXT NOT NULL,
+          type TEXT NOT NULL,
+          name TEXT NOT NULL,
+          score INTEGER DEFAULT 0,
+          PRIMARY KEY(user_id, type, name),
+          FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+      `);
+    } catch (error) {
+      console.error('Database initialization failed:', error);
+      throw error;
+    }
   }
 
+  /**
+   * @inheritdoc
+   */
   async get_asset_by_id(id: string): Promise<StumbleAsset | null> {
-    const row = this.db.prepare('SELECT * FROM assets WHERE id = ?').get(id) as any;
-    if (!row) return null;
-    return this.map_row_to_asset(row);
+    const row = this.db.prepare('SELECT * FROM assets WHERE id = ?').get(id) as StumbleAsset | undefined;
+    return row ? this.map_row_to_asset(row) : null;
   }
 
+  /**
+   * @inheritdoc
+   */
   async get_all_assets(category: string): Promise<StumbleAsset[]> {
     let query = 'SELECT * FROM assets WHERE 1=1 ';
-    const params: any[] = [];
+    const params: string[] = [];
 
     if (category !== 'all') {
       query += 'AND category = ? ';
       params.push(category);
     }
 
-    const rows = this.db.prepare(query).all(...params) as any[];
+    const rows = this.db.prepare(query).all(...params) as StumbleAsset[];
     return rows.map(r => this.map_row_to_asset(r));
   }
 
+  /**
+   * @inheritdoc
+   */
   async save_asset(asset: StumbleAsset): Promise<void> {
     this.db.prepare(`
       INSERT OR REPLACE INTO assets (id, url, title, description, source, category, rating, created_at, last_visited_at)
@@ -96,10 +121,17 @@ export class SqliteAdapter implements IStoragePort {
     );
   }
 
-  async update_rating(id: string, delta: number): Promise<void> {
-    this.db.prepare('UPDATE assets SET rating = rating + ? WHERE id = ?').run(delta, id);
+  /**
+   * @inheritdoc
+   */
+  async get_all_categories(): Promise<string[]> {
+    const rows = this.db.prepare('SELECT DISTINCT category FROM assets').all() as { category: string }[];
+    return rows.map(r => r.category);
   }
 
+  /**
+   * @inheritdoc
+   */
   async get_recommendations(user_id: string, limit: number): Promise<StumbleAsset[]> {
     const rows = this.db.prepare(`
       SELECT a.*
@@ -109,11 +141,26 @@ export class SqliteAdapter implements IStoragePort {
       WHERE r.asset_id IS NULL
       ORDER BY COALESCE(up.score, 0) + a.rating DESC
       LIMIT ?
-    `).all(user_id, user_id, limit) as any[];
+    `).all(user_id, user_id, limit) as StumbleAsset[];
 
     return rows.map(r => this.map_row_to_asset(r));
   }
 
+  /**
+   * @inheritdoc
+   */
+  async search_assets(query: string): Promise<StumbleAsset[]> {
+    const rows = this.db.prepare(`
+      SELECT * FROM assets
+      WHERE title LIKE ? OR url LIKE ?
+      LIMIT 20
+    `).all(`%${query}%`, `%${query}%`) as StumbleAsset[];
+    return rows.map(r => this.map_row_to_asset(r));
+  }
+
+  /**
+   * @inheritdoc
+   */
   async save_rating(user_id: string, asset_id: string, rating: 'like' | 'dislike'): Promise<void> {
     this.db.prepare(`
       INSERT INTO ratings (id, user_id, asset_id, rating, created_at)
@@ -121,6 +168,9 @@ export class SqliteAdapter implements IStoragePort {
     `).run(crypto.randomUUID(), user_id, asset_id, rating, new Date().toISOString());
   }
 
+  /**
+   * @inheritdoc
+   */
   async get_history(user_id: string, limit: number): Promise<RatedItem[]> {
     const rows = this.db.prepare(`
       SELECT a.*, r.rating as rating_val, r.created_at as timestamp 
@@ -129,7 +179,7 @@ export class SqliteAdapter implements IStoragePort {
       WHERE r.user_id = ?
       ORDER BY r.created_at DESC
       LIMIT ?
-    `).all(user_id, limit) as any[];
+    `).all(user_id, limit) as (StumbleAsset & { rating_val: 'like' | 'dislike', timestamp: string })[];
 
     return rows.map(r => ({
       ...this.map_row_to_asset(r),
@@ -138,6 +188,9 @@ export class SqliteAdapter implements IStoragePort {
     }));
   }
 
+  /**
+   * @inheritdoc
+   */
   async save_favorite(user_id: string, asset_id: string): Promise<void> {
     this.db.prepare(`
       INSERT INTO favorites (id, user_id, asset_id, created_at)
@@ -145,21 +198,30 @@ export class SqliteAdapter implements IStoragePort {
     `).run(crypto.randomUUID(), user_id, asset_id, new Date().toISOString());
   }
 
+  /**
+   * @inheritdoc
+   */
   async remove_favorite(user_id: string, asset_id: string): Promise<void> {
     this.db.prepare('DELETE FROM favorites WHERE user_id = ? AND asset_id = ?').run(user_id, asset_id);
   }
 
+  /**
+   * @inheritdoc
+   */
   async get_favorites(user_id: string): Promise<StumbleAsset[]> {
     const rows = this.db.prepare(`
       SELECT a.* 
       FROM favorites f
       JOIN assets a ON f.asset_id = a.id
       WHERE f.user_id = ?
-    `).all(user_id) as any[];
+    `).all(user_id) as StumbleAsset[];
 
     return rows.map(r => this.map_row_to_asset(r));
   }
 
+  /**
+   * @inheritdoc
+   */
   async update_user_preference(user_id: string, type: 'category' | 'source', name: string, delta: number): Promise<void> {
     this.db.prepare(`
       INSERT INTO user_preferences (user_id, type, name, score)
@@ -168,21 +230,29 @@ export class SqliteAdapter implements IStoragePort {
     `).run(user_id, type, name, delta, delta);
   }
 
+  /**
+   * @inheritdoc
+   */
   async get_user_preferences(user_id: string): Promise<{ type: string; name: string; score: number }[]> {
-    return this.db.prepare('SELECT * FROM user_preferences WHERE user_id = ?').all(user_id) as any[];
+    return this.db.prepare('SELECT * FROM user_preferences WHERE user_id = ?').all(user_id) as { type: string; name: string; score: number }[];
   }
 
-  private map_row_to_asset(row: any): StumbleAsset {
+  /**
+   * Maps a database row to a StumbleAsset object.
+   * @param {any} row - The database row.
+   * @returns {StumbleAsset}
+   */
+  private map_row_to_asset(row: Record<string, unknown>): StumbleAsset {
     return {
-      id: row.id,
-      url: row.url,
-      title: row.title,
-      description: row.description || undefined,
-      source: row.source,
-      category: row.category,
-      rating: row.rating,
-      created_at: new Date(row.created_at),
-      last_visited_at: row.last_visited_at ? new Date(row.last_visited_at) : undefined
+      id: String(row.id),
+      url: String(row.url),
+      title: String(row.title),
+      description: row.description ? String(row.description) : undefined,
+      source: String(row.source),
+      category: String(row.category),
+      rating: Number(row.rating),
+      created_at: new Date(String(row.created_at)),
+      last_visited_at: row.last_visited_at ? new Date(String(row.last_visited_at)) : undefined
     };
   }
 }

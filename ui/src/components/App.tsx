@@ -1,6 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+/**
+ * @fileoverview Main application component for StumbleClone.
+ */
+
+import { useState, useEffect, useCallback, useRef, FormEvent, ChangeEvent } from 'react';
 import './App.css';
 
+/**
+ * Result of a stumble action.
+ */
 interface StumbleResult {
   id: string;
   url: string;
@@ -10,11 +17,17 @@ interface StumbleResult {
   source: string;
 }
 
+/**
+ * Rated asset item.
+ */
 interface RatedItem extends StumbleResult {
   rating_val: 'like' | 'dislike';
   timestamp: Date;
 }
 
+/**
+ * Favorite asset item.
+ */
 interface FavoriteItem extends StumbleResult {
   id: string;
   savedAt: number;
@@ -24,7 +37,12 @@ type Category = 'all' | 'tech' | 'art' | 'science' | 'random';
 
 const API_BASE = 'http://localhost:3000/api/v1';
 
+/**
+ * Main application component.
+ * @returns {JSX.Element}
+ */
 export function App() {
+  // TODO: Add component-level tests for App (rendering, API interaction, state updates)
   const [current, setCurrent] = useState<StumbleResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,18 +53,11 @@ export function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [history, setHistory] = useState<RatedItem[]>([]);
   const [recommendations, setRecommendations] = useState<StumbleResult[]>([]);
-
-  const handleShare = async () => {
-    if (!current) return;
-    const shareData = { title: current.title || 'Check this out!', url: current.url };
-    if (navigator.share) {
-      try { await navigator.share(shareData); } catch (e) { console.error('Share failed', e); }
-    } else {
-      await navigator.clipboard.writeText(shareData.url);
-      setToast('Link copied to clipboard!');
-      setTimeout(() => setToast(null), 2000);
-    }
-  };
+  const [showAuth, setShowAuth] = useState(false);
+  const [user, setUser] = useState<{ id: string; email: string } | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showHistory, setShowHistory] = useState(false);
   const [category, setCategory] = useState<Category>('all');
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
@@ -59,6 +70,96 @@ export function App() {
   const iframeLoadedRef = useRef(false);
   const iframeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /**
+   * Handles user authentication (login or register).
+   * @param {boolean} isLogin - True for login, false for register.
+   */
+  const handleAuth = async (isLogin: boolean): Promise<void> => {
+    const endpoint = isLogin ? `${API_BASE}/auth/login` : `${API_BASE}/auth/register`;
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) throw new Error('Auth failed');
+      const data = await res.json();
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      setShowAuth(false);
+      setToast(isLogin ? 'Logged in!' : 'Registered!');
+    } catch (err) {
+      console.error('Auth error', err);
+      setToast('Auth failed');
+    }
+  };
+
+  /**
+   * Handles sharing the current asset URL.
+   */
+  const handleShare = async (): Promise<void> => {
+    if (!current) return;
+    const shareData = { title: current.title || 'Check this out!', url: current.url };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch (e) { console.error('Share failed', e); }
+    } else {
+      await navigator.clipboard.writeText(shareData.url);
+      setToast('Link copied to clipboard!');
+      setTimeout(() => setToast(null), 2000);
+    }
+  };
+
+  /**
+   * Handles asset search.
+   * @param {FormEvent} e - The form submission event.
+   */
+  const ensureDevAuth = useCallback(async (): Promise<void> => {
+    const existingToken = localStorage.getItem('token');
+    if (existingToken) return;
+
+    const credentials = { email: 'dev@stumble.local', password: 'devpass' };
+    const registerResponse = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+
+    if (registerResponse.ok) {
+      const data = await registerResponse.json();
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      return;
+    }
+
+    const loginResponse = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+
+    if (loginResponse.ok) {
+      const data = await loginResponse.json();
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      return;
+    }
+
+    throw new Error('Dev auth initialization failed');
+  }, []);
+
+  const handleSearch = async (e: FormEvent): Promise<void> => {
+    e.preventDefault();
+    try {
+      const res = await authenticatedFetch(`${API_BASE}/search?q=${encodeURIComponent(searchQuery)}`);
+      if (!res.ok) throw new Error('Search failed');
+      const results = await res.json();
+      setRecommendations(results);
+    } catch (err) {
+      console.error('Search error', err);
+      setToast('Search failed');
+    }
+  };
+
   const clearIframeTimeout = useCallback(() => {
     if (iframeTimeoutRef.current) {
       clearTimeout(iframeTimeoutRef.current);
@@ -70,13 +171,26 @@ export function App() {
     setIframeError(true);
     clearIframeTimeout();
     if (current) {
-      fetch(`${API_BASE}/rate`, {
+      authenticatedFetch(`${API_BASE}/rate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assetId: current.id, isPositive: false, note: 'blocked' }),
       }).catch(console.error);
     }
   }, [current, clearIframeTimeout]);
+
+  useEffect(() => {
+    if (showIframe && iframeRef.current) {
+      try {
+        if (iframeRef.current.contentWindow?.document) {
+          // Use setTimeout to avoid direct setState in effect
+          setTimeout(() => setIframeError(false), 0);
+        }
+      } catch {
+        // Use setTimeout to avoid direct setState in effect
+        setTimeout(() => setBlockedState(), 0);
+      }
+    }
+  }, [showIframe, setBlockedState]);
 
   const startIframeTimeout = useCallback(() => {
     clearIframeTimeout();
@@ -90,14 +204,8 @@ export function App() {
   const handleIframeLoad = useCallback(() => {
     iframeLoadedRef.current = true;
     clearIframeTimeout();
-    try {
-      if (iframeRef.current?.contentWindow?.document) {
-        setIframeError(false);
-      }
-    } catch {
-      setBlockedState();
-    }
-  }, [clearIframeTimeout, setBlockedState]);
+    setIframeError(false);
+  }, [clearIframeTimeout]);
 
   const isFavorite = current && Array.isArray(favorites) ? favorites.some(f => f.url === current.url) : false;
 
@@ -111,7 +219,7 @@ export function App() {
     clearIframeTimeout();
 
     try {
-      const res = await fetch(`${API_BASE}/stumble?category=${category}`);
+      const res = await authenticatedFetch(`${API_BASE}/stumble?category=${category}`);
       if (!res.ok) throw new Error('Failed to fetch stumble');
       const data: StumbleResult = await res.json();
       setCurrent(data);
@@ -131,29 +239,26 @@ export function App() {
     iframeLoadedRef.current = false;
   };
 
-  const handleRate = async (type: 'like' | 'dislike') => {
+  const handleRate = async (type: 'like' | 'dislike'): Promise<void> => {
     if (!current) return;
     setRateLoading(true);
     try {
-      await fetch(`${API_BASE}/rate`, {
+      await authenticatedFetch(`${API_BASE}/rate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assetId: current.id, isPositive: type === 'like' }),
       });
       setRating(type);
       if (current) {
-        await fetch(`${API_BASE}/preferences`, {
+        await authenticatedFetch(`${API_BASE}/preferences`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: 'category', name: current.category, delta: type === 'like' ? 1 : -1 }),
         });
-        await fetch(`${API_BASE}/preferences`, {
+        await authenticatedFetch(`${API_BASE}/preferences`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: 'source', name: current.source, delta: type === 'like' ? 1 : -1 }),
         });
       }
-      const updatedHistory = await fetch(`${API_BASE}/history?limit=20`).then(res => res.json());
+      const updatedHistory = await authenticatedFetch(`${API_BASE}/history?limit=20`).then(res => res.ok ? res.json() : []);
       setHistory(updatedHistory);
     } catch (err) {
       console.error('Rating failed', err);
@@ -162,29 +267,56 @@ export function App() {
     }
   };
 
-  const handleToggleFavorite = async () => {
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    const token = localStorage.getItem('token');
+    const headers = {
+      ...options.headers,
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+    return fetch(url, { ...options, headers });
+  };
+
+  useEffect(() => {
+    const initialize = async () => {
+      try {
+        await ensureDevAuth();
+      } catch (err) {
+        console.error('Dev auth initialization failed', err);
+      }
+
+      authenticatedFetch(`${API_BASE}/favorites`).then(res => res.ok ? res.json() : []).then(setFavorites);
+      authenticatedFetch(`${API_BASE}/history?limit=20`).then(res => res.ok ? res.json() : []).then(setHistory);
+      authenticatedFetch(`${API_BASE}/recommendations`).then(res => res.ok ? res.json() : []).then(setRecommendations);
+    };
+
+    initialize();
+  }, [ensureDevAuth]);
+
+  const handleToggleFavorite = async (): Promise<void> => {
     if (!current) return;
     try {
       if (isFavorite) {
-        await fetch(`${API_BASE}/favorites/${current.id}`, { method: 'DELETE' });
+        await authenticatedFetch(`${API_BASE}/favorites/${current.id}`, { method: 'DELETE' });
       } else {
-        await fetch(`${API_BASE}/favorites`, {
+        await authenticatedFetch(`${API_BASE}/favorites`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ assetId: current.id }),
         });
       }
-      const updatedFavorites = await fetch(`${API_BASE}/favorites`).then(res => res.json());
+      const res = await authenticatedFetch(`${API_BASE}/favorites`);
+      const updatedFavorites = await res.json();
       setFavorites(updatedFavorites);
     } catch (err) {
       console.error('Favorite toggle failed', err);
     }
   };
 
-  const handleRemoveFavorite = async (assetId: string) => {
+  const handleRemoveFavorite = async (assetId: string): Promise<void> => {
     try {
-      await fetch(`${API_BASE}/favorites/${assetId}`, { method: 'DELETE' });
-      const updatedFavorites = await fetch(`${API_BASE}/favorites`).then(res => res.json());
+      await authenticatedFetch(`${API_BASE}/favorites/${assetId}`, { method: 'DELETE' });
+      const res = await authenticatedFetch(`${API_BASE}/favorites`);
+      const updatedFavorites = await res.json();
       setFavorites(updatedFavorites);
     } catch (err) {
       console.error('Favorite removal failed', err);
@@ -196,9 +328,6 @@ export function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-    fetch(`${API_BASE}/favorites`).then(res => res.json()).then(setFavorites);
-    fetch(`${API_BASE}/history?limit=20`).then(res => res.json()).then(setHistory);
-    fetch(`${API_BASE}/recommendations`).then(res => res.json()).then(setRecommendations);
   }, [darkMode]);
 
   useEffect(() => () => clearIframeTimeout(), [clearIframeTimeout]);
@@ -212,13 +341,29 @@ export function App() {
           <button className="btn theme-toggle" onClick={() => setDarkMode(!darkMode)} aria-label="Toggle theme">
             {darkMode ? '☀️' : '🌙'}
           </button>
+          <button className="btn secondary" onClick={() => setShowAuth(true)}>
+            {user ? user.email : 'Login/Register'}
+          </button>
         </div>
       </header>
+
+      {showAuth && !user && (
+        <div className="auth-modal">
+          <div className="auth-content">
+            <h2>Login / Register</h2>
+            <input type="email" placeholder="Email" value={email} onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} />
+            <input type="password" placeholder="Password" value={password} onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} />
+            <button className="btn primary" onClick={() => handleAuth(true)}>Login</button>
+            <button className="btn secondary" onClick={() => handleAuth(false)}>Register</button>
+            <button className="btn secondary" onClick={() => setShowAuth(false)}>Close</button>
+          </div>
+        </div>
+      )}
       
       <div className="category-bar">
         <div className="category-selector">
           <label htmlFor="category">Filter by:</label>
-          <select id="category" value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+          <select id="category" value={category} onChange={(e: ChangeEvent<HTMLSelectElement>) => setCategory(e.target.value as Category)}>
             <option value="all">All</option>
             <option value="tech">Tech</option>
             <option value="art">Art</option>
@@ -226,6 +371,10 @@ export function App() {
             <option value="random">Random</option>
           </select>
         </div>
+        <form onSubmit={handleSearch}>
+          <input type="text" placeholder="Search assets..." value={searchQuery} onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)} />
+          <button type="submit">Search</button>
+        </form>
       </div>
 
       <main className="main-content">

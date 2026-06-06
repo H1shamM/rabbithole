@@ -1,45 +1,75 @@
-import express from 'express';
+/**
+ * @fileoverview Main entry point for the StumbleClone backend server.
+ * Configures the Express app, dependency injection, and routes.
+ */
+
+import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import { settings } from './config/settings.js';
 import { SqliteAdapter } from './db/sqlite_adapter.js';
 import { DiscoveryService } from './services/discovery_service.js';
 import { createDiscoveryRouter } from './api/v1/discovery_routes.js';
+import { createAuthRouter } from './api/v1/auth_routes.js';
+import { createHealthRouter } from './api/v1/health.js';
+import { authenticateJWT } from './middleware/auth.js';
 
 // Sources
 import { WikipediaSource } from './sources/wikipedia.js';
 import { HackerNewsSource } from './sources/hn.js';
 import { RedditSource } from './sources/reddit.js';
 import { DevToSource } from './sources/devto.js';
+import { UselessWebSource } from './sources/uselessweb.js';
+import { AtlasObscuraSource } from './sources/atlasobscura.js';
+import { BoredPandaSource } from './sources/boredpanda.js';
+import { WikipediaImageSource } from './sources/wikipedia_image.js';
+import { NasaApodSource } from './sources/nasa_apod.js';
+import { ProductHuntSource } from './sources/producthunt.js';
+import { YoutubeSource } from './sources/youtube.js';
+import { ContentFetcher } from './sources/ContentFetcher.js';
 
-const app = express();
+const app: Express = express();
 
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 // 1. Dependency Injection
 const storage = new SqliteAdapter(settings.DB_PATH);
-const sources = [
+const sources: ContentFetcher[] = [
   new WikipediaSource(),
   new HackerNewsSource(),
   new RedditSource(),
-  new DevToSource()
+  new DevToSource(),
+  new UselessWebSource(),
+  new AtlasObscuraSource(),
+  new BoredPandaSource(),
+  new WikipediaImageSource(),
+  new NasaApodSource(),
+  new ProductHuntSource(),
+  new YoutubeSource(),
 ];
 const discoveryService = new DiscoveryService(storage, sources);
 
 // 2. Routing Setup
-app.use('/api/v1', createDiscoveryRouter(discoveryService, storage));
+app.use('/api/v1/auth', createAuthRouter(storage));
+app.use('/api/v1', createHealthRouter());
+app.use('/api/v1', authenticateJWT, createDiscoveryRouter(discoveryService, storage));
 
-// 3. Health Check
-app.get('/health', (_req, res) => res.json({ ok: true }));
-
-// 4. Bootstrap
-async function bootstrap() {
-  const categories = await discoveryService.get_categories();
-  if (categories.length === 0) {
-    console.log('--- Bootstrap Seeding ---');
-    // ... basic seeding
+/**
+ * Bootstraps the application by initializing data if necessary.
+ * @returns {Promise<void>}
+ */
+async function bootstrap(): Promise<void> {
+  try {
+    const categories = await discoveryService.get_categories();
+    if (categories.length === 0) {
+      console.log('--- Bootstrap Seeding ---');
+      // TODO: Implement basic data seeding
+    }
+  } catch (error) {
+    console.error('Bootstrap failed:', error);
   }
 }
+
 bootstrap();
 
 app.listen(settings.PORT, () => {

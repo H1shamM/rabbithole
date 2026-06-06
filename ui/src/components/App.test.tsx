@@ -1,8 +1,14 @@
+/**
+ * @fileoverview Unit tests for App component.
+ */
+
 import { render, screen, fireEvent, waitFor, cleanup, within } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from './App';
 
-// Mock localStorage
+/**
+ * Mock localStorage for testing.
+ */
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -13,10 +19,23 @@ const localStorageMock = (() => {
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
+/**
+ * Helper to setup default fetch mocks.
+ */
+const setupFetchMocks = () => {
+    global.fetch = vi.fn().mockImplementation((url) => {
+        if (url.includes('/favorites') || url.includes('/history') || url.includes('/recommendations')) {
+            return Promise.resolve({ ok: true, json: async () => [] });
+        }
+        return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+};
+
 describe('App Component', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    setupFetchMocks();
   });
 
   afterEach(() => {
@@ -24,12 +43,6 @@ describe('App Component', () => {
   });
 
   it('renders initial empty state with Stumble button', () => {
-    global.fetch = vi.fn().mockImplementation((url) => {
-        if (url.includes('/favorites') || url.includes('/history') || url.includes('/recommendations')) {
-            return Promise.resolve({ ok: true, json: async () => [] });
-        }
-        return Promise.resolve({ ok: true, json: async () => ({}) });
-    });
     render(<App />);
     expect(screen.getByText(/Click/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /🎲 Stumble/i })).toBeInTheDocument();
@@ -47,7 +60,7 @@ describe('App Component', () => {
       .mockResolvedValueOnce({ ok: true }) // rate
       .mockResolvedValueOnce({ ok: true }) // pref1
       .mockResolvedValueOnce({ ok: true }) // pref2
-      .mockResolvedValueOnce({ ok: true, json: async () => [{ rating_val: 'like' }] }); // history
+      .mockResolvedValueOnce({ ok: true, json: async () => [{ rating_val: 'like', url: 'https://example.com' }] }); // history
 
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /🎲 Stumble/i }));
@@ -86,12 +99,6 @@ describe('App Component', () => {
   });
 
   it('dark mode toggles theme and persists', () => {
-    global.fetch = vi.fn().mockImplementation((url) => {
-        if (url.includes('/favorites') || url.includes('/history') || url.includes('/recommendations')) {
-            return Promise.resolve({ ok: true, json: async () => [] });
-        }
-        return Promise.resolve({ ok: true, json: async () => ({}) });
-    });
     render(<App />);
     const header = screen.getByRole('banner');
     const toggle = within(header).getByRole('button', { name: 'Toggle theme' });

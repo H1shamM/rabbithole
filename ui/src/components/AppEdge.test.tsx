@@ -1,8 +1,14 @@
+/**
+ * @fileoverview Edge case tests for App component.
+ */
+
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from './App';
 
-// Mock localStorage
+/**
+ * Mock localStorage for testing.
+ */
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -13,21 +19,33 @@ const localStorageMock = (() => {
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
-describe('App Component Edge Coverage', () => {
-  beforeEach(() => {
-    localStorage.clear();
-    vi.clearAllMocks();
+/**
+ * Helper to setup default fetch mocks.
+ */
+const setupFetchMocks = () => {
     global.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes('/favorites') || url.includes('/history') || url.includes('/recommendations') || url.includes('/stumble')) {
             return Promise.resolve({ ok: true, json: async () => [] });
         }
         return Promise.resolve({ ok: true, json: async () => ({}) });
     });
+};
+
+describe('App Component Edge Coverage', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    setupFetchMocks();
   });
 
   afterEach(() => {
     cleanup();
   });
+
+  // TODO: Add tests for:
+  // - Handling extremely long URLs in stumbled pages
+  // - Handling malformed API responses
+  // - Behavior when dark mode toggling fails to persist
 
   it('covers loadHistory/saveHistory error handling', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error(); });
