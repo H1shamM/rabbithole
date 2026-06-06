@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { usePWA } from '../hooks/usePWA';
+import { SubmissionForm } from './SubmissionForm';
 import './App.css';
 
 /**
@@ -575,6 +576,7 @@ export function App() {
             </ul>
           )}
         </div>
+        <SubmissionForm onSuccess={() => setToast('Submitted!')} authenticatedFetch={authenticatedFetch} />
       </main>
     </div>
   );
