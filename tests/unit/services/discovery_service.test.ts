@@ -24,18 +24,16 @@ const mockStorage: IStoragePort = {
   saveSubmission: vi.fn(),
   getAllSubmissions: vi.fn(),
   updateSubmissionStatus: vi.fn(),
-  getRecommendations: vi
-    .fn()
-    .mockResolvedValue([
-      {
-        id: "1",
-        url: "http://example.com",
-        title: "Test Asset",
-        source: "test",
-        category: "science",
-        rating: 10,
-      } as StumbleAsset,
-    ]),
+  getRecommendations: vi.fn().mockResolvedValue([
+    {
+      id: "1",
+      url: "http://example.com",
+      title: "Test Asset",
+      source: "test",
+      category: "science",
+      rating: 10,
+    } as StumbleAsset,
+  ]),
   getRandomAssetByInterests: vi.fn(),
   getAllInterests: vi.fn(),
 };

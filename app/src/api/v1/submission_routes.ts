@@ -32,11 +32,9 @@ export function createSubmissionRouter(storage: IStoragePort): Router {
       });
       res.sendStatus(201);
     } catch (error: unknown) {
-      res
-        .status(500)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
@@ -46,11 +44,9 @@ export function createSubmissionRouter(storage: IStoragePort): Router {
       const submissions = await storage.getAllSubmissions();
       res.json(submissions);
     } catch (error: unknown) {
-      res
-        .status(500)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 

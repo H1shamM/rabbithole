@@ -35,11 +35,9 @@ export function createDiscoveryRouter(
         res.json(recommendations);
       } catch (error: unknown) {
         console.error("Error in /recommendations:", error);
-        res
-          .status(500)
-          .json({
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
       }
     },
   );
@@ -54,11 +52,9 @@ export function createDiscoveryRouter(
       res.json(results);
     } catch (error: unknown) {
       console.error("Error in /search:", error);
-      res
-        .status(500)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
@@ -76,11 +72,9 @@ export function createDiscoveryRouter(
 
       res.json({ ...asset, blocked: asset.source === "ProductHunt" });
     } catch (error: unknown) {
-      res
-        .status(404)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(404).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
@@ -94,11 +88,9 @@ export function createDiscoveryRouter(
         await storage.updateUserPreference(userId, type, name, delta);
         res.sendStatus(204);
       } catch (error: unknown) {
-        res
-          .status(500)
-          .json({
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
       }
     },
   );
@@ -111,11 +103,9 @@ export function createDiscoveryRouter(
       await discoveryService.rate(assetId, isPositive, userId);
       res.sendStatus(204);
     } catch (error: unknown) {
-      res
-        .status(500)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
@@ -128,11 +118,9 @@ export function createDiscoveryRouter(
       res.json(history);
     } catch (error: unknown) {
       console.error("Error in /history:", error);
-      res
-        .status(500)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
@@ -147,11 +135,9 @@ export function createDiscoveryRouter(
         res.sendStatus(201);
       } catch (error: unknown) {
         console.error("Error in POST /favorites:", error);
-        res
-          .status(500)
-          .json({
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
       }
     },
   );
@@ -164,11 +150,9 @@ export function createDiscoveryRouter(
       res.json(favorites);
     } catch (error: unknown) {
       console.error("Error in GET /favorites:", error);
-      res
-        .status(500)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
@@ -186,11 +170,9 @@ export function createDiscoveryRouter(
         await discoveryService.removeFavorite(userId, assetId);
         res.sendStatus(204);
       } catch (error: unknown) {
-        res
-          .status(500)
-          .json({
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
       }
     },
   );
@@ -200,11 +182,9 @@ export function createDiscoveryRouter(
       const categories = await discoveryService.getCategories();
       res.json(categories);
     } catch (error: unknown) {
-      res
-        .status(500)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
@@ -216,11 +196,9 @@ export function createDiscoveryRouter(
         count: DEFAULT_SEED_ASSETS.length,
       });
     } catch (error: unknown) {
-      res
-        .status(500)
-        .json({
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   });
 
