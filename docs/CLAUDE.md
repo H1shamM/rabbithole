@@ -41,8 +41,6 @@ stumble-clone/
 ├── docker-compose.yml
 └── README.md
 
-
-
 ## Workflow — every change goes through this loop
 
 1. Open a GitHub issue using the user‑story or bug template (TEMPLATES.md).
@@ -68,16 +66,19 @@ Full conventions in WORKFLOW.md.
 ## Testing
 
 Two suites:
+
 - Unit – tests/unit/ (and co‑located). No network, no DB, all adapters mocked.
 - Integration – tests/integration/ (currently missing). Hit real DB, real endpoints.
 
 ### When to write what
+
 - New module → unit tests.
 - New DB adapter / external service → at least one integration test.
 - Bug fixes → unit test that fails before the fix.
 - Refactors → no new tests, existing suite must pass.
 
 ### Shared fixtures
+
 - mockDatabaseAdapter – in‑memory SQLite adapter for unit tests.
 - mockDiscoveryService – returns canned results.
 - sampleAssets – static test data from tests/fixtures/.
@@ -94,6 +95,7 @@ Two suites:
 ## Common tasks
 
 ### Add a new API endpoint
+
 1. Add route in app/api/v1/.
 2. Create/extend service in app/services/.
 3. Ensure strict typing.
@@ -101,25 +103,29 @@ Two suites:
 5. Update OpenAPI docs if present.
 
 ### Add a new database table
+
 1. Define SQL in app/db/sqlite_adapter.ts.
 2. Extend storage_port.ts.
 3. Test with real temporary SQLite file.
 4. Mirror existing try/finally pattern.
 
 ### Add a new React component
+
 1. Create in ui/src/components/.
 2. Functional component + hooks.
 3. Unit tests with React Testing Library.
 4. Style with project’s approach (Tailwind or CSS modules).
 
 ## Required environment variables
-| Variable | Purpose |
-|---|---|
-| DATABASE_URL | Connection string for SQLite |
-| API_PORT | Port for the backend (default 3000) |
-| EXTENSION_ID | ID of the browser extension |
+
+| Variable     | Purpose                             |
+| ------------ | ----------------------------------- |
+| DATABASE_URL | Connection string for SQLite        |
+| API_PORT     | Port for the backend (default 3000) |
+| EXTENSION_ID | ID of the browser extension         |
 
 ## Current status
+
 Early stage — API scaffold exists, extension + UI scaffold, minimal tests. Goal: reach ai-email-copilot quality level.
 
 See PROGRESS.md and TEMPLATES.md.

@@ -12,11 +12,21 @@ interface FavoritesPanelProps {
   onStumble?: () => void;
 }
 
-export function FavoritesPanel({ favorites, showFavorites, setShowFavorites, onRemove, onStumble }: FavoritesPanelProps) {
+export function FavoritesPanel({
+  favorites,
+  showFavorites,
+  setShowFavorites,
+  onRemove,
+  onStumble,
+}: FavoritesPanelProps) {
   return (
     <div className="favorites-section">
-      <button className="btn secondary favorites-toggle" onClick={() => setShowFavorites(!showFavorites)}>
-        {showFavorites ? '🔽 Hide Favorites' : '⭐ Favorites'} ({favorites.length})
+      <button
+        className="btn secondary favorites-toggle"
+        onClick={() => setShowFavorites(!showFavorites)}
+      >
+        {showFavorites ? "🔽 Hide Favorites" : "⭐ Favorites"} (
+        {favorites.length})
       </button>
       {showFavorites && (
         <div className="favorites-panel">
@@ -35,10 +45,19 @@ export function FavoritesPanel({ favorites, showFavorites, setShowFavorites, onR
             <ul className="favorites-list">
               {favorites.map((item) => (
                 <li key={item.id} className="favorites-item">
-                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="favorites-url">
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="favorites-url"
+                  >
                     {item.title || item.url}
                   </a>
-                  <button className="btn-remove-fav" onClick={() => onRemove(item.id)} aria-label="Remove from favorites">
+                  <button
+                    className="btn-remove-fav"
+                    onClick={() => onRemove(item.id)}
+                    aria-label="Remove from favorites"
+                  >
                     ✖
                   </button>
                 </li>

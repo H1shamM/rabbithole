@@ -1,5 +1,4 @@
-
-import { getFaviconUrl, estimateReadingTime } from '../utils/contentHelpers';
+import { getFaviconUrl, estimateReadingTime } from "../utils/contentHelpers";
 
 interface StumbleResult {
   id: string;
@@ -32,16 +31,6 @@ export function StumbleArea({
   onClose,
   onIframeLoad,
 }: StumbleAreaProps) {
-  if (!showIframe && !loading) {
-    return (
-      <div className="empty-state">
-        <div className="empty-icon">🚀</div>
-        <h2>Ready to explore?</h2>
-        <p>Click Stumble to discover the web, one page at a time!</p>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="loading-state">
@@ -55,7 +44,19 @@ export function StumbleArea({
     return (
       <div className="error-state">
         <p>⚠️ {error}</p>
-        <button className="btn-primary" onClick={onRetry}>Try Again</button>
+        <button className="btn-primary" onClick={onRetry}>
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (!showIframe && !current) {
+    return (
+      <div className="empty-state">
+        <div className="empty-icon">🚀</div>
+        <h2>Ready to explore?</h2>
+        <p>Click Stumble to discover the web, one page at a time!</p>
       </div>
     );
   }
@@ -66,15 +67,27 @@ export function StumbleArea({
       <div className="iframe-container">
         <div className="iframe-header">
           <div className="stumble-card-header">
-            <img src={getFaviconUrl(current.source)} alt="" className="source-favicon" />
+            <img
+              src={getFaviconUrl(current.source)}
+              alt=""
+              className="source-favicon"
+            />
             <span className="stumble-category">{current.category}</span>
             <span className="stumble-source">{current.source}</span>
             {estimateReadingTime(current.description) && (
-              <span className="reading-time">{estimateReadingTime(current.description)}</span>
+              <span className="reading-time">
+                {estimateReadingTime(current.description)}
+              </span>
             )}
           </div>
           <span className="iframe-title">{current.title || current.url}</span>
-          <button className="close-btn" onClick={onClose} aria-label="Close iframe">✖</button>
+          <button
+            className="close-btn"
+            onClick={onClose}
+            aria-label="Close iframe"
+          >
+            ✖
+          </button>
         </div>
         <iframe
           src={iframeSrc}
@@ -93,12 +106,21 @@ export function StumbleArea({
         <p>This page cannot be displayed inside the app.</p>
         <code className="fallback-url">{current.url}</code>
         <div className="fallback-actions">
-          <a href={current.url} target="_blank" rel="noopener noreferrer" className="btn-primary">
+          <a
+            href={current.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+          >
             Open in new tab
           </a>
-          <button className="btn-secondary" onClick={onRetry}>Try Another</button>
+          <button className="btn-secondary" onClick={onRetry}>
+            Try Another
+          </button>
         </div>
-        <button className="close-btn" onClick={onClose}>Close</button>
+        <button className="close-btn" onClick={onClose}>
+          Close
+        </button>
       </div>
     );
   }

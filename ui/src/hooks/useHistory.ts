@@ -1,17 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { AuthenticatedFetch } from '../types';
+import { useState, useEffect, useCallback } from "react";
+import type { AuthenticatedFetch } from "../types";
 
 export interface HistoryItem {
   id: string;
   url: string;
   title?: string;
-  rating_val: 'like' | 'dislike';
+  rating_val: "like" | "dislike";
   timestamp: Date;
 }
 
 const safeJson = async (res: Response) => {
   const text = await res.text();
-  if (!text || text.trim() === '') return null;
+  if (!text || text.trim() === "") return null;
   try {
     return JSON.parse(text);
   } catch {
@@ -27,7 +27,7 @@ export function useHistory(authenticatedFetch: AuthenticatedFetch) {
   const loadHistory = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await authenticatedFetch('/history?limit=20');
+      const res = await authenticatedFetch("/history?limit=20");
       if (res.ok) {
         const data = await safeJson(res);
         setHistory(Array.isArray(data) ? data : []);
@@ -35,7 +35,7 @@ export function useHistory(authenticatedFetch: AuthenticatedFetch) {
         setHistory([]);
       }
     } catch (err) {
-      console.error('Failed to load history', err);
+      console.error("Failed to load history", err);
       setHistory([]);
     } finally {
       setLoading(false);

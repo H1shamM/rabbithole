@@ -9,14 +9,18 @@
  * @param {number} timeout - The timeout in milliseconds.
  * @returns {Promise<Response>}
  */
-export async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout: number = 5000): Promise<Response> {
+export async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeout: number = 5000,
+): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
   try {
     const response = await fetch(url, {
       ...options,
-      signal: controller.signal
+      signal: controller.signal,
     });
     return response;
   } finally {

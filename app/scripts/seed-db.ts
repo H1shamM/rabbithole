@@ -1,14 +1,14 @@
-import { SqliteAdapter } from '../src/db/sqliteAdapter.js';
-import { WikipediaSource } from '../src/sources/wikipedia.js';
-import { HackerNewsSource } from '../src/sources/hn.js';
-import { RedditSource } from '../src/sources/reddit.js';
-import { DevToSource } from '../src/sources/devto.js';
-import { UselessWebSource } from '../src/sources/uselessweb.js';
-import { AtlasObscuraSource } from '../src/sources/atlasobscura.js';
-import { BoredPandaSource } from '../src/sources/boredpanda.js';
-import { WikipediaImageSource } from '../src/sources/wikipedia_image.js';
-import { YoutubeSource } from '../src/sources/youtube.js';
-import type { ContentFetcher } from '../src/sources/ContentFetcher.js';
+import { SqliteAdapter } from "../src/db/sqliteAdapter.js";
+import { WikipediaSource } from "../src/sources/wikipedia.js";
+import { HackerNewsSource } from "../src/sources/hn.js";
+import { RedditSource } from "../src/sources/reddit.js";
+import { DevToSource } from "../src/sources/devto.js";
+import { UselessWebSource } from "../src/sources/uselessweb.js";
+import { AtlasObscuraSource } from "../src/sources/atlasobscura.js";
+import { BoredPandaSource } from "../src/sources/boredpanda.js";
+import { WikipediaImageSource } from "../src/sources/wikipedia_image.js";
+import { YoutubeSource } from "../src/sources/youtube.js";
+import type { ContentFetcher } from "../src/sources/ContentFetcher.js";
 
 const sources: ContentFetcher[] = [
   new WikipediaSource(),
@@ -23,13 +23,14 @@ const sources: ContentFetcher[] = [
 ];
 
 async function seed() {
-  const storage = new SqliteAdapter('stumble.db');
-  const categories = ['all', 'tech', 'art', 'science', 'random'];
+  const storage = new SqliteAdapter("stumble.db");
+  const categories = ["all", "tech", "art", "science", "random"];
   let totalAdded = 0;
 
   for (const source of sources) {
     for (const category of categories) {
-      for (let i = 0; i < 3; i++) { // try 3 times per category
+      for (let i = 0; i < 3; i++) {
+        // try 3 times per category
         try {
           const asset = await source.fetchStumble(category);
           if (asset && asset.url && asset.title) {
@@ -45,7 +46,7 @@ async function seed() {
           // ignore
         }
         // small delay to avoid rate limiting
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 500));
       }
     }
   }

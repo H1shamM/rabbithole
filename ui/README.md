@@ -10,33 +10,34 @@ Click “Stumble” and explore hidden gems from Wikipedia, Reddit, Hacker News,
 
 ## ✨ Features
 
-- **Smart Discovery** – Weighted random algorithm that learns from your likes/dislikes  
-- **PWA** – Install on your phone; works offline, feels native  
-- **Social Login** – Google & GitHub OAuth2, plus email/password  
-- **Community Submissions** – Users can submit new URLs for moderation  
-- **Favorites & History** – Persist liked content and review your journey  
-- **Recommendations** – “Because you liked X” suggestions based on ratings  
-- **Dark Mode** – Automatic or manual, saved in localStorage  
-- **Full‑text Search** – Find any asset by title or URL  
-- **Browser Extension** – Side panel for stumbling directly from your browser  
+- **Smart Discovery** – Weighted random algorithm that learns from your likes/dislikes
+- **PWA** – Install on your phone; works offline, feels native
+- **Social Login** – Google & GitHub OAuth2, plus email/password
+- **Community Submissions** – Users can submit new URLs for moderation
+- **Favorites & History** – Persist liked content and review your journey
+- **Recommendations** – “Because you liked X” suggestions based on ratings
+- **Dark Mode** – Automatic or manual, saved in localStorage
+- **Full‑text Search** – Find any asset by title or URL
+- **Browser Extension** – Side panel for stumbling directly from your browser
 - **Tested & CI** – 80%+ coverage, GitHub Actions runs lint + tests
 
 ---
 
 ## 🧱 Tech Stack
 
-| Area | Technologies |
-|------|--------------|
-| **Backend** | Node.js 20+, Express 5, TypeScript, SQLite (better-sqlite3), Passport.js (OAuth2), bcrypt, JWT, Vitest, ESLint |
-| **Frontend** | React 19, Vite 6, TypeScript, PWA (vite-plugin-pwa), CSS custom properties, Vitest, React Testing Library |
-| **Extension** | Manifest V3 (side panel, background script) |
-| **DevOps** | Docker, docker-compose, GitHub Actions, Playwright (E2E) |
+| Area          | Technologies                                                                                                   |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Backend**   | Node.js 20+, Express 5, TypeScript, SQLite (better-sqlite3), Passport.js (OAuth2), bcrypt, JWT, Vitest, ESLint |
+| **Frontend**  | React 19, Vite 6, TypeScript, PWA (vite-plugin-pwa), CSS custom properties, Vitest, React Testing Library      |
+| **Extension** | Manifest V3 (side panel, background script)                                                                    |
+| **DevOps**    | Docker, docker-compose, GitHub Actions, Playwright (E2E)                                                       |
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 20+
 - npm
 
@@ -125,14 +126,14 @@ stumble-clone/
 
 Create a `.env` file in `/app` (see `.env.example`):
 
-| Variable | Description |
-|----------|-------------|
-| `PORT` | API port (default 3000) |
-| `DB_PATH` | SQLite database path (default `stumble.db`) |
-| `JWT_SECRET` | Secret for signing JWTs (change in production) |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | For Google OAuth |
-| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | For GitHub OAuth |
-| `FRONTEND_URL` | Frontend origin for OAuth redirects (default `http://localhost:5173`) |
+| Variable                                    | Description                                                           |
+| ------------------------------------------- | --------------------------------------------------------------------- |
+| `PORT`                                      | API port (default 3000)                                               |
+| `DB_PATH`                                   | SQLite database path (default `stumble.db`)                           |
+| `JWT_SECRET`                                | Secret for signing JWTs (change in production)                        |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | For Google OAuth                                                      |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | For GitHub OAuth                                                      |
+| `FRONTEND_URL`                              | Frontend origin for OAuth redirects (default `http://localhost:5173`) |
 
 ---
 

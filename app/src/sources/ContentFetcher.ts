@@ -2,7 +2,7 @@
  * @fileoverview Interface for content fetchers.
  */
 
-import type { StumbleAsset } from '../models/asset.js';
+import type { StumbleAsset } from "../models/asset.js";
 
 /**
  * Interface for components that fetch content from external sources.

@@ -22,7 +22,7 @@ Based on ai-email-copilot’s professional workflow. This is the standard for ev
    npm run lint
    npm run format
    npm test
-   npm run test:coverage   (verify >=80%)
+   npm run test:coverage (verify >=80%)
 6. Commit with a conventional commit message:
    feat(discovery): add URL validation to asset discovery
    Closes #12
@@ -37,6 +37,7 @@ Based on ai-email-copilot’s professional workflow. This is the standard for ev
 ## CI/CD (future)
 
 We’ll set up GitHub Actions for:
+
 - test.yml: npm ci → npm run lint → npm test (and coverage check).
 - deploy.yml (when ready): deploy the API to a cloud environment.
 
@@ -45,6 +46,7 @@ Eventually, we’ll adopt the same OIDC‑based deployment pattern as ai-email-c
 ## Commit conventions
 
 Use Conventional Commits:
+
 - feat: – new feature
 - fix: – bug fix
 - refactor: – code restructuring without functional change

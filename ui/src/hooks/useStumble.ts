@@ -1,7 +1,7 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import type { AuthenticatedFetch } from '../types';
+import { useState, useCallback, useRef, useEffect } from "react";
+import type { AuthenticatedFetch } from "../types";
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
 
 export interface StumbleResult {
   id: string;
@@ -13,7 +13,10 @@ export interface StumbleResult {
   source: string;
 }
 
-export function useStumble(authenticatedFetch: AuthenticatedFetch, category: string) {
+export function useStumble(
+  authenticatedFetch: AuthenticatedFetch,
+  category: string,
+) {
   const [current, setCurrent] = useState<StumbleResult | null>(null);
   const [nextStumble, setNextStumble] = useState<StumbleResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,8 +43,12 @@ export function useStumble(authenticatedFetch: AuthenticatedFetch, category: str
     clearIframeTimeout();
     if (current) {
       authenticatedFetch(`/rate`, {
-        method: 'POST',
-        body: JSON.stringify({ assetId: current.id, isPositive: false, note: 'blocked' }),
+        method: "POST",
+        body: JSON.stringify({
+          assetId: current.id,
+          isPositive: false,
+          note: "blocked",
+        }),
       }).catch(console.error);
     }
   }, [current, authenticatedFetch, clearIframeTimeout]);
@@ -64,7 +71,7 @@ export function useStumble(authenticatedFetch: AuthenticatedFetch, category: str
       data.proxyUrl = `${API_BASE}/proxy?url=${encodeURIComponent(data.url)}`;
       setNextStumble(data);
     } catch (err) {
-      console.debug('Prefetch failed', err);
+      console.debug("Prefetch failed", err);
       setNextStumble(null);
     }
   }, [category, authenticatedFetch]);
@@ -78,7 +85,7 @@ export function useStumble(authenticatedFetch: AuthenticatedFetch, category: str
       setIframeError(false);
       setNextStumble(null);
       startIframeTimeout();
-      
+
       // Pre-fetch another one in the background
       prefetchNext();
       return;
@@ -95,25 +102,34 @@ export function useStumble(authenticatedFetch: AuthenticatedFetch, category: str
       const res = await authenticatedFetch(`/stumble?category=${category}`);
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(`Failed to fetch stumble: ${res.status} - ${text.slice(0, 100)}`);
+        throw new Error(
+          `Failed to fetch stumble: ${res.status} - ${text.slice(0, 100)}`,
+        );
       }
       const data: StumbleResult = await res.json();
-      
+
       // Add proxy URL
       data.proxyUrl = `${API_BASE}/proxy?url=${encodeURIComponent(data.url)}`;
       setCurrent(data);
       setShowIframe(true);
       startIframeTimeout();
-      
+
       // Pre-fetch another one
       prefetchNext();
     } catch (err: unknown) {
-      console.error('Stumble fetch error:', err);
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      console.error("Stumble fetch error:", err);
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
-  }, [category, authenticatedFetch, clearIframeTimeout, startIframeTimeout, nextStumble, prefetchNext]);
+  }, [
+    category,
+    authenticatedFetch,
+    clearIframeTimeout,
+    startIframeTimeout,
+    nextStumble,
+    prefetchNext,
+  ]);
 
   const handleClose = useCallback(() => {
     setShowIframe(false);

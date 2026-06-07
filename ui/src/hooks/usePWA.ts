@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 /**
  * Interface for the BeforeInstallPromptEvent.
@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
+    outcome: "accepted" | "dismissed";
     platform: string;
   }>;
   prompt(): Promise<void>;
@@ -17,7 +17,8 @@ interface BeforeInstallPromptEvent extends Event {
  * Hook to manage PWA installation and update events.
  */
 export function usePWA() {
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installPrompt, setInstallPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
@@ -29,10 +30,13 @@ export function usePWA() {
       setIsInstallable(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
     };
   }, []);
 
@@ -44,11 +48,11 @@ export function usePWA() {
 
     // Wait for the user to respond to the prompt
     const { outcome } = await installPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      console.log('User accepted the PWA install prompt');
+
+    if (outcome === "accepted") {
+      console.log("User accepted the PWA install prompt");
     } else {
-      console.log('User dismissed the PWA install prompt');
+      console.log("User dismissed the PWA install prompt");
     }
 
     // Clear the prompt event

@@ -2,16 +2,16 @@
  * @fileoverview Application entry point.
  */
 
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.css';
-import App from './App.tsx';
-import { ToastProvider } from './contexts/ToastContext.tsx';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.tsx";
+import { ToastProvider } from "./contexts/ToastContext.tsx";
 
 /**
  * Initializes the React application.
  */
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 
 if (rootElement) {
   createRoot(rootElement).render(
@@ -19,8 +19,8 @@ if (rootElement) {
       <ToastProvider>
         <App />
       </ToastProvider>
-    </StrictMode>
+    </StrictMode>,
   );
 } else {
-  console.error('Root element not found');
+  console.error("Root element not found");
 }

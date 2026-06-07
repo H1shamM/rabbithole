@@ -1,32 +1,53 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import { Toast } from '../components/Toast';
-import type { ToastData } from '../components/Toast';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  type ReactNode,
+} from "react";
+import { Toast } from "../components/Toast";
+import type { ToastData } from "../components/Toast";
 
 interface ToastContextValue {
-  addToast: (message: string, type?: ToastData['type'], duration?: number) => void;
+  addToast: (
+    message: string,
+    type?: ToastData["type"],
+    duration?: number,
+  ) => void;
 }
 
-export const ToastContext = createContext<ToastContextValue | undefined>(undefined);
+export const ToastContext = createContext<ToastContextValue | undefined>(
+  undefined,
+);
 
-export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ToastProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [toasts, setToasts] = useState<ToastData[]>([]);
-  
-  const addToast = useCallback((message: string, type: ToastData['type'] = 'info', duration = 3000) => {
-    const id = Date.now().toString() + Math.random().toString(36);
-    setToasts(prev => [...prev, { id, message, type, duration }]);
-  }, []);
-  
+
+  const addToast = useCallback(
+    (message: string, type: ToastData["type"] = "info", duration = 3000) => {
+      const id = Date.now().toString() + Math.random().toString(36);
+      setToasts((prev) => [...prev, { id, message, type, duration }]);
+    },
+    [],
+  );
+
   const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
-  
+
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
       <div className="toast-container">
-        {toasts.map(toast => (
-          <Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            {...toast}
+            onClose={() => removeToast(toast.id)}
+          />
         ))}
       </div>
     </ToastContext.Provider>
@@ -35,6 +56,6 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
 export const useToast = () => {
   const context = useContext(ToastContext);
-  if (!context) throw new Error('useToast must be used within ToastProvider');
+  if (!context) throw new Error("useToast must be used within ToastProvider");
   return context;
 };

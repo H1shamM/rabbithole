@@ -54,6 +54,7 @@ Derived from ai-email-copilot’s code standards, adapted to TypeScript and Node
 ## Code Style (automatic)
 
 We use **ESLint** and **Prettier**. Config:
+
 - Root eslint.config.js or .eslintrc
 - ui/eslint.config.js (extend to app/)
 - Prettier: singleQuote: true, trailingComma: 'all', semi: true.
