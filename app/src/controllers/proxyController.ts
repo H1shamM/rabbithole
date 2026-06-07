@@ -35,7 +35,7 @@ export class ProxyController {
     }
 
     try {
-      const { html, headers } = await fetchHtml(targetUrl);
+      const { html } = await fetchHtml(targetUrl);
       
       // Remove restrictive headers
       res.removeHeader('X-Frame-Options');
@@ -48,13 +48,14 @@ export class ProxyController {
       const rewrittenHtml = makeAbsolute(html, targetUrl);
       
       res.send(rewrittenHtml);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Proxy error:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(502).send(`
         <html>
           <body style="font-family: sans-serif; text-align: center; padding: 2rem;">
             <h1>Cannot load ${targetUrl}</h1>
-            <p>${error.message}</p>
+            <p>${message}</p>
             <a href="${targetUrl}" target="_blank">Open directly in new tab</a>
             <br/><br/>
             <button onclick="window.location.reload()">Try again</button>

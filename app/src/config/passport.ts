@@ -8,11 +8,9 @@ import { Strategy as GitHubStrategy } from 'passport-github2';
 import crypto from 'crypto';
 import { settings } from './settings.js';
 import type { IStoragePort } from '../db/storagePort.js';
-import type { User } from '../models/user.js';
 
 /**
  * Initializes passport with OAuth2 strategies.
- * @param {IStoragePort} storage - The storage adapter.
  */
 export function initPassport(storage: IStoragePort): void {
   const googleConfig = settings.google;
@@ -101,8 +99,8 @@ export function initPassport(storage: IStoragePort): void {
     }));
   }
 
-  passport.serializeUser((user: any, done) => {
-    done(null, user.id);
+  passport.serializeUser((user: Express.User, done) => {
+    done(null, (user as any).id);
   });
 
   passport.deserializeUser(async (id: string, done) => {
