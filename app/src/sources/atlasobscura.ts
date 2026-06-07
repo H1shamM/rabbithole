@@ -2,17 +2,17 @@
  * @fileoverview AtlasObscura content fetcher.
  */
 
-import crypto from 'crypto';
-import type { ContentFetcher } from './ContentFetcher.js';
-import type { StumbleAsset } from '../models/asset.js';
+import crypto from "crypto";
+import type { ContentFetcher } from "./ContentFetcher.js";
+import type { StumbleAsset } from "../models/asset.js";
 
-import { fetchWithTimeout } from './utils.js';
+import { fetchWithTimeout } from "./utils.js";
 
 /**
  * AtlasObscura content fetcher implementation.
  */
 export class AtlasObscuraSource implements ContentFetcher {
-  private readonly BASE_URL = 'https://www.atlasobscura.com/articles?page=';
+  private readonly BASE_URL = "https://www.atlasobscura.com/articles?page=";
 
   /**
    * Fetches a random AtlasObscura article URL.
@@ -21,35 +21,37 @@ export class AtlasObscuraSource implements ContentFetcher {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async fetchStumble(category: string): Promise<StumbleAsset | null> {
-
     try {
       const page = Math.floor(Math.random() * 10) + 1;
       const response = await fetchWithTimeout(`${this.BASE_URL}${page}`);
-      
+
       if (!response.ok) {
         throw new Error(`AtlasObscura API error: ${response.statusText}`);
       }
-      
+
       const html = await response.text();
-      
+
       // Simplistic extraction: find an article link
       const linkMatch = html.match(/href="\/articles\/([^"]+)"/);
       if (!linkMatch) {
-        throw new Error('Could not find article');
+        throw new Error("Could not find article");
       }
-      
+
       return {
         id: crypto.randomUUID(),
         url: `https://www.atlasobscura.com/articles/${linkMatch[1]}`,
-        title: 'Atlas Obscura Article',
-        description: 'Explore the hidden wonders of the world.',
-        source: 'AtlasObscura',
-        category: 'art', // Atlas Obscura fits well here
+        title: "Atlas Obscura Article",
+        description: "Explore the hidden wonders of the world.",
+        source: "AtlasObscura",
+        category: "art", // Atlas Obscura fits well here
         rating: 0,
         created_at: new Date(),
       };
     } catch (error) {
-      console.error('Failed to fetch stumble from AtlasObscura, returning null:', error);
+      console.error(
+        "Failed to fetch stumble from AtlasObscura, returning null:",
+        error,
+      );
       return null;
     }
   }

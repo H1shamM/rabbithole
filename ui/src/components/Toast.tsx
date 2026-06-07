@@ -1,10 +1,10 @@
 // ui/src/components/Toast.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 
 export interface ToastData {
   id: string;
   message: string;
-  type: 'success' | 'error' | 'info';
+  type: "success" | "error" | "info";
   duration?: number;
 }
 
@@ -12,7 +12,12 @@ export interface ToastProps extends ToastData {
   onClose: () => void;
 }
 
-export const Toast: React.FC<ToastProps> = ({ message, type, duration = 3000, onClose }) => {
+export const Toast: React.FC<ToastProps> = ({
+  message,
+  type,
+  duration = 3000,
+  onClose,
+}) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -22,9 +27,12 @@ export const Toast: React.FC<ToastProps> = ({ message, type, duration = 3000, on
 
   const getIcon = () => {
     switch (type) {
-      case 'success': return '✓';
-      case 'error': return '✗';
-      default: return 'ℹ';
+      case "success":
+        return "✓";
+      case "error":
+        return "✗";
+      default:
+        return "ℹ";
     }
   };
 
@@ -32,7 +40,9 @@ export const Toast: React.FC<ToastProps> = ({ message, type, duration = 3000, on
     <div className={`toast toast-${type}`}>
       <span className="toast-icon">{getIcon()}</span>
       <span className="toast-message">{message}</span>
-      <button className="toast-close" onClick={onClose} aria-label="Close">×</button>
+      <button className="toast-close" onClick={onClose} aria-label="Close">
+        ×
+      </button>
     </div>
   );
 };

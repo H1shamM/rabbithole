@@ -1,4 +1,4 @@
-import type { HistoryItem } from '../hooks/useHistory';
+import type { HistoryItem } from "../hooks/useHistory";
 
 interface HistoryPanelProps {
   history: HistoryItem[];
@@ -7,11 +7,19 @@ interface HistoryPanelProps {
   onStumble?: () => void;
 }
 
-export function HistoryPanel({ history, showHistory, setShowHistory, onStumble }: HistoryPanelProps) {
+export function HistoryPanel({
+  history,
+  showHistory,
+  setShowHistory,
+  onStumble,
+}: HistoryPanelProps) {
   return (
     <div className="history-section">
-      <button className="btn secondary history-toggle" onClick={() => setShowHistory(!showHistory)}>
-        {showHistory ? '🔽 Hide History' : '📋 View History'} ({history.length})
+      <button
+        className="btn secondary history-toggle"
+        onClick={() => setShowHistory(!showHistory)}
+      >
+        {showHistory ? "🔽 Hide History" : "📋 View History"} ({history.length})
       </button>
       {showHistory && (
         <div className="history-panel">
@@ -19,7 +27,9 @@ export function HistoryPanel({ history, showHistory, setShowHistory, onStumble }
             <div className="empty-state">
               <div className="empty-icon">📜</div>
               <h3>No history yet</h3>
-              <p>Start stumbling and like/dislike content to build your history.</p>
+              <p>
+                Start stumbling and like/dislike content to build your history.
+              </p>
               {onStumble && (
                 <button className="btn-primary" onClick={onStumble}>
                   Start stumbling
@@ -30,8 +40,15 @@ export function HistoryPanel({ history, showHistory, setShowHistory, onStumble }
             <ul className="history-list">
               {history.slice(0, 10).map((item) => (
                 <li key={item.timestamp.toString()} className="history-item">
-                  <span className="history-rating">{item.rating_val === 'like' ? '👍' : '👎'}</span>
-                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="history-url">
+                  <span className="history-rating">
+                    {item.rating_val === "like" ? "👍" : "👎"}
+                  </span>
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="history-url"
+                  >
                     {item.title || item.url}
                   </a>
                 </li>

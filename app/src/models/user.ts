@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const UserSchema = z.object({
   id: z.string().uuid(),
@@ -6,7 +6,7 @@ export const UserSchema = z.object({
   password_hash: z.string().nullable(),
   display_name: z.string().optional(),
   avatar_url: z.string().url().optional(),
-  provider: z.enum(['local', 'google', 'github']).default('local'),
+  provider: z.enum(["local", "google", "github"]).default("local"),
   provider_id: z.string().optional(),
   created_at: z.date(),
 });

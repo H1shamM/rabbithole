@@ -1,7 +1,7 @@
 // ui/src/components/CategoryBar.tsx
-import React from 'react';
+import React from "react";
 
-type Category = 'all' | 'tech' | 'art' | 'science' | 'random';
+type Category = "all" | "tech" | "art" | "science" | "random";
 
 interface CategoryBarProps {
   category: Category;
@@ -22,7 +22,11 @@ export function CategoryBar({
     <div className="category-bar">
       <div className="category-selector">
         <label htmlFor="category">Filter by:</label>
-        <select id="category" value={category} onChange={(e) => onCategoryChange(e.target.value as Category)}>
+        <select
+          id="category"
+          value={category}
+          onChange={(e) => onCategoryChange(e.target.value as Category)}
+        >
           <option value="all">All</option>
           <option value="tech">Tech</option>
           <option value="art">Art</option>

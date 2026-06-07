@@ -1,32 +1,32 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from './hooks/useAuth';
-import { useFavorites } from './hooks/useFavorites';
-import { useHistory } from './hooks/useHistory';
-import { usePWA } from './hooks/usePWA';
-import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { useTheme } from './hooks/useTheme';
-import { Header } from './components/Header';
-import { AuthModal } from './components/AuthModal';
-import { ProfileModal } from './components/ProfileModal';
-import { CategoryBar } from './components/CategoryBar';
-import { StumbleArea } from './components/StumbleArea';
-import { ActionButtons } from './components/ActionButtons';
-import { HistoryPanel } from './components/HistoryPanel';
-import { FavoritesPanel } from './components/FavoritesPanel';
-import { RecommendationsPanel } from './components/RecommendationsPanel';
-import { SubmissionForm } from './components/SubmissionForm';
-import { useToast } from './contexts/ToastContext';
-import { useStumble, type StumbleResult } from './hooks/useStumble';
-import type { AuthenticatedFetch } from './types';
+import { useState, useEffect } from "react";
+import { useAuth } from "./hooks/useAuth";
+import { useFavorites } from "./hooks/useFavorites";
+import { useHistory } from "./hooks/useHistory";
+import { usePWA } from "./hooks/usePWA";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useTheme } from "./hooks/useTheme";
+import { Header } from "./components/Header";
+import { AuthModal } from "./components/AuthModal";
+import { ProfileModal } from "./components/ProfileModal";
+import { CategoryBar } from "./components/CategoryBar";
+import { StumbleArea } from "./components/StumbleArea";
+import { ActionButtons } from "./components/ActionButtons";
+import { HistoryPanel } from "./components/HistoryPanel";
+import { FavoritesPanel } from "./components/FavoritesPanel";
+import { RecommendationsPanel } from "./components/RecommendationsPanel";
+import { SubmissionForm } from "./components/SubmissionForm";
+import { useToast } from "./contexts/ToastContext";
+import { useStumble, type StumbleResult } from "./hooks/useStumble";
+import type { AuthenticatedFetch } from "./types";
 // ...
-type Category = 'all' | 'tech' | 'art' | 'science' | 'random';
+type Category = "all" | "tech" | "art" | "science" | "random";
 
 export function App() {
   const { isInstallable, showInstallPrompt } = usePWA();
-  const [category, setCategory] = useState<Category>('all');
+  const [category, setCategory] = useState<Category>("all");
   const { addToast } = useToast();
   const [recommendations, setRecommendations] = useState<StumbleResult[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const { darkMode, setDarkMode } = useTheme();
 
   const {
@@ -58,43 +58,63 @@ export function App() {
     handleIframeLoad,
   } = useStumble(typedAuthenticatedFetch, category);
 
-  const { favorites, showFavorites, setShowFavorites, toggleFavorite, removeFavorite, isFavorite } = useFavorites(typedAuthenticatedFetch);
-  const { history, showHistory, setShowHistory, loadHistory } = useHistory(typedAuthenticatedFetch);
+  const {
+    favorites,
+    showFavorites,
+    setShowFavorites,
+    toggleFavorite,
+    removeFavorite,
+    isFavorite,
+  } = useFavorites(typedAuthenticatedFetch);
+  const { history, showHistory, setShowHistory, loadHistory } = useHistory(
+    typedAuthenticatedFetch,
+  );
 
   useKeyboardShortcuts({
     onNext: fetchStumble,
-    onLike: () => handleRate('like'),
-    onDislike: () => handleRate('dislike'),
-    onToggleFavorites: () => setShowFavorites(prev => !prev),
-    onToggleHistory: () => setShowHistory(prev => !prev),
+    onLike: () => handleRate("like"),
+    onDislike: () => handleRate("dislike"),
+    onToggleFavorites: () => setShowFavorites((prev) => !prev),
+    onToggleHistory: () => setShowHistory((prev) => !prev),
     enabled: !!current && showIframe,
   });
 
   // Rating state
-  const [rating, setRating] = useState<'like' | 'dislike' | null>(null);
+  const [rating, setRating] = useState<"like" | "dislike" | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
 
-  const handleRate = async (type: 'like' | 'dislike') => {
+  const handleRate = async (type: "like" | "dislike") => {
     if (!current) return;
     setRateLoading(true);
     try {
       await authenticatedFetch(`/rate`, {
-        method: 'POST',
-        body: JSON.stringify({ assetId: current.id, isPositive: type === 'like' }),
+        method: "POST",
+        body: JSON.stringify({
+          assetId: current.id,
+          isPositive: type === "like",
+        }),
       });
       setRating(type);
       await authenticatedFetch(`/preferences`, {
-        method: 'POST',
-        body: JSON.stringify({ type: 'category', name: current.category, delta: type === 'like' ? 1 : -1 }),
+        method: "POST",
+        body: JSON.stringify({
+          type: "category",
+          name: current.category,
+          delta: type === "like" ? 1 : -1,
+        }),
       });
       await authenticatedFetch(`/preferences`, {
-        method: 'POST',
-        body: JSON.stringify({ type: 'source', name: current.source, delta: type === 'like' ? 1 : -1 }),
+        method: "POST",
+        body: JSON.stringify({
+          type: "source",
+          name: current.source,
+          delta: type === "like" ? 1 : -1,
+        }),
       });
       await loadHistory();
     } catch (err) {
-      console.error('Rating failed', err);
-      addToast('Rating failed', 'error');
+      console.error("Rating failed", err);
+      addToast("Rating failed", "error");
     } finally {
       setRateLoading(false);
     }
@@ -103,33 +123,41 @@ export function App() {
   const handleShare = async () => {
     if (!current) return;
     if (navigator.share) {
-      try { await navigator.share({ title: current.title, url: current.url }); } catch { /* ignore */ }
+      try {
+        await navigator.share({ title: current.title, url: current.url });
+      } catch {
+        /* ignore */
+      }
     } else {
       await navigator.clipboard.writeText(current.url);
-      addToast('Link copied!');
-      setTimeout(() => addToast('Failed'), 2000);
+      addToast("Link copied!");
+      setTimeout(() => addToast("Failed"), 2000);
     }
   };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await authenticatedFetch(`/search?q=${encodeURIComponent(searchQuery)}`);
+      const res = await authenticatedFetch(
+        `/search?q=${encodeURIComponent(searchQuery)}`,
+      );
       if (res.ok) setRecommendations(await res.json());
     } catch {
-      addToast('Search failed');
+      addToast("Search failed");
     }
   };
 
   // Load recommendations
   useEffect(() => {
-    authenticatedFetch(`/recommendations`).then(res => res.ok ? res.json() : []).then(setRecommendations);
+    authenticatedFetch(`/recommendations`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setRecommendations);
   }, [authenticatedFetch]);
 
   // Dark mode effect
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode);
-    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    document.documentElement.classList.toggle("dark", darkMode);
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
   // Dev auth
@@ -143,7 +171,7 @@ export function App() {
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         user={user}
-        onUserClick={() => user ? setShowProfile(true) : setShowAuth(true)}
+        onUserClick={() => (user ? setShowProfile(true) : setShowAuth(true))}
         isInstallable={isInstallable}
         onInstall={showInstallPrompt}
       />
@@ -157,7 +185,7 @@ export function App() {
         onLogin={() => handleAuth(true)}
         onRegister={() => handleAuth(false)}
         onClose={() => setShowAuth(false)}
-        apiBase={import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}
+        apiBase={import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1"}
       />
 
       <ProfileModal
@@ -202,11 +230,24 @@ export function App() {
           onNext={fetchStumble}
         />
 
-
-        <HistoryPanel history={history} showHistory={showHistory} setShowHistory={setShowHistory} onStumble={fetchStumble} />
-        <FavoritesPanel favorites={favorites} showFavorites={showFavorites} setShowFavorites={setShowFavorites} onRemove={removeFavorite} onStumble={fetchStumble} />
+        <HistoryPanel
+          history={history}
+          showHistory={showHistory}
+          setShowHistory={setShowHistory}
+          onStumble={fetchStumble}
+        />
+        <FavoritesPanel
+          favorites={favorites}
+          showFavorites={showFavorites}
+          setShowFavorites={setShowFavorites}
+          onRemove={removeFavorite}
+          onStumble={fetchStumble}
+        />
         <RecommendationsPanel recommendations={recommendations} />
-        <SubmissionForm onSuccess={() => addToast('Submitted!')} authenticatedFetch={typedAuthenticatedFetch} />
+        <SubmissionForm
+          onSuccess={() => addToast("Submitted!")}
+          authenticatedFetch={typedAuthenticatedFetch}
+        />
       </main>
     </div>
   );

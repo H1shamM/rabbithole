@@ -2,9 +2,9 @@
  * @fileoverview ProductHunt content fetcher.
  */
 
-import crypto from 'crypto';
-import type { ContentFetcher } from './ContentFetcher.js';
-import type { StumbleAsset } from '../models/asset.js';
+import crypto from "crypto";
+import type { ContentFetcher } from "./ContentFetcher.js";
+import type { StumbleAsset } from "../models/asset.js";
 
 /**
  * ProductHunt content fetcher implementation.
@@ -19,11 +19,11 @@ export class ProductHuntSource implements ContentFetcher {
   async fetchStumble(category: string): Promise<StumbleAsset | null> {
     return {
       id: crypto.randomUUID(),
-      url: 'https://www.producthunt.com/',
-      title: 'Product Hunt',
-      description: 'Trending products.',
-      source: 'ProductHunt',
-      category: 'tech',
+      url: "https://www.producthunt.com/",
+      title: "Product Hunt",
+      description: "Trending products.",
+      source: "ProductHunt",
+      category: "tech",
       rating: 0,
       created_at: new Date(),
     };

@@ -1,7 +1,7 @@
 export interface OAuthProfile {
   id: string;
-  emails?: { value: string }[];
+  emails?: { value: string }[] | undefined;
   displayName: string;
-  username?: string;
-  photos?: { value: string }[];
+  username?: string | undefined;
+  photos?: { value: string }[] | undefined;
 }

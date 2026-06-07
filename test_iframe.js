@@ -8,7 +8,7 @@ const { chromium } = require("playwright");
   await page.screenshot({ path: "audit-iframe-open.png" });
   const spinner = await page.$(".iframe-loading");
   console.log("Spinner visible:", !!spinner);
-  await page.click("button[aria-label=\"Close embedded site\"]");
+  await page.click('button[aria-label="Close embedded site"]');
   const container = await page.$(".iframe-container");
   console.log("Iframe closed:", !container);
   await browser.close();

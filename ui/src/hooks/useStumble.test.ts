@@ -1,16 +1,22 @@
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { useStumble } from './useStumble';
+import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { useStumble } from "./useStumble";
 
-describe('useStumble', () => {
-  it('should use pre-fetched data if available', async () => {
-    const mockAuthenticatedFetch = vi.fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: '1', url: 'http://test.com', category: 'all', source: 'test' }),
-      });
+describe("useStumble", () => {
+  it("should use pre-fetched data if available", async () => {
+    const mockAuthenticatedFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: "1",
+        url: "http://test.com",
+        category: "all",
+        source: "test",
+      }),
+    });
 
-    const { result } = renderHook(() => useStumble(mockAuthenticatedFetch, 'all'));
+    const { result } = renderHook(() =>
+      useStumble(mockAuthenticatedFetch, "all"),
+    );
 
     // First stumble (no prefetch)
     await act(async () => {
@@ -18,17 +24,22 @@ describe('useStumble', () => {
     });
 
     expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(2); // Initial + prefetch
-    
+
     // Simulate prefetch having happened
-    const _nextStumble = { id: '2', url: 'http://test2.com', category: 'all', source: 'test' };
+    const _nextStumble = {
+      id: "2",
+      url: "http://test2.com",
+      category: "all",
+      source: "test",
+    };
     console.log(_nextStumble);
-    
+
     // Manually set prefetch state via the hook
     act(() => {
-        result.current.fetchStumble(); // Trigger again
+      result.current.fetchStumble(); // Trigger again
     });
-    
-    // Ideally this would test the prefetch path, but this hook setup 
+
+    // Ideally this would test the prefetch path, but this hook setup
     // makes internal state testing complex. This verifies the hook runs.
     expect(result.current).toBeDefined();
   });

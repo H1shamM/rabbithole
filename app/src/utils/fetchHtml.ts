@@ -1,6 +1,9 @@
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
-export async function fetchHtml(url: string, timeoutMs = 10000): Promise<{ html: string; headers: Record<string, string> }> {
+export async function fetchHtml(
+  url: string,
+  timeoutMs = 10000,
+): Promise<{ html: string; headers: Record<string, string> }> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -8,7 +11,7 @@ export async function fetchHtml(url: string, timeoutMs = 10000): Promise<{ html:
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; StumbleClone/1.0)',
+        "User-Agent": "Mozilla/5.0 (compatible; StumbleClone/1.0)",
       },
     });
     clearTimeout(timeoutId);

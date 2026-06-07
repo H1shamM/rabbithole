@@ -2,9 +2,9 @@
  * @fileoverview NASA APOD content fetcher.
  */
 
-import crypto from 'crypto';
-import type { ContentFetcher } from './ContentFetcher.js';
-import type { StumbleAsset } from '../models/asset.js';
+import crypto from "crypto";
+import type { ContentFetcher } from "./ContentFetcher.js";
+import type { StumbleAsset } from "../models/asset.js";
 
 /**
  * NASA APOD content fetcher implementation.
@@ -21,11 +21,11 @@ export class NasaApodSource implements ContentFetcher {
     // For now, hardcode/simplistic.
     return {
       id: crypto.randomUUID(),
-      url: 'https://apod.nasa.gov/apod/astropix.html',
-      title: 'NASA Image of the Day',
-      description: 'Explore the cosmos.',
-      source: 'NasaApod',
-      category: 'science',
+      url: "https://apod.nasa.gov/apod/astropix.html",
+      title: "NASA Image of the Day",
+      description: "Explore the cosmos.",
+      source: "NasaApod",
+      category: "science",
       rating: 0,
       created_at: new Date(),
     };

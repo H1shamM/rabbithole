@@ -36,7 +36,6 @@ stumble-clone/
 ├── docker-compose.yml
 └── README.md
 
-
 ## Key principles
 
 - Separation of concerns: the API never touches the browser extension's code directly.
@@ -58,4 +57,3 @@ stumble-clone/
 ---
 
 Maintain this structure. Do not create new top‑level directories without a discussion.
-

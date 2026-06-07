@@ -38,7 +38,11 @@
 .btn,
 input,
 select {
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .logo {
@@ -50,14 +54,20 @@ select {
 
 .tagline {
   font-size: 0.8rem;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
   display: inline-block;
 }
 
 @media (max-width: 600px) {
-  .tagline { display: none; }
-  .header-row { gap: 0.5rem; }
-  .logo { font-size: 1rem; }
+  .tagline {
+    display: none;
+  }
+  .header-row {
+    gap: 0.5rem;
+  }
+  .logo {
+    font-size: 1rem;
+  }
 }
 
 /* Touch-friendly buttons */
@@ -142,7 +152,9 @@ select {
   font-size: 1.1rem;
   font-weight: 600;
   box-shadow: var(--shadow);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 @media (max-width: 480px) {
@@ -227,27 +239,37 @@ select {
 }
 
 @media (max-width: 768px) {
-  .iframe { height: 50vh; }
+  .iframe {
+    height: 50vh;
+  }
 }
 @media (max-width: 480px) {
-  .iframe { height: 40vh; }
+  .iframe {
+    height: 40vh;
+  }
 }
 
 /* Panels – history, favorites, recommendations */
-.history-panel, .favorites-panel, .recommendations-section {
+.history-panel,
+.favorites-panel,
+.recommendations-section {
   background: var(--code-bg);
   border-radius: 12px;
   padding: 1rem;
   margin-top: 1rem;
 }
 
-.history-list, .favorites-list, .recommendations-list {
+.history-list,
+.favorites-list,
+.recommendations-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.history-item, .favorites-item, .recommendation-item {
+.history-item,
+.favorites-item,
+.recommendation-item {
   padding: 0.75rem;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -255,7 +277,8 @@ select {
   gap: 0.5rem;
 }
 
-.history-url, .favorites-url {
+.history-url,
+.favorites-url {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -263,27 +286,30 @@ select {
 }
 
 @media (max-width: 600px) {
-  .history-url, .favorites-url {
+  .history-url,
+  .favorites-url {
     white-space: normal;
     word-break: break-all;
   }
 }
 
 /* Auth modals - responsive */
-.auth-modal, .profile-modal {
+.auth-modal,
+.profile-modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-.auth-content, .profile-content {
+.auth-content,
+.profile-content {
   background: var(--bg);
   border-radius: 16px;
   padding: 1.5rem;
@@ -353,7 +379,12 @@ select {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(90deg, var(--border) 25%, var(--code-bg) 50%, var(--border) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    var(--code-bg) 50%,
+    var(--border) 75%
+  );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
 }
@@ -361,7 +392,12 @@ select {
 .skeleton-line {
   height: 16px;
   border-radius: 8px;
-  background: linear-gradient(90deg, var(--border) 25%, var(--code-bg) 50%, var(--border) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    var(--code-bg) 50%,
+    var(--border) 75%
+  );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
   margin: 8px 0;
@@ -535,7 +571,10 @@ select {
 
 /* Stumble button special hover */
 .stumble-btn {
-  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    filter 0.2s;
 }
 
 .stumble-btn:hover {
@@ -551,9 +590,15 @@ select {
 
 /* Like/Dislike button pop animation */
 @keyframes pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .rate-btn:active {
@@ -562,9 +607,15 @@ select {
 
 /* Favorite star spin */
 @keyframes starSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(15deg) scale(1.2); }
-  100% { transform: rotate(0deg) scale(1); }
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(15deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
 }
 
 .favorite-btn.active,
@@ -574,8 +625,13 @@ select {
 
 /* Loading spinner pulse */
 @keyframes pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .spinner {
@@ -584,17 +640,26 @@ select {
   border: 3px solid var(--border);
   border-top-color: var(--accent);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite, pulse 1.2s ease-in-out infinite;
+  animation:
+    spin 0.8s linear infinite,
+    pulse 1.2s ease-in-out infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Skeleton shimmer improvement */
 .skeleton-line,
 .skeleton-circle {
-  background: linear-gradient(90deg, var(--border) 25%, var(--code-bg) 50%, var(--border) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    var(--code-bg) 50%,
+    var(--border) 75%
+  );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
 }
@@ -603,7 +668,9 @@ select {
 .history-item,
 .favorites-item,
 .recommendation-item {
-  transition: background 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    transform 0.1s;
 }
 
 .history-item:hover,
@@ -620,7 +687,7 @@ select {
 }
 
 .btn::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -629,7 +696,9 @@ select {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
   transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s;
+  transition:
+    width 0.3s,
+    height 0.3s;
 }
 
 .btn:active::after {
@@ -639,7 +708,11 @@ select {
 
 /* Smooth dark mode transitions (already added) */
 * {
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.2s ease;
 }
 
 /* Scrollbar styling (optional) */

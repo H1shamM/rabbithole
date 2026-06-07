@@ -1,10 +1,10 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import tseslint from 'typescript-eslint'
+import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ['node_modules', 'dist', 'eslint.config.js'],
+    ignores: ["node_modules", "dist", "eslint.config.js"],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -14,11 +14,11 @@ export default tseslint.config(
         ...globals.node,
       },
       parserOptions: {
-        project: './tsconfig.json',
+        project: "./tsconfig.json",
       },
     },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
+      "@typescript-eslint/no-explicit-any": "warn",
     },
   },
-)
+);

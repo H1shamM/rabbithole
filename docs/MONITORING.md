@@ -16,6 +16,6 @@ To track production errors:
 
 ## Traffic Analytics (Plausible)
 
-Traffic is monitored using Plausible Analytics. The script is injected in `ui/index.html`. 
+Traffic is monitored using Plausible Analytics. The script is injected in `ui/index.html`.
 
 To configure a new domain, update the `data-domain` attribute in `ui/index.html`.

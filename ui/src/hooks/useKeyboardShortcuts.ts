@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 interface KeyboardShortcutsProps {
   onNext: () => void;
@@ -23,29 +23,29 @@ export function useKeyboardShortcuts({
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger if user is typing in an input or textarea
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
 
       switch (e.key) {
-        case 'ArrowRight':
-        case 'j':
+        case "ArrowRight":
+        case "j":
           e.preventDefault();
           onNext();
           break;
-        case 'ArrowUp':
-        case 'k':
+        case "ArrowUp":
+        case "k":
           e.preventDefault();
           onLike();
           break;
-        case 'ArrowDown':
-        case 'l':
+        case "ArrowDown":
+        case "l":
           e.preventDefault();
           onDislike();
           break;
-        case 'f':
+        case "f":
           e.preventDefault();
           onToggleFavorites();
           break;
-        case 'h':
+        case "h":
           e.preventDefault();
           onToggleHistory();
           break;
@@ -54,7 +54,7 @@ export function useKeyboardShortcuts({
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [enabled, onNext, onLike, onDislike, onToggleFavorites, onToggleHistory]);
 }

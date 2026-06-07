@@ -1,14 +1,14 @@
-import { chromium } from 'playwright';
+import { chromium } from "playwright";
 
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto('http://localhost:5173');
+  await page.goto("http://localhost:5173");
 
   const viewports = [
-    { width: 375, height: 667, name: 'mobile' },
-    { width: 768, height: 1024, name: 'tablet' },
-    { width: 1280, height: 800, name: 'desktop' }
+    { width: 375, height: 667, name: "mobile" },
+    { width: 768, height: 1024, name: "tablet" },
+    { width: 1280, height: 800, name: "desktop" },
   ];
 
   for (const vp of viewports) {
