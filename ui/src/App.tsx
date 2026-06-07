@@ -45,6 +45,8 @@ export function App() {
     ensureDevAuth,
   } = useAuth();
 
+  const typedAuthenticatedFetch = authenticatedFetch as (url: string, options?: RequestInit) => Promise<Response>;
+
   const {
     current,
     loading,
@@ -54,10 +56,10 @@ export function App() {
     fetchStumble,
     handleClose,
     handleIframeLoad,
-  } = useStumble(authenticatedFetch, category);
+  } = useStumble(typedAuthenticatedFetch, category);
 
-  const { favorites, showFavorites, setShowFavorites, toggleFavorite, removeFavorite, isFavorite } = useFavorites(authenticatedFetch);
-  const { history, showHistory, setShowHistory, loadHistory } = useHistory(authenticatedFetch);
+  const { favorites, showFavorites, setShowFavorites, toggleFavorite, removeFavorite, isFavorite } = useFavorites(typedAuthenticatedFetch);
+  const { history, showHistory, setShowHistory, loadHistory } = useHistory(typedAuthenticatedFetch);
 
   useKeyboardShortcuts({
     onNext: fetchStumble,
@@ -204,7 +206,7 @@ export function App() {
         <HistoryPanel history={history} showHistory={showHistory} setShowHistory={setShowHistory} onStumble={fetchStumble} />
         <FavoritesPanel favorites={favorites} showFavorites={showFavorites} setShowFavorites={setShowFavorites} onRemove={removeFavorite} onStumble={fetchStumble} />
         <RecommendationsPanel recommendations={recommendations} />
-        <SubmissionForm onSuccess={() => addToast('Submitted!')} authenticatedFetch={authenticatedFetch} />
+        <SubmissionForm onSuccess={() => addToast('Submitted!')} authenticatedFetch={typedAuthenticatedFetch} />
       </main>
     </div>
   );
