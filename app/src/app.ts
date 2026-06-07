@@ -30,6 +30,7 @@ import type { ContentFetcher } from './sources/ContentFetcher.js';
 import jwt from 'jsonwebtoken';
 import { GitHubTrendingSource } from './sources/github_trending.js';
 import { MediumSource } from './sources/medium.js';
+import { User } from './models/user.js';
 
 export async function createApp() {
   const app = express();
@@ -95,7 +96,7 @@ export async function createApp() {
     v1Router.get('/auth/google/callback',
       passport.authenticate('google', { failureRedirect: '/login', session: false }),
       (req, res) => {
-        const user = req.user as any;
+        const user = req.user as User;
         const token = jwt.sign({ id: user.id }, settings.jwtSecret);
         res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}?token=${token}`);
       }
@@ -106,7 +107,7 @@ export async function createApp() {
     v1Router.get('/auth/github/callback',
       passport.authenticate('github', { failureRedirect: '/login', session: false }),
       (req, res) => {
-        const user = req.user as any;
+        const user = req.user as User;
         const token = jwt.sign({ id: user.id }, settings.jwtSecret);
         res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}?token=${token}`);
       }

@@ -19,7 +19,7 @@ export function initPassport(storage: IStoragePort): void {
       clientID: googleConfig.clientId,
       clientSecret: googleConfig.clientSecret,
       callbackURL: googleConfig.callbackUrl,
-    }, async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
+    }, async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: User) => void) => {
       try {
         let user = await storage.findUserByProvider('google', profile.id);
         if (!user) {
@@ -62,7 +62,7 @@ export function initPassport(storage: IStoragePort): void {
       clientID: githubConfig.clientId,
       clientSecret: githubConfig.clientSecret,
       callbackURL: githubConfig.callbackUrl,
-    }, async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
+    }, async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: User) => void) => {
       try {
         let user = await storage.findUserByProvider('github', profile.id);
         if (!user) {
