@@ -24,5 +24,7 @@ jobs:
         run: cd ${{ matrix.dir }} && npm ci
       - name: Lint
         run: cd ${{ matrix.dir }} && npm run lint
+      - name: Typecheck
+        run: cd ${{ matrix.dir }} && if [ -f package.json ] && grep -q '"typecheck":' package.json; then npm run typecheck; else echo "No typecheck script, skipping"; fi
       - name: Test
         run: cd ${{ matrix.dir }} && if [ -f package.json ] && grep -q '"test":' package.json; then npm test -- --coverage; else echo "No test script, skipping"; fi
