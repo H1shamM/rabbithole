@@ -1,63 +1,69 @@
-# StumbleClone: A Serendipitous Discovery Engine
+# StumbleClone 🚀
 
-StumbleClone is a professional-grade recreation of the classic StumbleUpon experience. Built as a **Modular Monolith** using **Hexagonal Architecture**, it provides a cross-platform discovery loop for the open web.
+**A modern, production-ready reimagining of the classic serendipitous discovery experience.**
 
-## 🚀 Quick Start
+---
 
-### 1. Prerequisites
-- **Node.js 20+**
-- **Docker & Docker Compose** (optional)
+## 🎯 Project Goal
+StumbleClone aims to provide a fast, reliable, and serendipitous discovery engine for the open web. Built using **Modular Monolith** and **Hexagonal (Ports & Adapters)** design, it transforms the way users discover hidden gems online.
 
-### 2. Backend Setup
+---
+
+## ✨ Features (v2.0)
+
+| Feature | Description |
+| :--- | :--- |
+| **Serendipitous Discovery** | Intelligent engine surfacing "hidden gem" URLs. |
+| **PWA Native Feel** | Installable, offline-capable, and mobile-optimized. |
+| **Social Auth** | Secure, seamless login via Google or GitHub (OAuth2). |
+| **Community Driven** | Users can submit high-quality links for moderation. |
+| **Scalable Architecture** | Hexagonal design ensures maintainability and modularity. |
+
+---
+
+## 🛠️ Quick Start
+
+### Prerequisites
+- Node.js 20+
+- npm (latest)
+
+### 1. Backend API
 ```bash
 cd app
 npm install
 npm start
 ```
-*The backend will automatically seed initial "hidden gem" URLs into a local SQLite database (`stumble.db`) on first run.*
+*Note: The API seeds a local `stumble.db` on initial launch.*
 
-### 3. Frontend / Web Discovery
+### 2. Frontend Web App
 ```bash
 cd ui
 npm install
 npm run dev
 ```
-Visit `http://localhost:5173` to start stumbling from your browser.
+Open [http://localhost:5173](http://localhost:5173) in your browser to start stumbling.
 
-### 4. Browser Extension Setup
-1. Run the build script:
-   ```bash
-   ./scripts/build-extension.sh
-   ```
-2. Open Chrome and go to `chrome://extensions`.
-3. Enable **Developer Mode**.
-4. Click **Load Unpacked** and select the `stumble-clone/extension` folder.
-5. Click the StumbleClone icon in your toolbar to open the **Side Panel**.
+### 3. Browser Extension (Optional)
+1. Run `./scripts/build-extension.sh`.
+2. Load the `extension/` folder in Chrome via *Developer Mode* in `chrome://extensions`.
 
 ---
 
-## 🏗️ Architecture
-
-Following the engineering standards of the `adapter-system`, this project uses a strict **Hexagonal (Ports & Adapters)** design:
-
-- **`app/api/`**: Versioned Express routes (`v1`).
-- **`app/services/`**: Core business logic and orchestration.
-- **`app/models/`**: Zod-backed domain models for runtime validation.
-- **`app/db/`**: Persistence adapters (SQLite).
-- **`ui/`**: Responsive React + TypeScript frontend.
-
-## 🛠️ Development & Skills
-
-This repository is optimized for AI-assisted engineering:
-
-- **Linting:** `npm run lint` (ESLint + Prettier)
-- **Testing:** `npm test` (Vitest with 80% coverage goals)
-- **Type Checking:** `npm run typecheck`
-
-Refer to **`CLAUDE.md`** for detailed engineering skills and architectural guidelines.
-
-## 📱 Mobile Support
-StumbleClone is designed as a **Responsive Web App**. You can open the Web UI on any smartphone browser and "Add to Home Screen" to use it as a PWA (Progressive Web App).
+## 📱 Mobile Experience
+StumbleClone is a fully functional **Progressive Web App (PWA)**. Open the app in your mobile browser, then select **"Add to Home Screen"** for a seamless, native-like experience with offline caching.
 
 ---
-*Created by [H1shamM](https://github.com/H1shamM) using Professional Engineering Workflows.*
+
+## 🏗️ Architecture & Tech Stack
+
+Built with professional engineering standards:
+
+- **Backend:** Node.js, TypeScript, Express, Better-SQLite3
+- **Frontend:** React, Vite, TypeScript, CSS Modules
+- **Design Pattern:** Hexagonal (Ports & Adapters)
+- **Quality Assurance:** Vitest (80%+ coverage goal), ESLint, Prettier
+
+---
+
+*Engineered with precision for the modern web.*
+[GitHub Repository](https://github.com/H1shamM/stumble-clone)
