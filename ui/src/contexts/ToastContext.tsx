@@ -1,21 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
-// ui/src/contexts/ToastContext.tsx
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { Toast } from '../components/Toast';
+import type { ToastMessage } from '../types/toast';
 
-export interface ToastMessage {
-  id: string;
-  message: string;
-  type: 'success' | 'error' | 'info';
-  duration?: number;
-}
-
-interface ToastContextType {
+const ToastContext = createContext<{
   addToast: (message: string, type?: ToastMessage['type'], duration?: number) => void;
-  removeToast: (id: string) => void;
-}
-
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
+} | undefined>(undefined);
 
 export const useToast = () => {
   const context = useContext(ToastContext);
@@ -23,35 +13,21 @@ export const useToast = () => {
   return context;
 };
 
-interface ToastProviderProps {
-  children: ReactNode;
-}
-
-export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
+export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
   const addToast = useCallback((message: string, type: ToastMessage['type'] = 'info', duration = 3000) => {
-    const id = Date.now().toString() + Math.random().toString(36).substring(2, 6);
+    const id = Date.now().toString() + Math.random().toString(36);
     setToasts(prev => [...prev, { id, message, type, duration }]);
   }, []);
-
   const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
-
   return (
-    <ToastContext.Provider value={{ addToast, removeToast }}>
+    <ToastContext.Provider value={{ addToast }}>
       {children}
       <div className="toast-container">
         {toasts.map(toast => (
-          <Toast
-            key={toast.id}
-            id={toast.id}
-            message={toast.message}
-            type={toast.type}
-            duration={toast.duration}
-            onClose={() => removeToast(toast.id)}
-          />
+          <Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />
         ))}
       </div>
     </ToastContext.Provider>
