@@ -1,23 +1,13 @@
-// ui/src/components/HistoryPanel.tsx
-import React from 'react';
-import { SkeletonLoader } from './SkeletonLoader';
-
-interface HistoryItem {
-  id: string;
-  url: string;
-  title?: string;
-  rating_val: 'like' | 'dislike';
-  timestamp: Date;
-}
+import { HistoryItem } from '../hooks/useHistory';
 
 interface HistoryPanelProps {
   history: HistoryItem[];
   showHistory: boolean;
   setShowHistory: (val: boolean) => void;
-  loading?: boolean;
+  onStumble?: () => void;
 }
 
-export function HistoryPanel({ history, showHistory, setShowHistory, loading }: HistoryPanelProps) {
+export function HistoryPanel({ history, showHistory, setShowHistory, onStumble }: HistoryPanelProps) {
   return (
     <div className="history-section">
       <button className="btn secondary history-toggle" onClick={() => setShowHistory(!showHistory)}>
@@ -25,17 +15,24 @@ export function HistoryPanel({ history, showHistory, setShowHistory, loading }: 
       </button>
       {showHistory && (
         <div className="history-panel">
-          {loading ? (
-            <SkeletonLoader type="list" count={5} />
-          ) : history.length === 0 ? (
-            <p className="history-empty">📜 No history yet. Start exploring!</p>
+          {history.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📜</div>
+              <h3>No history yet</h3>
+              <p>Start stumbling and like/dislike content to build your history.</p>
+              {onStumble && (
+                <button className="btn-primary" onClick={onStumble}>
+                  Start stumbling
+                </button>
+              )}
+            </div>
           ) : (
             <ul className="history-list">
               {history.slice(0, 10).map((item) => (
                 <li key={item.timestamp.toString()} className="history-item">
                   <span className="history-rating">{item.rating_val === 'like' ? '👍' : '👎'}</span>
                   <a href={item.url} target="_blank" rel="noopener noreferrer" className="history-url">
-                    {item.url}
+                    {item.title || item.url}
                   </a>
                 </li>
               ))}
