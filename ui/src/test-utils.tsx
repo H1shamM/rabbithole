@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { render as rtlRender } from '@testing-library/react';
 import { ToastProvider } from './contexts/ToastContext';
 import { vi } from 'vitest';

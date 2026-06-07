@@ -100,7 +100,7 @@ export function initPassport(storage: IStoragePort): void {
   }
 
   passport.serializeUser((user: Express.User, done) => {
-    done(null, user.id);
+    done(null, (user as any).id);
   });
 
   passport.deserializeUser(async (id: string, done) => {
