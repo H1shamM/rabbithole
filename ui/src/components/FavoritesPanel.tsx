@@ -1,6 +1,3 @@
-// ui/src/components/FavoritesPanel.tsx
-import React from 'react';
-
 interface FavoriteItem {
   id: string;
   url: string;
@@ -12,9 +9,10 @@ interface FavoritesPanelProps {
   showFavorites: boolean;
   setShowFavorites: (val: boolean) => void;
   onRemove: (id: string) => void;
+  onStumble?: () => void;
 }
 
-export function FavoritesPanel({ favorites, showFavorites, setShowFavorites, onRemove }: FavoritesPanelProps) {
+export function FavoritesPanel({ favorites, showFavorites, setShowFavorites, onRemove, onStumble }: FavoritesPanelProps) {
   return (
     <div className="favorites-section">
       <button className="btn secondary favorites-toggle" onClick={() => setShowFavorites(!showFavorites)}>
@@ -23,7 +21,16 @@ export function FavoritesPanel({ favorites, showFavorites, setShowFavorites, onR
       {showFavorites && (
         <div className="favorites-panel">
           {favorites.length === 0 ? (
-            <p className="favorites-empty">⭐ No favorites yet. Keep stumbling!</p>
+            <div className="empty-state">
+              <div className="empty-icon">⭐</div>
+              <h3>No favorites yet</h3>
+              <p>Save interesting stumbles by clicking the star button.</p>
+              {onStumble && (
+                <button className="btn-primary" onClick={onStumble}>
+                  Explore now
+                </button>
+              )}
+            </div>
           ) : (
             <ul className="favorites-list">
               {favorites.map((item) => (

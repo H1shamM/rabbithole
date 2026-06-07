@@ -201,8 +201,8 @@ export function App() {
         />
 
 
-        <HistoryPanel history={history} showHistory={showHistory} setShowHistory={setShowHistory} />
-        <FavoritesPanel favorites={favorites} showFavorites={showFavorites} setShowFavorites={setShowFavorites} onRemove={removeFavorite} />
+        <HistoryPanel history={history} showHistory={showHistory} setShowHistory={setShowHistory} onStumble={fetchStumble} />
+        <FavoritesPanel favorites={favorites} showFavorites={showFavorites} setShowFavorites={setShowFavorites} onRemove={removeFavorite} onStumble={fetchStumble} />
         <RecommendationsPanel recommendations={recommendations} />
         <SubmissionForm onSuccess={() => addToast('Submitted!')} authenticatedFetch={authenticatedFetch} />
       </main>
