@@ -49,6 +49,11 @@ export const authenticateJWT = (
 
   const token = authHeader.split(' ')[1];
   
+  if (!token) {
+    res.sendStatus(401);
+    return;
+  }
+  
   const jwtSecret = settings.jwtSecret as string;
   if (!jwtSecret) {
     res.status(500).json({ error: 'JWT secret not configured' });

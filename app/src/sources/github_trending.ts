@@ -8,13 +8,6 @@ import type { ContentFetcher } from './ContentFetcher.js';
 import type { StumbleAsset } from '../models/asset.js';
 import { fetchWithTimeout } from './utils.js';
 
-interface TrendingRepo {
-  url: string;
-  title: string;
-  description: string;
-  language?: string;
-}
-
 export class GitHubTrendingSource implements ContentFetcher {
   private readonly TRENDING_URL = 'https://github.com/trending';
 
@@ -25,27 +18,31 @@ export class GitHubTrendingSource implements ContentFetcher {
       
       const html = await response.text();
       
-      // Parse trending repositories (simple regex, enough for this purpose)
+      // Parse trending repositories
       const repoRegex = /<h2 class="h3 lh-condensed">\s*<a href="\/([^"]+)"/g;
       const descRegex = /<p class="col-9 color-fg-muted my-1 pr-4">([^<]+)<\/p>/g;
       
       const urls: string[] = [];
       let match;
       while ((match = repoRegex.exec(html)) !== null && urls.length < 20) {
-        urls.push(`https://github.com/${match[1]}`);
+        if (match[1]) urls.push(`https://github.com/${match[1]}`);
       }
       
       const descriptions: string[] = [];
       while ((match = descRegex.exec(html)) !== null && descriptions.length < urls.length) {
-        descriptions.push(match[1].trim());
+        if (match[1]) descriptions.push(match[1].trim());
       }
       
       if (urls.length === 0) throw new Error('No repos found');
       
       const randomIndex = Math.floor(Math.random() * urls.length);
       const repoUrl = urls[randomIndex];
+      
+      if (!repoUrl) return null;
+
       const repoPath = repoUrl.replace('https://github.com/', '');
-      const title = repoPath.split('/')[1] || repoPath;
+      const titleParts = repoPath.split('/');
+      const title = titleParts[1] || titleParts[0];
       const description = descriptions[randomIndex] || 'Trending GitHub repository';
       
       return {

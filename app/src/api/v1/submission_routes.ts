@@ -22,7 +22,7 @@ export function createSubmissionRouter(storage: IStoragePort): Router {
       const userId = req.user_id;
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       
-      await storage.save_submission({
+      await storage.saveSubmission({
         id: crypto.randomUUID(),
         user_id: userId,
         url,
@@ -39,7 +39,7 @@ export function createSubmissionRouter(storage: IStoragePort): Router {
   router.get('/', async (req: AuthenticatedRequest, res: Response) => {
     try {
       // TODO: Admin-only check
-      const submissions = await storage.get_all_submissions();
+      const submissions = await storage.getAllSubmissions();
       res.json(submissions);
     } catch (error: unknown) {
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });

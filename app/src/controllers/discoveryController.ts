@@ -77,6 +77,7 @@ export class DiscoveryController {
     const userId = (req as any).user_id;
     if (!userId) throw new AppError('Unauthorized', 401);
     const assetId = req.params.id;
+    if (typeof assetId !== 'string') throw new AppError('Invalid ID', 400);
     await this.discoveryService.removeFavorite(userId, assetId);
     res.sendStatus(204);
   };

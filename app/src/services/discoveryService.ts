@@ -53,10 +53,15 @@ export class DiscoveryService {
     const shuffled = [...this.sources];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      const temp = shuffled[i];
+      if (temp !== undefined && shuffled[j] !== undefined) {
+        shuffled[i] = shuffled[j];
+        shuffled[j] = temp;
+      }
     }
 
     for (const source of shuffled) {
+      if (!source) continue;
       try {
         const asset = await source.fetchStumble(category);
         if (asset && asset.url && asset.title) {

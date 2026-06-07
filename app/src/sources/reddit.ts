@@ -29,6 +29,8 @@ export class RedditSource implements ContentFetcher {
     try {
       // Get subreddits for the category, fallback to 'all'
       const subreddits = this.categorySubreddits[category] || this.categorySubreddits.all;
+      if (!subreddits || subreddits.length === 0) throw new Error('No subreddits defined');
+
       const randomSubreddit = subreddits[Math.floor(Math.random() * subreddits.length)];
       if (!randomSubreddit) return null;
 
@@ -45,22 +47,25 @@ export class RedditSource implements ContentFetcher {
       }
       
       const data = await response.json();
-      if (!data.data || !data.data.children || data.data.children.length === 0) {
+      if (!data?.data?.children || data.data.children.length === 0) {
         throw new Error('No posts found');
       }
 
       // Filter out self-posts and stickied posts, keep only external links
       const posts = data.data.children.filter((child: any) => {
-        const post = child.data;
+        const post = child?.data;
         return post && !post.is_self && !post.stickied && post.url && post.url.startsWith('https://');
       });
 
       if (posts.length === 0) {
         // Fallback to any post (including self-posts) if no external links
-        const anyPosts = data.data.children.filter((child: any) => child.data && child.data.url);
+        const anyPosts = data.data.children.filter((child: any) => child?.data?.url);
         if (anyPosts.length === 0) throw new Error('No suitable posts found');
+        
         const randomAny = anyPosts[Math.floor(Math.random() * anyPosts.length)];
-        const post = randomAny.data;
+        const post = randomAny?.data;
+        if (!post) return null;
+
         return {
           id: crypto.randomUUID(),
           url: post.url,
@@ -73,7 +78,8 @@ export class RedditSource implements ContentFetcher {
         };
       }
 
-      const randomPost = posts[Math.floor(Math.random() * posts.length)].data;
+      const randomPost = posts[Math.floor(Math.random() * posts.length)]?.data;
+      if (!randomPost) return null;
       
       return {
         id: crypto.randomUUID(),

@@ -4,7 +4,7 @@
 
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import { DiscoveryService } from '../../services/discovery_service.js';
+import { DiscoveryService } from '../../services/discoveryService.js';
 import { seedDefaultAssets, DEFAULT_SEED_ASSETS } from '../../bootstrap.js';
 import type { IStoragePort } from '../../db/storagePort.js';
 import type { AuthenticatedRequest } from '../../middleware/auth.js';
@@ -23,7 +23,7 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
       const limit = parseInt(req.query.limit as string) || 10;
       const userId = req.user_id;
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-      const recommendations = await discoveryService.get_recommendations(userId, limit);
+      const recommendations = await discoveryService.getRecommendations(userId, limit);
       res.json(recommendations);
     } catch (error: unknown) {
       console.error('Error in /recommendations:', error);
@@ -36,7 +36,7 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
       const queryParam = req.query.q as string | string[] | undefined;
       const query = typeof queryParam === 'string' ? queryParam : undefined;
       if (!query) return res.status(400).json({ error: 'Missing query parameter' });
-      const results = await storage.search_assets(query);
+      const results = await storage.searchAssets(query);
       res.json(results);
     } catch (error: unknown) {
       console.error('Error in /search:', error);
@@ -65,7 +65,7 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
       const { type, name, delta } = req.body;
       const userId = req.user_id;
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-      await storage.update_user_preference(userId, type, name, delta);
+      await storage.updateUserPreference(userId, type, name, delta);
       res.sendStatus(204);
     } catch (error: unknown) {
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
@@ -89,7 +89,7 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
       const limit = parseInt(req.query.limit as string) || 20;
       const userId = req.user_id;
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-      const history = await discoveryService.get_history(userId, limit);
+      const history = await discoveryService.getHistory(userId, limit);
       res.json(history);
     } catch (error: unknown) {
       console.error('Error in /history:', error);
@@ -138,7 +138,7 @@ export function createDiscoveryRouter(discoveryService: DiscoveryService, storag
 
   router.get('/categories', async (_req: Request, res: Response) => {
     try {
-      const categories = await discoveryService.get_categories();
+      const categories = await discoveryService.getCategories();
       res.json(categories);
     } catch (error: unknown) {
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });

@@ -28,7 +28,7 @@ export function createAuthRouter(storage: IStoragePort): Router {
         return res.status(400).json({ error: 'Email and password are required' });
       }
 
-      let user = await storage.find_user_by_email(email);
+      let user = await storage.findUserByEmail(email);
       if (user) {
         const token = jwt.sign({ id: user.id }, settings.jwtSecret as string);
         return res.json({ token, user: { id: user.id, email: user.email, display_name: user.display_name, avatar_url: user.avatar_url } });
@@ -45,7 +45,7 @@ export function createAuthRouter(storage: IStoragePort): Router {
         created_at: new Date(),
       };
       
-      await storage.save_user(user);
+      await storage.saveUser(user);
       
       const token = jwt.sign({ id: userId }, settings.jwtSecret as string);
       res.json({ token, user: { id: userId, email, display_name: user.display_name, avatar_url: user.avatar_url } });
@@ -58,7 +58,7 @@ export function createAuthRouter(storage: IStoragePort): Router {
   router.post('/login', async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
-      const user = await storage.find_user_by_email(email);
+      const user = await storage.findUserByEmail(email);
       
       if (!user || !user.password_hash || !(await bcrypt.compare(password, user.password_hash))) {
         return res.status(401).json({ error: 'Invalid credentials' });
@@ -102,7 +102,7 @@ export function createAuthRouter(storage: IStoragePort): Router {
       const userId = req.user_id;
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       
-      const user = await storage.get_user_by_id(userId);
+      const user = await storage.getUserById(userId);
       if (!user) return res.status(404).json({ error: 'User not found' });
       
       res.json({

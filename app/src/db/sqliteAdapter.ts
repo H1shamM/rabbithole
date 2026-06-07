@@ -206,7 +206,7 @@ export class SqliteAdapter implements IStoragePort {
   }
 
   async getUserPreferences(user_id: string): Promise<{ type: string; name: string; score: number }[]> {
-    return this.db.prepare('SELECT * FROM user_preferences WHERE user_id = ?').all(user_id);
+    return this.db.prepare('SELECT * FROM user_preferences WHERE user_id = ?').all(user_id) as { type: string; name: string; score: number }[];
   }
 
   // User auth

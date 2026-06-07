@@ -31,27 +31,33 @@ export class MediumSource implements ContentFetcher {
       
       const xml = await response.text();
       
-      // Extract items with regex (simple, but works)
+      // Extract items with regex
       const itemRegex = /<item>([\s\S]*?)<\/item>/g;
       const items: MediumItem[] = [];
       let match;
       while ((match = itemRegex.exec(xml)) !== null && items.length < 20) {
         const itemXml = match[1];
+        if (!itemXml) continue;
         const titleMatch = itemXml.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/);
         const linkMatch = itemXml.match(/<link>(.*?)<\/link>/);
         const descMatch = itemXml.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/);
-        if (titleMatch && linkMatch) {
+        
+        if (titleMatch?.[1] && linkMatch?.[1]) {
           items.push({
             title: titleMatch[1],
             link: linkMatch[1],
-            description: descMatch ? descMatch[1].replace(/<[^>]*>/g, '').slice(0, 200) : 'Medium story',
+            description: descMatch?.[1]?.replace(/<[^>]*>/g, '').slice(0, 200) || 'Medium story',
           });
         }
       }
       
       if (items.length === 0) throw new Error('No items found');
       
-      const randomItem = items[Math.floor(Math.random() * items.length)];
+      const randomIndex = Math.floor(Math.random() * items.length);
+      const randomItem = items[randomIndex];
+      
+      if (!randomItem) return null;
+
       return {
         id: crypto.randomUUID(),
         url: randomItem.link,

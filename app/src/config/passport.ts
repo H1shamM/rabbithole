@@ -23,19 +23,19 @@ export function initPassport(storage: IStoragePort): void {
       callbackURL: googleConfig.callbackUrl,
     }, async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
       try {
-        let user = await storage.find_user_by_provider('google', profile.id);
+        let user = await storage.findUserByProvider('google', profile.id);
         if (!user) {
           const email = profile.emails?.[0].value;
           if (!email) return done(new Error('No email found in Google profile'));
           
-          user = await storage.find_user_by_email(email);
+          user = await storage.findUserByEmail(email);
           if (user) {
             // Link existing account
             user.provider = 'google';
             user.provider_id = profile.id;
             user.display_name = user.display_name || profile.displayName;
             user.avatar_url = user.avatar_url || profile.photos?.[0].value;
-            await storage.save_user(user);
+            await storage.saveUser(user);
           } else {
             // Create new account
             user = {
@@ -48,7 +48,7 @@ export function initPassport(storage: IStoragePort): void {
               provider_id: profile.id,
               created_at: new Date(),
             };
-            await storage.save_user(user);
+            await storage.saveUser(user);
           }
         }
         return done(null, user);
@@ -66,19 +66,19 @@ export function initPassport(storage: IStoragePort): void {
       callbackURL: githubConfig.callbackUrl,
     }, async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
       try {
-        let user = await storage.find_user_by_provider('github', profile.id);
+        let user = await storage.findUserByProvider('github', profile.id);
         if (!user) {
           const email = profile.emails?.[0].value;
           if (!email) return done(new Error('No email found in GitHub profile'));
           
-          user = await storage.find_user_by_email(email);
+          user = await storage.findUserByEmail(email);
           if (user) {
             // Link existing account
             user.provider = 'github';
             user.provider_id = profile.id;
             user.display_name = user.display_name || profile.displayName;
             user.avatar_url = user.avatar_url || profile.photos?.[0].value;
-            await storage.save_user(user);
+            await storage.saveUser(user);
           } else {
             // Create new account
             user = {
@@ -91,7 +91,7 @@ export function initPassport(storage: IStoragePort): void {
               provider_id: profile.id,
               created_at: new Date(),
             };
-            await storage.save_user(user);
+            await storage.saveUser(user);
           }
         }
         return done(null, user);
@@ -107,7 +107,7 @@ export function initPassport(storage: IStoragePort): void {
 
   passport.deserializeUser(async (id: string, done) => {
     try {
-      const user = await storage.get_user_by_id(id);
+      const user = await storage.getUserById(id);
       done(null, user);
     } catch (error) {
       done(error);
