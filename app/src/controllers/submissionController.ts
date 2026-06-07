@@ -2,13 +2,19 @@ import type { Request, Response } from 'express';
 import crypto from 'crypto';
 import type { IStoragePort } from '../db/storagePort.js';
 import { AppError } from '../middleware/errorHandler.js';
+import type { AuthenticatedRequest } from '../middleware/auth.js';
+
+interface SubmissionBody {
+  url: string;
+  title: string;
+}
 
 export class SubmissionController {
   constructor(private storage: IStoragePort) {}
 
-  createSubmission = async (req: Request, res: Response) => {
-    const { url, title } = req.body;
-    const userId = (req as any).user_id;
+  createSubmission = async (req: AuthenticatedRequest, res: Response) => {
+    const { url, title } = req.body as SubmissionBody;
+    const userId = req.user_id;
     if (!userId) throw new AppError('Unauthorized', 401);
     await this.storage.saveSubmission({
       id: crypto.randomUUID(),

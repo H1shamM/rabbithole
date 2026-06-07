@@ -5,6 +5,17 @@ import type { StumbleAsset } from '../models/asset.js';
 import type { User } from '../models/user.js';
 import type { Submission } from '../models/submission.js';
 
+interface UserRow {
+  id: string;
+  email: string;
+  password_hash: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  provider: 'local' | 'google' | 'github';
+  provider_id: string | null;
+  created_at: string;
+}
+
 export class SqliteAdapter implements IStoragePort {
   private db: Database.Database;
 
@@ -84,7 +95,7 @@ export class SqliteAdapter implements IStoragePort {
     if (!ratingsCols.includes('user_id')) this.db.exec('ALTER TABLE ratings ADD COLUMN user_id TEXT');
   }
 
-  private mapRowToAsset(row: any): StumbleAsset {
+  private mapRowToAsset(row: AssetRow): StumbleAsset {
     return {
       id: row.id,
       url: row.url,
@@ -94,20 +105,20 @@ export class SqliteAdapter implements IStoragePort {
       category: row.category,
       rating: row.rating,
       created_at: new Date(row.created_at),
-      last_visited_at: row.last_visited_at ? new Date(row.last_visited_at) : undefined,
+      last_visited_at: row.last_visited_at ? new Date(row.last_visited_at) : undefined
     };
   }
 
-  private mapRowToUser(row: any): User {
+  private mapRowToUser(row: UserRow): User {
     return {
       id: row.id,
       email: row.email,
-      password_hash: row.password_hash || null,
+      password_hash: row.password_hash,
       display_name: row.display_name || undefined,
       avatar_url: row.avatar_url || undefined,
       provider: row.provider,
       provider_id: row.provider_id || undefined,
-      created_at: new Date(row.created_at),
+      created_at: new Date(row.created_at)
     };
   }
 
@@ -170,6 +181,7 @@ export class SqliteAdapter implements IStoragePort {
       FROM ratings r JOIN assets a ON r.asset_id = a.id
       WHERE r.user_id = ? ORDER BY r.created_at DESC LIMIT ?
     `).all(user_id, limit);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return rows.map((r: any) => ({
       ...this.mapRowToAsset(r),
       rating_val: r.rating_val,
@@ -211,17 +223,17 @@ export class SqliteAdapter implements IStoragePort {
 
   // User auth
   async findUserByEmail(email: string): Promise<User | null> {
-    const row = this.db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    const row = this.db.prepare('SELECT * FROM users WHERE email = ?').get(email) as UserRow | undefined;
     return row ? this.mapRowToUser(row) : null;
   }
 
   async findUserByProvider(provider: string, provider_id: string): Promise<User | null> {
-    const row = this.db.prepare('SELECT * FROM users WHERE provider = ? AND provider_id = ?').get(provider, provider_id);
+    const row = this.db.prepare('SELECT * FROM users WHERE provider = ? AND provider_id = ?').get(provider, provider_id) as UserRow | undefined;
     return row ? this.mapRowToUser(row) : null;
   }
 
   async getUserById(id: string): Promise<User | null> {
-    const row = this.db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    const row = this.db.prepare('SELECT * FROM users WHERE id = ?').get(id) as UserRow | undefined;
     return row ? this.mapRowToUser(row) : null;
   }
 
@@ -247,6 +259,7 @@ export class SqliteAdapter implements IStoragePort {
 
   async getAllSubmissions(): Promise<Submission[]> {
     const rows = this.db.prepare('SELECT * FROM submissions ORDER BY created_at DESC').all();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return rows.map((r: any) => ({ ...r, created_at: new Date(r.created_at) }));
   }
 
@@ -270,6 +283,7 @@ export class SqliteAdapter implements IStoragePort {
 
   async getRandomAssetByInterests(interests: string[], exclude_ids: string[]): Promise<StumbleAsset | null> {
     let query = 'SELECT * FROM assets WHERE 1=1 ';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any[] = [];
     if (interests.length) {
       query += `AND category IN (${interests.map(() => '?').join(',')}) `;

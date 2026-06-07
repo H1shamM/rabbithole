@@ -1,3 +1,4 @@
+import type { OAuthProfile } from "../types/auth.js";
 /**
  * @fileoverview Passport configuration for OAuth2 strategies.
  */
@@ -8,6 +9,7 @@ import { Strategy as GitHubStrategy } from 'passport-github2';
 import crypto from 'crypto';
 import { settings } from './settings.js';
 import type { IStoragePort } from '../db/storagePort.js';
+import type { User } from '../models/user.js';
 
 /**
  * Initializes passport with OAuth2 strategies.
@@ -19,7 +21,8 @@ export function initPassport(storage: IStoragePort): void {
       clientID: googleConfig.clientId,
       clientSecret: googleConfig.clientSecret,
       callbackURL: googleConfig.callbackUrl,
-    }, async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: User) => void) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }, async (_accessToken: string, _refreshToken: string, profile: OAuthProfile, done: (error: any, user?: User) => void) => {
       try {
         let user = await storage.findUserByProvider('google', profile.id);
         if (!user) {
@@ -62,7 +65,8 @@ export function initPassport(storage: IStoragePort): void {
       clientID: githubConfig.clientId,
       clientSecret: githubConfig.clientSecret,
       callbackURL: githubConfig.callbackUrl,
-    }, async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: User) => void) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }, async (_accessToken: string, _refreshToken: string, profile: OAuthProfile, done: (error: any, user?: User) => void) => {
       try {
         let user = await storage.findUserByProvider('github', profile.id);
         if (!user) {
@@ -99,7 +103,9 @@ export function initPassport(storage: IStoragePort): void {
     }));
   }
 
-  passport.serializeUser((user: Express.User, done) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  passport.serializeUser((user: any, done) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     done(null, (user as any).id);
   });
 

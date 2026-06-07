@@ -5,12 +5,12 @@ import crypto from 'crypto';
 import { settings } from '../config/settings.js';
 import type { IStoragePort } from '../db/storagePort.js';
 import { AppError } from '../middleware/errorHandler.js';
+import type { AuthenticatedRequest } from '../middleware/auth.js';
 
 export class AuthController {
   constructor(private storage: IStoragePort) {}
-
-  register = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+//...
+  me = async (req: AuthenticatedRequest, res: Response) => {
     if (!email || !password) {
       throw new AppError('Email and password are required', 400);
     }
@@ -46,10 +46,9 @@ export class AuthController {
     res.json({ token, user: { id: user.id, email: user.email, display_name: user.display_name, avatar_url: user.avatar_url } });
   };
 
-  me = async (req: Request, res: Response) => {
-    const userId = (req as any).user_id;
-    if (!userId) throw new AppError('Unauthorized', 401);
-    const user = await this.storage.getUserById(userId);
+  me = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user_id) throw new AppError('Unauthorized', 401);
+    const user = await this.storage.getUserById(req.user_id);
     if (!user) throw new AppError('User not found', 404);
     res.json({
       id: user.id,
