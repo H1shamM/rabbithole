@@ -4,7 +4,7 @@
 
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import App from './App';
+import App from '../App';
 
 /**
  * Mock localStorage for testing.

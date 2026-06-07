@@ -39,6 +39,11 @@
   }
 }
 
+/* Add at the top of index.css, after :root definitions */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+}
+
 /** Dark Mode Override */
 @media (prefers-color-scheme: dark) {
   :root {

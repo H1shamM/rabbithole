@@ -16,7 +16,7 @@ describe('usePWA', () => {
     const { result } = renderHook(() => usePWA());
 
     const event = new Event('beforeinstallprompt');
-    // @ts-ignore - Mocking the custom event
+    // @ts-expect-error - Mocking the custom event
     event.preventDefault = vi.fn();
 
     act(() => {
@@ -32,11 +32,11 @@ describe('usePWA', () => {
 
     const mockPrompt = vi.fn().mockResolvedValue(undefined);
     const event = new Event('beforeinstallprompt');
-    // @ts-ignore
+    // @ts-expect-error - Mocking event.prompt
     event.prompt = mockPrompt;
-    // @ts-ignore
+    // @ts-expect-error - Mocking event.userChoice
     event.userChoice = Promise.resolve({ outcome: 'accepted' });
-    // @ts-ignore
+    // @ts-expect-error - Mocking event.preventDefault
     event.preventDefault = vi.fn();
 
     act(() => {
