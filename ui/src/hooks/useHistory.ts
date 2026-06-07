@@ -1,7 +1,8 @@
+type AuthenticatedFetch = (url: string, options?: RequestInit) => Promise<Response>;
 // ui/src/hooks/useHistory.ts
 import { useState, useEffect, useCallback } from 'react';
 
-interface RatedItem {
+export interface HistoryItem {
   id: string;
   url: string;
   title?: string;
@@ -20,8 +21,8 @@ const safeJson = async (res: Response) => {
   }
 };
 
-export function useHistory(authenticatedFetch: any) {
-  const [history, setHistory] = useState<RatedItem[]>([]);
+export function useHistory(authenticatedFetch: AuthenticatedFetch) {
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +44,7 @@ export function useHistory(authenticatedFetch: any) {
   }, [authenticatedFetch]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     loadHistory();
   }, [loadHistory]);
 

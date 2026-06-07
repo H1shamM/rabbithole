@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // ui/src/contexts/ToastContext.tsx
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { Toast } from '../components/Toast';

@@ -20,7 +20,7 @@ describe('useStumble', () => {
     expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(1);
     
     // Simulate prefetch having happened
-    const nextStumble = { id: '2', url: 'http://test2.com', category: 'all', source: 'test' };
+    const _nextStumble = { id: '2', url: 'http://test2.com', category: 'all', source: 'test' };
     
     // Manually set prefetch state via the hook
     act(() => {
