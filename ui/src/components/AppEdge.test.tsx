@@ -2,7 +2,7 @@
  * @fileoverview Edge case tests for App component.
  */
 
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup } from '../test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from '../App';
 
@@ -67,13 +67,13 @@ describe('App Component Edge Coverage', () => {
   it('covers loading state and API error', async () => {
     window.fetch = vi.fn().mockImplementation((url) => {
         if (url.includes('/stumble')) {
-            return Promise.reject(new Error('Network error'));
+            return Promise.reject(new Error('error'));
         }
         return Promise.resolve({ ok: true, json: async () => [] });
     });
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /🎲 Stumble/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Stumble/i }));
     
-    await waitFor(() => expect(screen.getByText(/Network error/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Something went wrong/i)).toBeInTheDocument());
   });
 });

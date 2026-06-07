@@ -2,7 +2,7 @@
  * @fileoverview Coverage tests for App component.
  */
 
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup } from '../test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from '../App';
 
@@ -85,7 +85,7 @@ describe('App Component Coverage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Favorites/i }));
 
     // Find and click remove button
-    const removeBtn = await screen.findByLabelText(/Remove from favorites/i);
+    const removeBtn = await screen.findByRole("button", { name: /Remove from favorites/i });
     fireEvent.click(removeBtn);
     
     await waitFor(() => expect(screen.getByText(/No favorites yet/i)).toBeInTheDocument());

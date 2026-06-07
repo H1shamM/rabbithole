@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
-import { useStumble } from './hooks/useStumble';
 import { useFavorites } from './hooks/useFavorites';
 import { useHistory } from './hooks/useHistory';
 import { usePWA } from './hooks/usePWA';
