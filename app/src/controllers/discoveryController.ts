@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { DiscoveryService } from '../services/discoveryService.js';
 import type { IStoragePort } from '../db/storagePort.js';
 import { AppError } from '../middleware/errorHandler.js';
-import type { AuthenticatedRequest } from '../../middleware/auth.js';
+import type { AuthenticatedRequest } from '../middleware/auth.js';
 
 export class DiscoveryController {
   constructor(

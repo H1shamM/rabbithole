@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { WikipediaImageSource } from '../../../app/sources/wikipedia_image';
+import { WikipediaImageSource } from '../../../app/src/sources/wikipedia_image';
 
 describe('WikipediaImageSource', () => {
   beforeEach(() => {

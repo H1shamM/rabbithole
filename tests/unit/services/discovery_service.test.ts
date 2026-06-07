@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { DiscoveryService } from '../../../app/services/discovery_service';
-import { IStoragePort } from '../../../app/db/storage_port';
-import { StumbleAsset } from '../../../app/models/asset';
+import { DiscoveryService } from '../../../app/src/services/discovery_service';
+import { IStoragePort } from '../../../app/src/db/storage_port';
+import { StumbleAsset } from '../../../app/src/models/asset';
 
 const mockStorage: IStoragePort = {
   get_asset_by_id: vi.fn().mockResolvedValue({ id: '1', category: 'tech', source: 'test' } as StumbleAsset),

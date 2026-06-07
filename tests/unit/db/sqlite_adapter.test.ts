@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SqliteAdapter } from '../../../app/db/sqlite_adapter';
+import { SqliteAdapter } from '../../../app/src/db/sqlite_adapter';
 import crypto from 'crypto';
 import fs from 'fs';
 

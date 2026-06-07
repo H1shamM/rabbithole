@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BoredPandaSource } from '../../../app/sources/boredpanda.js';
+import { BoredPandaSource } from '../../../app/src/sources/boredpanda.js';
 
 describe('BoredPandaSource', () => {
   let source: BoredPandaSource;

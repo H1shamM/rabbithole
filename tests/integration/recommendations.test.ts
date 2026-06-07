@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import { createDiscoveryRouter } from '../../app/api/v1/discovery_routes';
-import { SqliteAdapter } from '../../app/db/sqlite_adapter';
-import { DiscoveryService } from '../../app/services/discovery_service';
+import { createDiscoveryRouter } from '../../app/src/api/v1/discovery_routes';
+import { SqliteAdapter } from '../../app/src/db/sqlite_adapter';
+import { DiscoveryService } from '../../app/src/services/discovery_service';
 import fs from 'fs';
 
 const DB_PATH = 'test_recs.db';

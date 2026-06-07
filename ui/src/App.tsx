@@ -16,8 +16,8 @@ import { FavoritesPanel } from './components/FavoritesPanel';
 import { RecommendationsPanel } from './components/RecommendationsPanel';
 import { SubmissionForm } from './components/SubmissionForm';
 import { useToast } from './contexts/ToastContext';
-import { useStumble, StumbleResult } from './hooks/useStumble';
-import { AuthenticatedFetch } from './types';
+import { useStumble, type StumbleResult } from './hooks/useStumble';
+import type { AuthenticatedFetch } from './types';
 // ...
 type Category = 'all' | 'tech' | 'art' | 'science' | 'random';
 
@@ -152,8 +152,8 @@ export function App() {
         isOpen={showAuth && !user}
         email={email}
         password={password}
-        onEmailChange={setEmail}
-        onPasswordChange={setPassword}
+        onEmailChange={(e) => setEmail(e.target.value)}
+        onPasswordChange={(e) => setPassword(e.target.value)}
         onLogin={() => handleAuth(true)}
         onRegister={() => handleAuth(false)}
         onClose={() => setShowAuth(false)}

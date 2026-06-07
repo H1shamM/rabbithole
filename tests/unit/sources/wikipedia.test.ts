@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { WikipediaSource } from '../../../app/sources/wikipedia.js';
+import { WikipediaSource } from '../../../app/src/sources/wikipedia.js';
 describe('WikipediaSource', () => {
   let source: WikipediaSource;
   beforeEach(() => { source = new WikipediaSource(); vi.restoreAllMocks(); });

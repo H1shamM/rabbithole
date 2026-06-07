@@ -1,11 +1,14 @@
 // ui/src/components/Toast.tsx
 import React, { useEffect } from 'react';
 
-interface ToastProps {
+export interface ToastData {
   id: string;
   message: string;
   type: 'success' | 'error' | 'info';
   duration?: number;
+}
+
+export interface ToastProps extends ToastData {
   onClose: () => void;
 }
 

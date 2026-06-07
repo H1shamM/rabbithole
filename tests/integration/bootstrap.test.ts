@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { SqliteAdapter } from '../../app/db/sqlite_adapter';
-import { seedDefaultAssets, DEFAULT_SEED_ASSETS } from '../../app/bootstrap';
+import { SqliteAdapter } from '../../app/src/db/sqlite_adapter';
+import { seedDefaultAssets, DEFAULT_SEED_ASSETS } from '../../app/src/bootstrap';
 import fs from 'fs';
 
 const DB_PATH = 'test_bootstrap.db';

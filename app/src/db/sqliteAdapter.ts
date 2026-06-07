@@ -1,3 +1,14 @@
+interface AssetRow {
+  id: string;
+  url: string;
+  title: string;
+  description: string | null;
+  source: string;
+  category: string;
+  rating: number;
+  created_at: string;
+  last_visited_at: string | null;
+}
 import Database from 'better-sqlite3';
 import crypto from 'crypto';
 import type { IStoragePort, RatedItem } from './storagePort.js';
