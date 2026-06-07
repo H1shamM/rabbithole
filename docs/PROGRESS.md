@@ -28,6 +28,7 @@
 | ----- | ---------------------------- | ---- | ------ |
 | S3-02 | v1.0 Polish & Coverage Boost | S    | Done   |
 | S3-03 | Repo Hygiene Pass            | S    | Done   |
+| S3-04 | CI & Type Stabilization      | S    | Done   |
 
 ## Sprint 4: Production v2.0 (In Progress)
 
@@ -48,4 +49,3 @@
 ### Follow-ups
 
 - [ ] Address lingering `@typescript-eslint/no-explicit-any` warnings in `app/`.
-- [ ] Add `npm test` script to `ui/`.
