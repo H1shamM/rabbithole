@@ -15,7 +15,7 @@ export function RecommendationsPanel({ recommendations }: { recommendations: Rec
         <p>No recommendations yet. Keep rating content!</p>
       ) : (
         <ul className="recommendations-list">
-          {recommendations.map((item) => (
+          {Array.isArray(recommendations) && recommendations.map((item) => (
             <li key={item.id} className="recommendation-item">
               <a href={item.url} target="_blank" rel="noopener noreferrer">
                 {item.title || item.url}
