@@ -1,6 +1,6 @@
-type AuthenticatedFetch = (url: string, options?: RequestInit) => Promise<Response>;
 // ui/src/hooks/useHistory.ts
 import { useState, useEffect, useCallback } from 'react';
+import type { AuthenticatedFetch } from '../types';
 
 export interface HistoryItem {
   id: string;
@@ -44,8 +44,10 @@ export function useHistory(authenticatedFetch: AuthenticatedFetch) {
   }, [authenticatedFetch]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    loadHistory();
+    const timer = setTimeout(() => {
+      loadHistory();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [loadHistory]);
 
   return { history, showHistory, setShowHistory, loadHistory, loading };

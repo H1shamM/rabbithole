@@ -1,5 +1,5 @@
-type AuthenticatedFetch = (url: string, options?: RequestInit) => Promise<Response>;
 import { useState, useCallback, useRef, useEffect } from 'react';
+import type { AuthenticatedFetch } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
@@ -24,8 +24,10 @@ export function useStumble(authenticatedFetch: AuthenticatedFetch, category: str
   const iframeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    setNextStumble(null);
+    const timer = setTimeout(() => {
+      setNextStumble(null);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [category]);
 
   const clearIframeTimeout = useCallback(() => {
@@ -66,8 +68,7 @@ export function useStumble(authenticatedFetch: AuthenticatedFetch, category: str
       setNextStumble(data);
     } catch (err) {
       console.debug('Prefetch failed', err);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    setNextStumble(null);
+      setNextStumble(null);
     }
   }, [category, authenticatedFetch]);
 
@@ -78,8 +79,7 @@ export function useStumble(authenticatedFetch: AuthenticatedFetch, category: str
       setShowIframe(true);
       setLoading(false);
       setIframeError(false);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    setNextStumble(null);
+      setNextStumble(null);
       startIframeTimeout();
       
       // Pre-fetch another one in the background

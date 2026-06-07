@@ -17,15 +17,16 @@ import { FavoritesPanel } from './components/FavoritesPanel';
 import { RecommendationsPanel } from './components/RecommendationsPanel';
 import { SubmissionForm } from './components/SubmissionForm';
 import { useToast } from './contexts/ToastContext';
-import './App.css';
-
+import { useStumble, StumbleResult } from './hooks/useStumble';
+import { AuthenticatedFetch } from './types';
+// ...
 type Category = 'all' | 'tech' | 'art' | 'science' | 'random';
 
 export function App() {
   const { isInstallable, showInstallPrompt } = usePWA();
   const [category, setCategory] = useState<Category>('all');
   const { addToast } = useToast();
-  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<StumbleResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const { darkMode, setDarkMode } = useTheme();
 
@@ -45,7 +46,7 @@ export function App() {
     ensureDevAuth,
   } = useAuth();
 
-  const typedAuthenticatedFetch = authenticatedFetch as (url: string, options?: RequestInit) => Promise<Response>;
+  const typedAuthenticatedFetch = authenticatedFetch as AuthenticatedFetch;
 
   const {
     current,

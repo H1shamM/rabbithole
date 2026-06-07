@@ -1,8 +1,7 @@
-type AuthenticatedFetch = (url: string, options?: RequestInit) => Promise<Response>;
 // ui/src/hooks/useFavorites.ts
 import { useState, useEffect, useCallback } from 'react';
 import type { StumbleResult } from './useStumble';
-
+import type { AuthenticatedFetch } from '../types';
 // Helper to safely parse JSON responses
 const safeJson = async (res: Response) => {
   const text = await res.text();
@@ -49,8 +48,7 @@ export function useFavorites(authenticatedFetch: AuthenticatedFetch) {
           body: JSON.stringify({ assetId: asset.id }),
         });
       }
-      await // eslint-disable-next-line react-hooks/exhaustive-deps
-    loadFavorites();
+      loadFavorites();
     } catch (err) {
       console.error('Favorite toggle failed', err);
     }
@@ -59,16 +57,17 @@ export function useFavorites(authenticatedFetch: AuthenticatedFetch) {
   const removeFavorite = useCallback(async (assetId: string) => {
     try {
       await authenticatedFetch(`/favorites/${assetId}`, { method: 'DELETE' });
-      await // eslint-disable-next-line react-hooks/exhaustive-deps
-    loadFavorites();
+      loadFavorites();
     } catch (err) {
       console.error('Favorite removal failed', err);
     }
   }, [authenticatedFetch, loadFavorites]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    loadFavorites();
+    const timer = setTimeout(() => {
+      loadFavorites();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [loadFavorites]);
 
   return {
