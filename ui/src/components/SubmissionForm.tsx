@@ -1,5 +1,9 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { PlusCircle, Send } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 /**
  * Props for the SubmissionForm component.
@@ -10,7 +14,7 @@ interface Props {
 }
 
 /**
- * Component to submit a new URL.
+ * Card form for submitting a new link to the community queue.
  */
 export function SubmissionForm({ onSuccess, authenticatedFetch }: Props) {
   const [url, setUrl] = useState("");
@@ -36,25 +40,40 @@ export function SubmissionForm({ onSuccess, authenticatedFetch }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="submission-form">
-      <h3>Submit a Link</h3>
-      <input
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-      />
-      <input
-        type="url"
-        placeholder="URL"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        required
-      />
-      <button type="submit" disabled={loading}>
-        {loading ? "Submitting..." : "Submit"}
-      </button>
-    </form>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <PlusCircle className="size-4 text-primary" />
+          Submit a link
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-3 sm:flex-row"
+        >
+          <Input
+            type="text"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            className="sm:flex-1"
+          />
+          <Input
+            type="url"
+            placeholder="https://example.com"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            required
+            className="sm:flex-1"
+          />
+          <Button type="submit" disabled={loading} className="gap-2">
+            <Send className="size-4" />
+            {loading ? "Submitting…" : "Submit"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

@@ -22,7 +22,7 @@ export function SkeletonLoader({
 
   if (type === "list") {
     return (
-      <div className="space-y-space-2">
+      <div className="space-y-2">
         {Array.from({ length: count }).map((_, i) => (
           <div key={i} className="p-2">
             <Skeleton className="h-4 w-[90%]" />
@@ -35,7 +35,7 @@ export function SkeletonLoader({
 
   // card type
   return (
-    <div className="p-4 border rounded-md space-y-space-2">
+    <div className="space-y-2 rounded-md border p-4">
       <Skeleton className="h-5 w-[70%]" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-[50%]" />

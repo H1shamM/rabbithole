@@ -41,6 +41,18 @@
 | S4-05 | AI Vector Search      | XL   | Todo   |
 | S4-06 | Admin Infrastructure  | M    | Todo   |
 
+## Sprint 5: Migration & SaaS UI Overhaul (In Progress)
+
+| ID    | Story                                   | Size | Status            |
+| ----- | --------------------------------------- | ---- | ----------------- |
+| S5-01 | Build repair & Tailwind v4 wiring (bug) | S    | Done (PR #79)     |
+| S5-02 | Modern SaaS UI overhaul (sidebar+main)  | L    | In Review         |
+
+S5-02: indigo oklch design tokens, sidebar + main app shell, top-bar Header
+(search + theme + avatar/dropdown user menu), redesigned StumbleArea +
+floating action bar, and panels/modals polished (emoji → Lucide). Reconciled
+onto master, preserving the avatar/dropdown user menu.
+
 ### Backlog
 
 - [ ] "Stumble of the Day" Email (Email Co-Pilot Integration)

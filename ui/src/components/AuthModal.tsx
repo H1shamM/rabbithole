@@ -58,7 +58,7 @@ export function AuthModal({
                 <DialogTitle>Welcome Back</DialogTitle>
               </DialogHeader>
               <Form {...form}>
-                <form className="space-y-space-4 mt-4">
+                <form className="mt-4 space-y-4">
                   <FormField
                     control={form.control}
                     name="email"

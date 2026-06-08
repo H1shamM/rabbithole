@@ -145,7 +145,9 @@ describe("App Component", () => {
 
     await waitFor(
       () => {
-        expect(favBtn.textContent).toBe("⭐");
+        expect(
+          screen.getByLabelText("Remove from favorites"),
+        ).toBeInTheDocument();
       },
       { timeout: 2000 },
     );
@@ -167,10 +169,14 @@ describe("App Component", () => {
     const user = userEvent.setup();
     render(<App />);
     // Find the user menu button by aria-label
-    const userButton = await screen.findByRole("button", { name: /User menu/i });
+    const userButton = await screen.findByRole("button", {
+      name: /User menu/i,
+    });
     await user.click(userButton);
     // Find "Profile" in the dropdown
-    const profileItem = await screen.findByRole("menuitem", { name: /Profile/i });
+    const profileItem = await screen.findByRole("menuitem", {
+      name: /Profile/i,
+    });
     await user.click(profileItem);
     expect(screen.getByText(/Profile/i)).toBeInTheDocument();
   });
