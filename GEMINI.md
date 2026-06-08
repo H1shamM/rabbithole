@@ -15,8 +15,11 @@ Each turn, decide what needs doing and do it, without asking permission for rout
    changes: `gh pr list --author "@me" --state open`, then `gh pr view <n> --comments`.
    If a review asks for changes, apply them on the **same branch**, run the gates, push.
    Re-request review with `gh pr review` is NOT yours to do — just push; the senior re-reviews.
-2. **Otherwise pick up the next task.** Take the lowest-numbered open issue labeled
-   `gemini-ready` assigned to you that has no PR yet, and implement it (steps below).
+2. **Otherwise pick up the next task — but only if you have NO open PR.** Work on **one PR
+   at a time**: never start a new issue while you have an open PR (awaiting review or with
+   changes requested) — finish and get that one merged first. When clear, take the
+   lowest-numbered open issue labeled `gemini-ready` assigned to you that has no PR yet, and
+   implement it (steps below). Always branch off the **latest** `master` (`git pull` first).
 3. After acting, briefly report what you did, then continue until there's nothing left to do
    (no review feedback pending, no unstarted assigned issue) — then stop.
 
