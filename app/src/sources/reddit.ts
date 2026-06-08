@@ -101,9 +101,7 @@ export class RedditSource implements ContentFetcher {
 
       if (posts.length === 0) {
         // Fallback to any post (including self-posts) if no external links
-        const anyPosts = data.data.children.filter(
-          (child) => child.data.url,
-        );
+        const anyPosts = data.data.children.filter((child) => child.data.url);
         if (anyPosts.length === 0) throw new Error("No suitable posts found");
 
         const randomAny = anyPosts[Math.floor(Math.random() * anyPosts.length)];
