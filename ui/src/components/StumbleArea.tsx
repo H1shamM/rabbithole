@@ -35,11 +35,11 @@ export function StumbleArea({
   onClose,
   onIframeLoad,
 }: StumbleAreaProps) {
-  const [isVisible, setIsVisible] = useState(process.env.NODE_ENV === "test");
+  const [isVisible, setIsVisible] = useState(import.meta.env.MODE === "test");
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "test") return;
+    if (import.meta.env.MODE === "test") return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {

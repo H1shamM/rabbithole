@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -42,7 +41,9 @@ export function Header({
             variant="ghost"
             size="icon"
             onClick={() => setDarkMode(!darkMode)}
-            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={
+              darkMode ? "Switch to light mode" : "Switch to dark mode"
+            }
           >
             {darkMode ? (
               <Sun className="h-5 w-5" />
@@ -54,10 +55,19 @@ export function Header({
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full" aria-label="User menu">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                  aria-label="User menu"
+                >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.avatar_url} alt={user.display_name || "User"} />
-                    <AvatarFallback>{(user.display_name || user.email || "?")[0]}</AvatarFallback>
+                    <AvatarImage
+                      src={user.avatar_url}
+                      alt={user.display_name || "User"}
+                    />
+                    <AvatarFallback>
+                      {(user.display_name || user.email || "?")[0]}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>

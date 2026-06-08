@@ -185,13 +185,9 @@ export function App() {
         <AuthModal
           isOpen={showAuth && !user}
           onLogin={(values) => {
-            setEmail(values.email);
-            setPassword(values.password);
             handleAuth(values.email, values.password, true);
           }}
           onRegister={(values) => {
-            setEmail(values.email);
-            setPassword(values.password);
             handleAuth(values.email, values.password, false);
           }}
           onClose={() => setShowAuth(false)}
@@ -208,7 +204,7 @@ export function App() {
 
         <CategoryBar
           category={category}
-          onCategoryChange={setCategory}
+          onCategoryChange={(cat) => setCategory(cat as Category)}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
           onSearchSubmit={handleSearch}

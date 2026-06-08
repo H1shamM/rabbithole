@@ -1,5 +1,5 @@
 // ui/src/components/ErrorBoundary.tsx
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -26,7 +26,7 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public render() {
-    if (this.state.hasError && process.env.NODE_ENV !== "test") {
+    if (this.state.hasError && import.meta.env.MODE !== "test") {
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4">
           <h2 className="text-2xl font-bold">Something went wrong</h2>
