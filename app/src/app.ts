@@ -31,6 +31,7 @@ import type { ContentFetcher } from "./sources/ContentFetcher.js";
 import jwt from "jsonwebtoken";
 import { GitHubTrendingSource } from "./sources/github_trending.js";
 import { MediumSource } from "./sources/medium.js";
+import { LobstersSource } from "./sources/lobsters.js";
 import type { User } from "./models/user.js";
 
 export async function createApp() {
@@ -84,6 +85,7 @@ export async function createApp() {
     new YoutubeSource(),
     new GitHubTrendingSource(),
     new MediumSource(),
+    new LobstersSource(),
   ];
   const discoveryService = new DiscoveryService(storage, sources);
 
