@@ -37,10 +37,14 @@ export const Toast: React.FC<ToastProps> = ({
   };
 
   return (
-    <div className={`toast toast-${type}`}>
+    <div className={`toast toast-${type}`} role="status" aria-live="polite">
       <span className="toast-icon">{getIcon()}</span>
       <span className="toast-message">{message}</span>
-      <button className="toast-close" onClick={onClose} aria-label="Close">
+      <button
+        className="toast-close"
+        onClick={onClose}
+        aria-label="Close notification"
+      >
         ×
       </button>
     </div>

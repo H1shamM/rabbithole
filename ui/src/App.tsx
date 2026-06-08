@@ -167,6 +167,9 @@ export function App() {
 
   return (
     <div className="app-container">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <Header
         darkMode={darkMode}
         setDarkMode={setDarkMode}
@@ -205,7 +208,7 @@ export function App() {
         onSearchSubmit={handleSearch}
       />
 
-      <main className="main-content">
+      <main id="main-content" className="main-content">
         <StumbleArea
           showIframe={showIframe}
           loading={loading}
