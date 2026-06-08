@@ -17,6 +17,7 @@
 
   /* Touch target min size */
   --touch-min: 44px;
+  --spacing: 1rem;
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
