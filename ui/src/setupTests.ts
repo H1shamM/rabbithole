@@ -1,25 +1,24 @@
-/**
- * @fileoverview Test setup file for Vitest and Testing Library.
- */
+import "@testing-library/jest-dom/vitest";
+import { vi } from "vitest";
 
-import { expect, vi } from "vitest";
-import * as matchers from "@testing-library/jest-dom/matchers";
+// Mock IntersectionObserver
+class IntersectionObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  constructor() {}
+}
 
-/**
- * Extend Vitest's expect with jest-dom matchers.
- */
-expect.extend(matchers);
+vi.stubGlobal("IntersectionObserver", IntersectionObserver);
 
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(), // deprecated
-    removeListener: vi.fn(), // deprecated
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
+// Mock matchMedia
+vi.stubGlobal("matchMedia", (query: string) => ({
+  matches: false,
+  media: query,
+  onchange: null,
+  addListener: vi.fn(), // deprecated
+  removeListener: vi.fn(), // deprecated
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+}));
