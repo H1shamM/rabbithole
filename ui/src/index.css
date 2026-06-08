@@ -6,6 +6,17 @@
   --bg: #ffffff;
   --border: #e5e7eb;
 
+  /* 8px Grid System */
+  --space-0-5: 0.125rem; /* 2px */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+
   /* Font Stack */
   --font-sans:
     "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -52,8 +63,8 @@ h3 {
   font-family: var(--font-sans);
   font-weight: 700;
   color: var(--text-primary);
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-3);
   line-height: 1.2;
 }
 
@@ -69,7 +80,7 @@ h3 {
 }
 
 p {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--space-4);
   line-height: 1.6;
 }
 
