@@ -41,3 +41,7 @@ playwright-report/
 
 # Misc
 *.lock
+
+# local screenshot helper (not part of the app)
+shot.mjs
+shot-*.png
