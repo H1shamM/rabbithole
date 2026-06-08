@@ -26,9 +26,6 @@ export class DiscoveryService {
 
     // If database has fewer than 5 assets, try to fetch from live sources
     if (assets.length < 5) {
-      console.log(
-        `Only ${assets.length} assets in DB, fetching from live sources...`,
-      );
       const newAsset = await this.fetchFromLiveSources(category);
       if (newAsset) {
         await this.storage.saveAsset(newAsset);
@@ -85,7 +82,6 @@ export class DiscoveryService {
       try {
         const asset = await source.fetchStumble(category);
         if (asset && asset.url && asset.title) {
-          console.log(`Fetched new asset from ${asset.source}`);
           return asset;
         }
       } catch (error) {

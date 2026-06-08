@@ -62,7 +62,7 @@ export async function ensureDevUser(storage: IStoragePort): Promise<void> {
       created_at: new Date(),
     };
     await storage.saveUser(devUser);
-    console.log("Created dev user");
+    // User created successfully
   }
 }
 
