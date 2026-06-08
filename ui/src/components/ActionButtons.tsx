@@ -1,5 +1,6 @@
 // ui/src/components/ActionButtons.tsx
 import React from "react";
+import { Button } from "@/components/ui/button";
 
 interface ActionButtonsProps {
   showIframe: boolean;
@@ -32,55 +33,56 @@ export function ActionButtons({
   onShare,
   onNext,
 }: ActionButtonsProps) {
-  if (!current || !showIframe) {
-    return (
-      <button
-        className="btn primary stumble-btn"
-        onClick={onNext}
-        disabled={loading}
-      >
-        {loading ? "Stumbling..." : "🎲 Stumble"}
-      </button>
-    );
-  }
+  if (!showIframe || !current) return null;
 
   return (
     <div className="action-bar">
-      <div className="rating-group">
-        <button
-          className={`btn rate-btn ${rating === "like" ? "active" : ""}`}
-          onClick={() => onRate("like")}
-          disabled={rateLoading || rating !== null}
-          aria-label="Like"
-        >
-          👍
-        </button>
-        <button
-          className={`btn rate-btn ${rating === "dislike" ? "active" : ""}`}
-          onClick={() => onRate("dislike")}
-          disabled={rateLoading || rating !== null}
-          aria-label="Dislike"
-        >
-          👎
-        </button>
-      </div>
-      <button
-        className={`btn rate-btn ${isFavorite ? "active" : ""} favorite-btn`}
+      <Button
+        variant={rating === "like" ? "default" : "secondary"}
+        size="sm"
+        onClick={() => onRate("like")}
+        disabled={rateLoading}
+        className="rate-btn"
+        aria-label="Like"
+      >
+        👍
+      </Button>
+      <Button
+        variant={rating === "dislike" ? "default" : "secondary"}
+        size="sm"
+        onClick={() => onRate("dislike")}
+        disabled={rateLoading}
+        className="rate-btn"
+        aria-label="Dislike"
+      >
+        👎
+      </Button>
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={onToggleFavorite}
-        aria-label="Save to favorites"
+        className={`favorite-btn ${isFavorite ? "active" : ""}`}
+        aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
       >
         {isFavorite ? "⭐" : "☆"}
-      </button>
-      <button className="btn rate-btn" onClick={onShare} aria-label="Share">
+      </Button>
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={onShare}
+        aria-label="Share"
+      >
         📤
-      </button>
-      <button
-        className="btn secondary next-btn"
+      </Button>
+      <Button
+        variant="default"
+        size="sm"
         onClick={onNext}
         disabled={loading}
+        className="next-btn"
       >
         {loading ? "..." : "➡️ Next Stumble"}
-      </button>
+      </Button>
     </div>
   );
 }

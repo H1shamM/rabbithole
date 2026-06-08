@@ -1,5 +1,7 @@
 import { getFaviconUrl, estimateReadingTime } from "../utils/contentHelpers";
 import { useEffect, useRef, useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface StumbleResult {
   id: string;
@@ -51,34 +53,33 @@ export function StumbleArea({
 
   if (loading) {
     return (
-      <div className="skeleton-stumble">
-        <div className="skeleton-circle skeleton-shimmer" />
-        <div
-          className="skeleton-line skeleton-shimmer"
-          style={{ width: "60%" }}
-        />
-      </div>
+      <Card className="p-space-6 flex flex-col gap-space-4">
+        <Skeleton className="h-12 w-12 rounded-full" />
+        <Skeleton className="h-4 w-[60%]" />
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="error-state">
+      <Card className="p-space-6 text-center text-destructive">
         <p>⚠️ {error}</p>
-        <button className="btn-primary" onClick={onRetry}>
+        <button className="mt-space-2 text-primary underline" onClick={onRetry}>
           Try Again
         </button>
-      </div>
+      </Card>
     );
   }
 
   if (!showIframe && !current) {
     return (
-      <div className="stumble-card empty-state">
-        <div className="empty-icon">🚀</div>
-        <h2>Ready to explore?</h2>
+      <Card className="p-space-12 text-center text-muted-foreground">
+        <div className="text-4xl mb-space-4">🚀</div>
+        <h2 className="text-2xl font-bold text-foreground">
+          Ready to explore?
+        </h2>
         <p>Click Stumble to discover the web, one page at a time!</p>
-      </div>
+      </Card>
     );
   }
 
@@ -127,26 +128,26 @@ export function StumbleArea({
 
   if (showIframe && iframeError && current) {
     return (
-      <div className="iframe-fallback">
+      <Card className="p-space-6 text-center text-destructive">
         <p>This page cannot be displayed inside the app.</p>
-        <code className="fallback-url">{current.url}</code>
-        <div className="fallback-actions">
+        <code className="block my-space-2">{current.url}</code>
+        <div className="flex justify-center gap-space-2">
           <a
             href={current.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-primary"
+            className="text-primary underline"
           >
             Open in new tab
           </a>
-          <button className="btn-secondary" onClick={onRetry}>
+          <button className="text-secondary underline" onClick={onRetry}>
             Try Another
           </button>
         </div>
         <button className="close-btn" onClick={onClose}>
           Close
         </button>
-      </div>
+      </Card>
     );
   }
 
