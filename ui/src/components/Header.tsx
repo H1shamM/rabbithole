@@ -27,7 +27,6 @@ export function Header({
     <header className="header">
       <div className="header-row">
         <h1 className="logo">StumbleClone</h1>
-        <p className="tagline">Discover the web</p>
         <button
           className="btn theme-toggle"
           onClick={() => setDarkMode(!darkMode)}
