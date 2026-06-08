@@ -1,106 +1,61 @@
 :root {
-  /* Muted Violet Palette */
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-accent: #6d28d9; /* Muted Violet */
-  --bg: #f9fafb;
+  /* Design Tokens - Color Palette (Muted Blues/Whites) */
+  --bg: #f8fafc;
   --bg-card: #ffffff;
-  --border: #e5e7eb;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent: #4f46e5;
+  --accent-light: #6366f1;
+  --border: #e2e8f0;
+  --shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
-  /* 8px Grid System */
-  --space-0-5: 0.125rem;
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
+  /* Spacing - 8px Grid */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-12: 3rem; /* 48px */
 
-  /* Font Stack */
-  --font-sans:
-    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
+  /* Typography */
+  --font-family: "Inter", system-ui, -apple-system, sans-serif;
+  --font-size-base: 16px;
+  --line-height: 1.6;
 
-  font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.6;
-  letter-spacing: -0.01em;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height);
   color: var(--text-primary);
-  background: var(--bg);
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+  background-color: var(--bg);
 }
 
-:root[data-theme="dark"] {
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-accent: #8b5cf6;
-  --bg: #111827;
-  --bg-card: #1f2937;
-  --border: #374151;
-}
-
-button {
-  cursor: pointer;
+/* Base Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  background: var(--bg);
-  transition: background-color 0.3s ease;
+  font-family: var(--font-family);
+  background-color: var(--bg);
 }
 
-#root {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: 100vh;
+a {
+  text-decoration: none;
+  color: var(--accent);
+}
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font: inherit;
 }
 
-h1,
-h2,
-h3 {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-top: var(--space-6);
-  margin-bottom: var(--space-3);
-  line-height: 1.2;
-}
-
-h1 {
-  font-size: 2.25rem;
-  letter-spacing: -0.02em;
-}
-h2 {
-  font-size: 1.875rem;
-}
-h3 {
-  font-size: 1.5rem;
-}
-
-p {
-  margin: 0 0 var(--space-4);
-  line-height: 1.6;
-}
-
-@media (max-width: 480px) {
-  :root {
-    font-size: 14px;
-  }
-  h1 {
-    font-size: 1.8rem;
-  }
-  h2 {
-    font-size: 1.5rem;
-  }
-}
-
-/* Focus indicators */
+/* Focus indicator */
 :focus-visible {
-  outline: 2px solid var(--text-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

@@ -24,17 +24,17 @@ export function Header({
   onInstall,
 }: HeaderProps) {
   return (
-    <header className="header">
-      <div className="header-row">
-        <h1 className="logo">StumbleClone</h1>
+    <header className="app-header">
+      <h1 className="logo">StumbleClone</h1>
+      <div className="nav-group">
         <button
-          className="btn secondary theme-toggle"
+          className="btn btn-secondary"
           onClick={() => setDarkMode(!darkMode)}
           aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
         >
           {darkMode ? "☀️" : "🌙"}
         </button>
-        <button className="btn secondary" onClick={onUserClick}>
+        <button className="btn btn-secondary" onClick={onUserClick}>
           {user ? (
             <div className="user-info">
               {user.avatar_url && (
@@ -43,15 +43,11 @@ export function Header({
               <span>{user.display_name || user.email}</span>
             </div>
           ) : (
-            "Login/Register"
+            "Login"
           )}
         </button>
         {isInstallable && (
-          <button
-            className="btn secondary install-btn"
-            onClick={onInstall}
-            aria-label="Install App"
-          >
+          <button className="btn btn-secondary" onClick={onInstall}>
             📲 Install
           </button>
         )}

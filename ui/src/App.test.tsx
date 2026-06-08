@@ -154,7 +154,9 @@ describe("App Component", () => {
   it("dark mode toggles theme and persists", () => {
     render(<App />);
     const header = screen.getByRole("banner");
-    const toggle = within(header).getByRole("button", { name: "Switch to dark mode" });
+    const toggle = within(header).getByRole("button", {
+      name: "Switch to dark mode",
+    });
 
     fireEvent.click(toggle);
     expect(document.documentElement.classList.contains("dark")).toBe(true);

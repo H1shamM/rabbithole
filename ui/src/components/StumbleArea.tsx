@@ -74,7 +74,7 @@ export function StumbleArea({
 
   if (!showIframe && !current) {
     return (
-      <div className="empty-state">
+      <div className="stumble-card empty-state">
         <div className="empty-icon">🚀</div>
         <h2>Ready to explore?</h2>
         <p>Click Stumble to discover the web, one page at a time!</p>
