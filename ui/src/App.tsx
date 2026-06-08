@@ -35,12 +35,8 @@ export function App() {
     user,
     showAuth,
     showProfile,
-    email,
-    password,
     setShowAuth,
     setShowProfile,
-    setEmail,
-    setPassword,
     authenticatedFetch,
     handleAuth,
     logout,
@@ -196,16 +192,17 @@ export function App() {
 
         <AuthModal
           isOpen={showAuth && !user}
-          email={email}
-          password={password}
-          onEmailChange={(e) => setEmail(e.target.value)}
-          onPasswordChange={(e) => setPassword(e.target.value)}
-          onLogin={() => handleAuth(true)}
-          onRegister={() => handleAuth(false)}
+          onLogin={(values) => {
+            setEmail(values.email);
+            setPassword(values.password);
+            handleAuth(true);
+          }}
+          onRegister={(values) => {
+            setEmail(values.email);
+            setPassword(values.password);
+            handleAuth(false);
+          }}
           onClose={() => setShowAuth(false)}
-          apiBase={
-            import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1"
-          }
         />
 
         <ProfileModal

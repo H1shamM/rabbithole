@@ -1,5 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -7,58 +10,109 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+const authSchema = z.object({
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
+});
 
 interface AuthModalProps {
   isOpen: boolean;
-  email: string;
-  password: any;
-  onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onLogin: () => void;
-  onRegister: () => void;
+  onLogin: (values: z.infer<typeof authSchema>) => void;
+  onRegister: (values: z.infer<typeof authSchema>) => void;
   onClose: () => void;
-  apiBase: string;
 }
 
 export function AuthModal({
   isOpen,
-  email,
-  password,
-  onEmailChange,
-  onPasswordChange,
   onLogin,
   onRegister,
   onClose,
 }: AuthModalProps) {
+  const form = useForm<z.infer<typeof authSchema>>({
+    resolver: zodResolver(authSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Authentication</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-space-4">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={onEmailChange}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={onPasswordChange}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-          />
-          <div className="flex gap-space-2">
-            <Button onClick={onLogin}>Login</Button>
-            <Button variant="secondary" onClick={onRegister}>
-              Register
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <AnimatePresence>
+      {isOpen && (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+          <DialogContent className="sm:max-w-[400px]">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <DialogHeader>
+                <DialogTitle>Welcome Back</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form className="space-y-space-4 mt-space-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="name@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="••••••••"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex gap-space-2 pt-space-2">
+                    <Button
+                      type="button"
+                      className="flex-1"
+                      onClick={form.handleSubmit(onLogin)}
+                    >
+                      Login
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={form.handleSubmit(onRegister)}
+                    >
+                      Register
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </motion.div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </AnimatePresence>
   );
 }
