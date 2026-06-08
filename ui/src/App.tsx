@@ -148,7 +148,10 @@ export function App() {
   }, [authenticatedFetch]);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
+    document.documentElement.setAttribute(
+      "data-theme",
+      darkMode ? "dark" : "light",
+    );
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
@@ -160,10 +163,13 @@ export function App() {
     <ErrorBoundary>
       <div className="app-container">
         {networkError && (
-          <div className="network-error-banner" role="status">
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative my-4"
+            role="status"
+          >
             <p>⚠️ {networkError}</p>
             <button
-              className="btn-secondary"
+              className="mt-2 bg-red-500 text-white px-3 py-1 rounded"
               onClick={() => {
                 setNetworkError(null);
                 window.location.reload();
@@ -173,7 +179,10 @@ export function App() {
             </button>
           </div>
         )}
-        <a href="#main-content" className="skip-link">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 bg-accent text-white p-2"
+        >
           Skip to main content
         </a>
         <Header

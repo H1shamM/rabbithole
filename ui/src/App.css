@@ -1,97 +1,11 @@
 /* ui/src/App.css */
 
-.app-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-@media (max-width: 768px) {
+@layer base {
   .app-container {
-    padding: var(--space-2);
+    @apply max-w-[1200px] mx-auto min-h-screen flex flex-col px-4 md:px-6;
   }
-}
 
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  margin-top: var(--space-4);
-}
-
-/* Header */
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-
-.nav-group {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-/* Base Buttons */
-.btn {
-  padding: var(--space-2) var(--space-4);
-  border-radius: 6px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.btn-primary {
-  background-color: var(--accent);
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: var(--accent-light);
-}
-
-.btn-secondary {
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-}
-
-.btn-secondary:hover {
-  background-color: var(--bg);
-  border-color: var(--text-secondary);
-}
-
-/* Stumble Area & Cards */
-.stumble-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: var(--space-6);
-  box-shadow: var(--shadow);
-}
-
-.empty-state {
-  text-align: center;
-  padding: var(--space-12);
-  color: var(--text-secondary);
-}
-
-.stumble-btn {
-  background: var(--accent);
-  color: white;
-  padding: var(--space-3) var(--space-6);
-  border-radius: 40px;
-  font-weight: 600;
-  display: block;
-  margin: var(--space-6) auto;
+  .main-content {
+    @apply flex-1 flex flex-col gap-6 mt-4;
+  }
 }
