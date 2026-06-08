@@ -144,14 +144,6 @@ export function App() {
   }, [authenticatedFetch]);
 
   useEffect(() => {
-    document.documentElement.setAttribute(
-      "data-theme",
-      darkMode ? "dark" : "light",
-    );
-    localStorage.setItem("theme", darkMode ? "dark" : "light");
-  }, [darkMode]);
-
-  useEffect(() => {
     ensureDevAuth();
   }, [ensureDevAuth]);
 

@@ -160,7 +160,9 @@ describe("App Component Coverage", () => {
         screen.getByRole("button", { name: /Favorites/i }),
       ).toBeInTheDocument(),
     );
-    fireEvent.click(screen.getByRole("button", { name: /Favorites/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Favorites/i }),
+    );
 
     // Find and click remove button
     const removeBtn = await screen.findByLabelText("Remove from favorites");

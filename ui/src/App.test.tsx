@@ -7,6 +7,7 @@ import {
   within,
   setupFetchMocks,
 } from "./test-utils";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { App } from "./App";
 
@@ -44,7 +45,6 @@ describe("App Component", () => {
   it("renders initial empty state with Stumble button", () => {
     render(<App />);
     expect(screen.getByText(/Ready to explore/i)).toBeInTheDocument();
-    // Use a function matcher to be more robust
     expect(
       screen.getByRole("button", {
         name: (content) => content.includes("Stumble"),
@@ -159,14 +159,19 @@ describe("App Component", () => {
     });
 
     fireEvent.click(toggle);
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(localStorage.setItem).toHaveBeenCalledWith("theme", "dark");
   });
 
   it("shows profile modal when clicking user button", async () => {
+    const user = userEvent.setup();
     render(<App />);
-    const userButton = await screen.findByText(/Dev User/i);
-    fireEvent.click(userButton);
-    expect(screen.getByText(/Logout/i)).toBeInTheDocument();
+    // Find the user menu button by aria-label
+    const userButton = await screen.findByRole("button", { name: /User menu/i });
+    await user.click(userButton);
+    // Find "Profile" in the dropdown
+    const profileItem = await screen.findByRole("menuitem", { name: /Profile/i });
+    await user.click(profileItem);
+    expect(screen.getByText(/Profile/i)).toBeInTheDocument();
   });
 });

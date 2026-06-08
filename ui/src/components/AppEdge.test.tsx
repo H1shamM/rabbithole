@@ -156,6 +156,6 @@ describe("App Component Edge Coverage", () => {
     render(<App />);
     const toggle = screen.getByRole("button", { name: /Switch to dark mode/i });
     fireEvent.click(toggle);
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
   });
 });
