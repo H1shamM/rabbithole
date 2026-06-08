@@ -28,8 +28,8 @@ export function estimateReadingTime(text: string | undefined): string | null {
 
 export function getDomainFromUrl(url: string): string {
   try {
-    return new URL(url).hostname.replace("www.", "");
+    return new URL(url).hostname.replace(/^www\./, "");
   } catch {
-    return url;
+    return "";
   }
 }

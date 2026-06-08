@@ -36,7 +36,7 @@ describe("contentHelpers", () => {
     expect(getDomainFromUrl("https://github.com/H1shamM/stumble-clone")).toBe("github.com");
   });
 
-  it("should return original string for invalid URL", () => {
-    expect(getDomainFromUrl("not-a-url")).toBe("not-a-url");
+  it("should return empty string for invalid URL", () => {
+    expect(getDomainFromUrl("not-a-url")).toBe("");
   });
 });
