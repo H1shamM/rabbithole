@@ -28,10 +28,9 @@ export function Header({
       <div className="header-row">
         <h1 className="logo">StumbleClone</h1>
         <button
-          className="btn theme-toggle"
+          className="btn secondary theme-toggle"
           onClick={() => setDarkMode(!darkMode)}
-          aria-label="Toggle theme"
-          style={{ transition: "transform 0.2s" }}
+          aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
         >
           {darkMode ? "☀️" : "🌙"}
         </button>

@@ -11,12 +11,11 @@ export function useTheme() {
   });
 
   useEffect(() => {
-    // Apply dark mode class to html element
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    // Apply dark mode attribute to html element
+    document.documentElement.setAttribute(
+      "data-theme",
+      darkMode ? "dark" : "light",
+    );
     // Save to localStorage
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
