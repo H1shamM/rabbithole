@@ -1,7 +1,7 @@
 import { getFaviconUrl, estimateReadingTime } from "../utils/contentHelpers";
 import { useEffect, useRef, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/ui/card";
+import { Skeleton } from "@/ui/skeleton";
 
 interface StumbleResult {
   id: string;
