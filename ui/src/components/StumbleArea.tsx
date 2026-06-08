@@ -33,9 +33,12 @@ export function StumbleArea({
 }: StumbleAreaProps) {
   if (loading) {
     return (
-      <div className="loading-state">
-        <div className="spinner" />
-        <p>Finding something interesting...</p>
+      <div className="skeleton-stumble">
+        <div className="skeleton-circle skeleton-shimmer" />
+        <div
+          className="skeleton-line skeleton-shimmer"
+          style={{ width: "60%" }}
+        />
       </div>
     );
   }
