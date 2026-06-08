@@ -7,23 +7,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import App from "../App";
 
 /**
- * Mock localStorage for testing.
- */
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-})();
-Object.defineProperty(window, "localStorage", { value: localStorageMock });
-
-/**
  * Helper to setup default fetch mocks.
  */
 const setupFetchMocks = () => {
@@ -75,11 +58,6 @@ describe("App Component Edge Coverage", () => {
     cleanup();
   });
 
-  // TODO: Add tests for:
-  // - Handling extremely long URLs in stumbled pages
-  // - Handling malformed API responses
-  // - Behavior when dark mode toggling fails to persist
-
   it("covers loadHistory/saveHistory error handling", () => {
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error();
@@ -105,5 +83,69 @@ describe("App Component Edge Coverage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Stumble/i }));
 
     await waitFor(() => expect(screen.getByText(/error/i)).toBeInTheDocument());
+  });
+
+  it("covers extremely long URLs in stumbled pages", async () => {
+    const longUrl = "https://example.com/" + "a".repeat(1000);
+    window.fetch = vi.fn().mockImplementation((url) => {
+      if (url.includes("/stumble")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "1",
+            url: longUrl,
+            category: "tech",
+            source: "test",
+          }),
+          text: async () => JSON.stringify({ url: longUrl }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => [],
+        text: async () => "[]",
+      });
+    });
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Stumble/i }));
+    await waitFor(() =>
+      expect(screen.getByTitle("Stumbled page")).toBeInTheDocument(),
+    );
+    expect(screen.getByTitle("Stumbled page")).toHaveAttribute("src", longUrl);
+  });
+
+  it("covers malformed API responses", async () => {
+    window.fetch = vi.fn().mockImplementation((url) => {
+      if (url.includes("/stumble")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => "invalid json", // Malformed
+          text: async () => "invalid json",
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => [],
+        text: async () => "[]",
+      });
+    });
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Stumble/i }));
+
+    await waitFor(() => expect(screen.getByText(/error/i)).toBeInTheDocument());
+  });
+
+  it("covers behavior when dark mode toggling fails to persist", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("Disk full");
+    });
+    render(<App />);
+    const toggle = screen.getByRole("button", { name: /Switch to dark mode/i });
+    fireEvent.click(toggle);
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 });
