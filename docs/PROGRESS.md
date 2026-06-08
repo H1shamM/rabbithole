@@ -45,13 +45,19 @@
 
 | ID    | Story                                   | Size | Status            |
 | ----- | --------------------------------------- | ---- | ----------------- |
-| S5-01 | Build repair & Tailwind v4 wiring (bug) | S    | Done (PR #79)     |
-| S5-02 | Modern SaaS UI overhaul (sidebar+main)  | L    | In Review         |
+| S5-01 | Build repair & Tailwind v4 wiring (bug)        | S    | Done (PR #79) |
+| S5-02 | Modern SaaS UI overhaul (sidebar+main)         | L    | Done (PR #81) |
+| S5-03 | Supervised Gemini junior-dev pipeline + helpers | M    | Done          |
 
 S5-02: indigo oklch design tokens, sidebar + main app shell, top-bar Header
 (search + theme + avatar/dropdown user menu), redesigned StumbleArea +
 floating action bar, and panels/modals polished (emoji → Lucide). Reconciled
 onto master, preserving the avatar/dropdown user menu.
+
+S5-03: dedicated `H1shamM-bot` account (Write-only), `master` branch protection
+(PR + code-owner review + CI), `GEMINI.md` junior playbook, Gemini Task issue
+template, and CODEOWNERS. Junior tasks are tracked as `gemini-ready` GitHub issues
+(e.g. #84–#86, the contentHelpers utilities) and reviewed/merged by the senior.
 
 ### Backlog
 
