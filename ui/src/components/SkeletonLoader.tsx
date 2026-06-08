@@ -12,7 +12,7 @@ export function SkeletonLoader({
 }: SkeletonLoaderProps) {
   if (type === "stumble") {
     return (
-      <div className="flex flex-col gap-space-4 p-space-6 border rounded-lg">
+      <div className="flex flex-col gap-4 p-6 border rounded-lg">
         <Skeleton className="h-8 w-[60%] mx-auto" />
         <Skeleton className="h-40 w-full rounded-md" />
         <Skeleton className="h-4 w-[80%]" />
@@ -25,9 +25,9 @@ export function SkeletonLoader({
     return (
       <div className="space-y-space-2">
         {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className="p-space-2">
+          <div key={i} className="p-2">
             <Skeleton className="h-4 w-[90%]" />
-            <Skeleton className="h-3 w-[60%] mt-space-1" />
+            <Skeleton className="h-3 w-[60%] mt-1" />
           </div>
         ))}
       </div>
@@ -36,7 +36,7 @@ export function SkeletonLoader({
 
   // card type
   return (
-    <div className="p-space-4 border rounded-md space-y-space-2">
+    <div className="p-4 border rounded-md space-y-space-2">
       <Skeleton className="h-5 w-[70%]" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-[50%]" />

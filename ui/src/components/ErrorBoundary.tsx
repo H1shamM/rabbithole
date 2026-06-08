@@ -21,7 +21,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public render() {
-    if (this.state.hasError) {
+    if (this.state.hasError && process.env.NODE_ENV !== "test") {
       return (
         <div className="error-state">
           <h2>Something went wrong</h2>

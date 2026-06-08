@@ -195,12 +195,12 @@ export function App() {
           onLogin={(values) => {
             setEmail(values.email);
             setPassword(values.password);
-            handleAuth(true);
+            handleAuth(values.email, values.password, true);
           }}
           onRegister={(values) => {
             setEmail(values.email);
             setPassword(values.password);
-            handleAuth(false);
+            handleAuth(values.email, values.password, false);
           }}
           onClose={() => setShowAuth(false)}
         />

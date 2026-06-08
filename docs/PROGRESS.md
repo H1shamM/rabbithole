@@ -39,12 +39,12 @@
 | S4-03 | Community Submissions | L    | Done   |
 | S4-04 | Production Infra      | M    | Done   |
 | S4-05 | AI Vector Search      | XL   | Todo   |
+| S4-06 | Admin Infrastructure  | M    | Todo   |
 
-## Backlog
+### Backlog
 
-- [ ] User Authentication & Sync (OAuth2)
-- [ ] Community URL Submission
 - [ ] "Stumble of the Day" Email (Email Co-Pilot Integration)
+- [ ] Admin Dashboard (requires S4-06)
 
 ### Follow-ups
 

@@ -34,7 +34,7 @@ export function ProfileModal({
         <DialogHeader>
           <DialogTitle>Profile</DialogTitle>
         </DialogHeader>
-        <div className="flex items-center gap-space-4">
+        <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
             <AvatarImage src={user.avatar_url} alt={user.display_name} />
             <AvatarFallback>{user.display_name?.charAt(0)}</AvatarFallback>
@@ -44,17 +44,17 @@ export function ProfileModal({
             <p className="text-muted-foreground">{user.email}</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-space-4 mt-space-4">
-          <div className="bg-muted p-space-4 rounded-md">
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="bg-muted p-4 rounded-md">
             <p className="text-sm">Stumbles</p>
             <p className="text-2xl font-bold">{historyCount}</p>
           </div>
-          <div className="bg-muted p-space-4 rounded-md">
+          <div className="bg-muted p-4 rounded-md">
             <p className="text-sm">Favorites</p>
             <p className="text-2xl font-bold">{favoritesCount}</p>
           </div>
         </div>
-        <Button variant="destructive" onClick={onLogout} className="mt-space-4">
+        <Button variant="destructive" onClick={onLogout} className="mt-4">
           Logout
         </Button>
       </DialogContent>

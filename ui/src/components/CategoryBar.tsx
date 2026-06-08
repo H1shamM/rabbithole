@@ -24,7 +24,7 @@ export function CategoryBar({
   onSearchSubmit,
 }: CategoryBarProps) {
   return (
-    <div className="flex flex-col md:flex-row gap-space-4 p-space-4 bg-bg-card rounded-lg border border-border">
+    <div className="flex flex-col md:flex-row gap-4 p-4 bg-bg-card rounded-lg border border-border">
       <Select value={category} onValueChange={onCategoryChange}>
         <SelectTrigger className="w-full md:w-[200px]">
           <SelectValue placeholder="Filter by category" />
@@ -38,7 +38,7 @@ export function CategoryBar({
         </SelectContent>
       </Select>
 
-      <form onSubmit={onSearchSubmit} className="flex gap-space-2 w-full">
+      <form onSubmit={onSearchSubmit} className="flex gap-2 w-full">
         <input
           type="text"
           placeholder="Search assets..."

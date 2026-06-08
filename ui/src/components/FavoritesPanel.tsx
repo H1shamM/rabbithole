@@ -23,7 +23,7 @@ export function FavoritesPanel({
   onStumble,
 }: FavoritesPanelProps) {
   return (
-    <div className="mt-space-6">
+    <div className="mt-6">
       <Button
         variant="outline"
         onClick={() => setShowFavorites(!showFavorites)}
@@ -33,24 +33,24 @@ export function FavoritesPanel({
         <span>({favorites.length})</span>
       </Button>
       {showFavorites && (
-        <Card className="mt-space-4">
+        <Card className="mt-4">
           <CardHeader>
             <CardTitle>Favorites</CardTitle>
           </CardHeader>
           <CardContent>
             {favorites.length === 0 ? (
-              <div className="text-center py-space-6 text-muted-foreground">
+              <div className="text-center py-6 text-muted-foreground">
                 <p>Your treasure chest is empty.</p>
-                <Button onClick={onStumble} className="mt-space-2">
+                <Button onClick={onStumble} className="mt-2">
                   Explore now
                 </Button>
               </div>
             ) : (
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-space-4">
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {favorites.map((item) => (
                   <li
                     key={item.id}
-                    className="p-space-3 border rounded-md flex justify-between items-center"
+                    className="p-3 border rounded-md flex justify-between items-center"
                   >
                     <a
                       href={item.url}

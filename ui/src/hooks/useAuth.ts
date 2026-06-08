@@ -33,7 +33,7 @@ export function useAuth() {
   );
 
   const handleAuth = useCallback(
-    async (isLogin: boolean) => {
+    async (email: string, password: string, isLogin: boolean) => {
       const endpoint = isLogin
         ? `${API_BASE}/auth/login`
         : `${API_BASE}/auth/register`;
@@ -53,7 +53,7 @@ export function useAuth() {
         return false;
       }
     },
-    [email, password],
+    [],
   );
 
   const logout = useCallback(() => {

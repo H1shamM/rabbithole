@@ -108,6 +108,10 @@ export function useStumble(
       }
       const data: StumbleResult = await res.json();
 
+      if (typeof data !== "object" || data === null) {
+        throw new Error("Invalid response format");
+      }
+
       // Add proxy URL
       data.proxyUrl = `${API_BASE}/proxy?url=${encodeURIComponent(data.url)}`;
       setCurrent(data);

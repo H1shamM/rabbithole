@@ -8,24 +8,21 @@ interface Recommendation {
 }
 
 export function RecommendationsPanel({
-  recommendations,
+  recommendations = [],
 }: {
-  recommendations: Recommendation[];
+  recommendations?: Recommendation[];
 }) {
+  console.log("Recommendations:", recommendations);
   return (
-    <Card className="mt-space-6">
+    <Card className="mt-6">
       <CardHeader>
         <CardTitle>Recommended for you</CardTitle>
       </CardHeader>
       <CardContent>
-        {recommendations.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            No recommendations yet. Keep rating content!
-          </p>
-        ) : (
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-space-4">
-            {recommendations.map((item) => (
-              <li key={item.id} className="p-space-3 border rounded-md">
+        {Array.isArray(recommendations) && recommendations.length > 0 ? (
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(recommendations || []).map((item) => (
+              <li key={item.id} className="p-3 border rounded-md">
                 <a
                   href={item.url}
                   target="_blank"
@@ -37,6 +34,10 @@ export function RecommendationsPanel({
               </li>
             ))}
           </ul>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            No recommendations yet. Keep rating content!
+          </p>
         )}
       </CardContent>
     </Card>

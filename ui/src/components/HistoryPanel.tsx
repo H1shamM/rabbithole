@@ -16,7 +16,7 @@ export function HistoryPanel({
   onStumble,
 }: HistoryPanelProps) {
   return (
-    <div className="mt-space-6">
+    <div className="mt-6">
       <Button
         variant="outline"
         onClick={() => setShowHistory(!showHistory)}
@@ -26,24 +26,24 @@ export function HistoryPanel({
         <span>({history.length})</span>
       </Button>
       {showHistory && (
-        <Card className="mt-space-4">
+        <Card className="mt-4">
           <CardHeader>
             <CardTitle>History</CardTitle>
           </CardHeader>
           <CardContent>
             {history.length === 0 ? (
-              <div className="text-center py-space-6 text-muted-foreground">
+              <div className="text-center py-6 text-muted-foreground">
                 <p>Your journey has just begun.</p>
-                <Button onClick={onStumble} className="mt-space-2">
+                <Button onClick={onStumble} className="mt-2">
                   Explore now
                 </Button>
               </div>
             ) : (
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-space-4">
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {history.slice(0, 10).map((item) => (
                   <li
                     key={item.timestamp.toString()}
-                    className="p-space-3 border rounded-md"
+                    className="p-3 border rounded-md"
                   >
                     <a
                       href={item.url}

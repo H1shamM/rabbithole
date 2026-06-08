@@ -59,7 +59,7 @@ export function AuthModal({
                 <DialogTitle>Welcome Back</DialogTitle>
               </DialogHeader>
               <Form {...form}>
-                <form className="space-y-space-4 mt-space-4">
+                <form className="space-y-space-4 mt-4">
                   <FormField
                     control={form.control}
                     name="email"
@@ -90,7 +90,7 @@ export function AuthModal({
                       </FormItem>
                     )}
                   />
-                  <div className="flex gap-space-2 pt-space-2">
+                  <div className="flex gap-2 pt-2">
                     <Button
                       type="button"
                       className="flex-1"

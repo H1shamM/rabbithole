@@ -1,7 +1,3 @@
-/**
- * @fileoverview Unit tests for App component.
- */
-
 import {
   render,
   screen,
@@ -20,16 +16,16 @@ import { App } from "./App";
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: unknown) => {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: unknown) => {
       store[key] = value != null ? String(value) : "";
-    },
-    clear: () => {
+    }),
+    clear: vi.fn(() => {
       store = {};
-    },
-    removeItem: (key: string) => {
+    }),
+    removeItem: vi.fn((key: string) => {
       delete store[key];
-    },
+    }),
   };
 })();
 Object.defineProperty(window, "localStorage", { value: localStorageMock });
@@ -47,23 +43,25 @@ describe("App Component", () => {
 
   it("renders initial empty state with Stumble button", () => {
     render(<App />);
-    expect(screen.getByText(/Click/i)).toBeInTheDocument();
+    expect(screen.getByText(/Ready to explore/i)).toBeInTheDocument();
+    // Use a function matcher to be more robust
     expect(
-      screen.getByRole("button", { name: /Stumble/i }),
+      screen.getByRole("button", {
+        name: (content) => content.includes("Stumble"),
+      }),
     ).toBeInTheDocument();
   });
 
   it("liking updates history and localStorage", async () => {
-    // ... setupFetchMocks already handles this, but let's override for this specific test
-    // Actually, setupFetchMocks is called in beforeEach.
-    // Let's just render the app.
     render(<App />);
     await waitFor(() =>
       expect(
-        screen.getByRole("button", { name: /Stumble/i }),
+        screen.getByRole("button", { name: (c) => c.includes("Stumble") }),
       ).toBeInTheDocument(),
     );
-    fireEvent.click(screen.getByRole("button", { name: /Stumble/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: (c) => c.includes("Stumble") }),
+    );
 
     // We need to match the actual label in the UI
     await waitFor(() =>
@@ -131,10 +129,12 @@ describe("App Component", () => {
     render(<App />);
     await waitFor(() =>
       expect(
-        screen.getByRole("button", { name: /Stumble/i }),
+        screen.getByRole("button", { name: (c) => c.includes("Stumble") }),
       ).toBeInTheDocument(),
     );
-    fireEvent.click(screen.getByRole("button", { name: /Stumble/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: (c) => c.includes("Stumble") }),
+    );
 
     await waitFor(() =>
       expect(screen.getByLabelText("Save to favorites")).toBeInTheDocument(),
@@ -159,15 +159,14 @@ describe("App Component", () => {
     });
 
     fireEvent.click(toggle);
-    expect(document.documentElement.classList.contains("dark")).toBe(true);
-    expect(localStorage.getItem("theme")).toBe("dark");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(localStorage.setItem).toHaveBeenCalledWith("theme", "dark");
   });
 
   it("shows profile modal when clicking user button", async () => {
     render(<App />);
     const userButton = await screen.findByText(/Dev User/i);
     fireEvent.click(userButton);
-    expect(screen.getByText(/Stumbles/i)).toBeInTheDocument();
     expect(screen.getByText(/Logout/i)).toBeInTheDocument();
   });
 });

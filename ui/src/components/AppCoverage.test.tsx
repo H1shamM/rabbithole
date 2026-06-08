@@ -105,7 +105,9 @@ describe("App Component Coverage", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /🎲 Stumble/i }));
 
-    await waitFor(() => expect(screen.getByText(/error/i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/Failed/i)).toBeInTheDocument(),
+    );
   });
 
   it("removes favorites", async () => {

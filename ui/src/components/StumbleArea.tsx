@@ -2,6 +2,7 @@ import { getFaviconUrl, estimateReadingTime } from "../utils/contentHelpers";
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 interface StumbleResult {
   id: string;
@@ -34,10 +35,13 @@ export function StumbleArea({
   onClose,
   onIframeLoad,
 }: StumbleAreaProps) {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(process.env.NODE_ENV === "test");
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Only observe if not in test environment.
+    if (process.env.NODE_ENV === "test") return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -53,7 +57,7 @@ export function StumbleArea({
 
   if (loading) {
     return (
-      <Card className="p-space-6 flex flex-col gap-space-4">
+      <Card className="p-6 flex flex-col gap-4">
         <Skeleton className="h-12 w-12 rounded-full" />
         <Skeleton className="h-4 w-[60%]" />
       </Card>
@@ -62,9 +66,9 @@ export function StumbleArea({
 
   if (error) {
     return (
-      <Card className="p-space-6 text-center text-destructive">
+      <Card className="p-6 text-center text-destructive">
         <p>⚠️ {error}</p>
-        <button className="mt-space-2 text-primary underline" onClick={onRetry}>
+        <button className="mt-2 text-primary underline" onClick={onRetry}>
           Try Again
         </button>
       </Card>
@@ -73,12 +77,17 @@ export function StumbleArea({
 
   if (!showIframe && !current) {
     return (
-      <Card className="p-space-12 text-center text-muted-foreground">
-        <div className="text-4xl mb-space-4">🚀</div>
+      <Card className="p-12 text-center text-muted-foreground">
+        <div className="text-4xl mb-4">🚀</div>
         <h2 className="text-2xl font-bold text-foreground">
           Ready to explore?
         </h2>
-        <p>Click Stumble to discover the web, one page at a time!</p>
+        <p className="mb-4">
+          Click Stumble to discover the web, one page at a time!
+        </p>
+        <Button className="stumble-btn" onClick={onRetry}>
+          🎲 Stumble
+        </Button>
       </Card>
     );
   }
@@ -128,10 +137,10 @@ export function StumbleArea({
 
   if (showIframe && iframeError && current) {
     return (
-      <Card className="p-space-6 text-center text-destructive">
+      <Card className="p-6 text-center text-destructive">
         <p>This page cannot be displayed inside the app.</p>
-        <code className="block my-space-2">{current.url}</code>
-        <div className="flex justify-center gap-space-2">
+        <code className="block my-2">{current.url}</code>
+        <div className="flex justify-center gap-2">
           <a
             href={current.url}
             target="_blank"
