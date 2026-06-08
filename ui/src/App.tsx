@@ -6,9 +6,9 @@ import { usePWA } from "./hooks/usePWA";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useTheme } from "./hooks/useTheme";
 import { Header } from "./components/Header";
+import { Sidebar } from "./components/Sidebar";
 import { AuthModal } from "./components/AuthModal";
 import { ProfileModal } from "./components/ProfileModal";
-import { CategoryBar } from "./components/CategoryBar";
 import { StumbleArea } from "./components/StumbleArea";
 import { ActionButtons } from "./components/ActionButtons";
 import { HistoryPanel } from "./components/HistoryPanel";
@@ -144,116 +144,135 @@ export function App() {
   }, [authenticatedFetch]);
 
   useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-theme",
+      darkMode ? "dark" : "light",
+    );
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
+
+  useEffect(() => {
     ensureDevAuth();
   }, [ensureDevAuth]);
 
   return (
     <ErrorBoundary>
-      <div className="app-container">
-        {networkError && (
-          <div
-            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative my-4"
-            role="status"
-          >
-            <p>⚠️ {networkError}</p>
-            <button
-              className="mt-2 bg-red-500 text-white px-3 py-1 rounded"
-              onClick={() => {
-                setNetworkError(null);
-                window.location.reload();
-              }}
-            >
-              Retry
-            </button>
-          </div>
-        )}
+      <div className="flex min-h-screen bg-background text-foreground">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-50 bg-accent text-white p-2"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 rounded-md bg-primary px-3 py-2 text-primary-foreground"
         >
           Skip to main content
         </a>
-        <Header
-          darkMode={darkMode}
-          setDarkMode={setDarkMode}
-          user={user}
-          onUserClick={() => (user ? setShowProfile(true) : setShowAuth(true))}
+
+        <Sidebar
+          category={category}
+          onCategoryChange={setCategory}
           isInstallable={isInstallable}
           onInstall={showInstallPrompt}
         />
 
-        <AuthModal
-          isOpen={showAuth && !user}
-          onLogin={(values) => {
-            handleAuth(values.email, values.password, true);
-          }}
-          onRegister={(values) => {
-            handleAuth(values.email, values.password, false);
-          }}
-          onClose={() => setShowAuth(false)}
-        />
-
-        <ProfileModal
-          isOpen={showProfile && !!user}
-          user={user}
-          historyCount={history.length}
-          favoritesCount={favorites.length}
-          onClose={() => setShowProfile(false)}
-          onLogout={logout}
-        />
-
-        <CategoryBar
-          category={category}
-          onCategoryChange={(cat) => setCategory(cat as Category)}
-          searchQuery={searchQuery}
-          onSearchQueryChange={setSearchQuery}
-          onSearchSubmit={handleSearch}
-        />
-
-        <main id="main-content" className="main-content">
-          <StumbleArea
-            showIframe={showIframe}
-            loading={loading}
-            error={error}
-            current={current}
-            iframeError={iframeError}
-            onRetry={fetchStumble}
-            onClose={handleClose}
-            onIframeLoad={handleIframeLoad}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Header
+            darkMode={darkMode}
+            setDarkMode={setDarkMode}
+            user={user}
+            onUserClick={() =>
+              user ? setShowProfile(true) : setShowAuth(true)
+            }
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            onSearchSubmit={handleSearch}
           />
 
-          <ActionButtons
-            showIframe={showIframe}
-            current={current}
-            loading={loading}
-            rating={rating}
-            rateLoading={rateLoading}
-            isFavorite={isFavorite(current)}
-            onRate={handleRate}
-            onToggleFavorite={() => toggleFavorite(current)}
-            onShare={handleShare}
-            onNext={fetchStumble}
+          {networkError && (
+            <div
+              className="mx-4 mt-4 flex items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive sm:mx-6"
+              role="status"
+            >
+              <p>⚠️ {networkError}</p>
+              <button
+                className="rounded-md bg-destructive px-3 py-1 text-sm text-white"
+                onClick={() => {
+                  setNetworkError(null);
+                  window.location.reload();
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          <AuthModal
+            isOpen={showAuth && !user}
+            onLogin={(values) => {
+              handleAuth(values.email, values.password, true);
+            }}
+            onRegister={(values) => {
+              handleAuth(values.email, values.password, false);
+            }}
+            onClose={() => setShowAuth(false)}
           />
 
-          <HistoryPanel
-            history={history}
-            showHistory={showHistory}
-            setShowHistory={setShowHistory}
-            onStumble={fetchStumble}
+          <ProfileModal
+            isOpen={showProfile && !!user}
+            user={user}
+            historyCount={history.length}
+            favoritesCount={favorites.length}
+            onClose={() => setShowProfile(false)}
+            onLogout={logout}
           />
-          <FavoritesPanel
-            favorites={favorites}
-            showFavorites={showFavorites}
-            setShowFavorites={setShowFavorites}
-            onRemove={removeFavorite}
-            onStumble={fetchStumble}
-          />
-          <RecommendationsPanel recommendations={recommendations} />
-          <SubmissionForm
-            onSuccess={() => addToast("Submitted!")}
-            authenticatedFetch={typedAuthenticatedFetch}
-          />
-        </main>
+
+          <main
+            id="main-content"
+            className="flex-1 overflow-y-auto px-4 py-6 sm:px-6"
+          >
+            <div className="mx-auto w-full max-w-5xl space-y-6">
+              <StumbleArea
+                showIframe={showIframe}
+                loading={loading}
+                error={error}
+                current={current}
+                iframeError={iframeError}
+                onRetry={fetchStumble}
+                onClose={handleClose}
+                onIframeLoad={handleIframeLoad}
+              />
+
+              <ActionButtons
+                showIframe={showIframe}
+                current={current}
+                loading={loading}
+                rating={rating}
+                rateLoading={rateLoading}
+                isFavorite={isFavorite(current)}
+                onRate={handleRate}
+                onToggleFavorite={() => toggleFavorite(current)}
+                onShare={handleShare}
+                onNext={fetchStumble}
+              />
+
+              <HistoryPanel
+                history={history}
+                showHistory={showHistory}
+                setShowHistory={setShowHistory}
+                onStumble={fetchStumble}
+              />
+              <FavoritesPanel
+                favorites={favorites}
+                showFavorites={showFavorites}
+                setShowFavorites={setShowFavorites}
+                onRemove={removeFavorite}
+                onStumble={fetchStumble}
+              />
+              <RecommendationsPanel recommendations={recommendations} />
+              <SubmissionForm
+                onSuccess={() => addToast("Submitted!")}
+                authenticatedFetch={typedAuthenticatedFetch}
+              />
+            </div>
+          </main>
+        </div>
       </div>
     </ErrorBoundary>
   );

@@ -1,5 +1,6 @@
+import { History, ChevronDown, ChevronUp } from "lucide-react";
 import type { HistoryItem } from "../hooks/useHistory";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface HistoryPanelProps {
@@ -9,6 +10,9 @@ interface HistoryPanelProps {
   onStumble?: () => void;
 }
 
+/**
+ * Collapsible list of recently visited stumbles.
+ */
 export function HistoryPanel({
   history,
   showHistory,
@@ -16,40 +20,44 @@ export function HistoryPanel({
   onStumble,
 }: HistoryPanelProps) {
   return (
-    <div className="mt-6">
+    <div>
       <Button
         variant="outline"
         onClick={() => setShowHistory(!showHistory)}
         className="w-full justify-between"
       >
-        <span>{showHistory ? "🔽 Hide History" : "📋 View History"}</span>
-        <span>({history.length})</span>
+        <span className="flex items-center gap-2">
+          <History className="size-4" />
+          {showHistory ? "Hide History" : "View History"}
+        </span>
+        <span className="flex items-center gap-2 text-muted-foreground">
+          {history.length}
+          {showHistory ? (
+            <ChevronUp className="size-4" />
+          ) : (
+            <ChevronDown className="size-4" />
+          )}
+        </span>
       </Button>
       {showHistory && (
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle>History</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="mt-3">
+          <CardContent className="pt-6">
             {history.length === 0 ? (
-              <div className="text-center py-6 text-muted-foreground">
+              <div className="py-6 text-center text-muted-foreground">
                 <p>Your journey has just begun.</p>
-                <Button onClick={onStumble} className="mt-2">
+                <Button onClick={onStumble} className="mt-3">
                   Explore now
                 </Button>
               </div>
             ) : (
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
                 {history.slice(0, 10).map((item) => (
-                  <li
-                    key={item.timestamp.toString()}
-                    className="p-3 border rounded-md"
-                  >
+                  <li key={item.timestamp.toString()}>
                     <a
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium hover:text-accent"
+                      className="block truncate rounded-lg border border-border px-3 py-2.5 text-sm font-medium transition-colors hover:border-primary/40 hover:bg-accent"
                     >
                       {item.title || item.url}
                     </a>

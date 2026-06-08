@@ -103,7 +103,7 @@ describe("App Component Coverage", () => {
     });
 
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /🎲 Stumble/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Stumble" }));
 
     await waitFor(() =>
       expect(screen.getByText(/Failed/i)).toBeInTheDocument(),
@@ -160,9 +160,7 @@ describe("App Component Coverage", () => {
         screen.getByRole("button", { name: /Favorites/i }),
       ).toBeInTheDocument(),
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: /Favorites/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /Favorites/i }));
 
     // Find and click remove button
     const removeBtn = await screen.findByLabelText("Remove from favorites");
