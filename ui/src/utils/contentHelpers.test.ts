@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getFaviconUrl, estimateReadingTime, getDomainFromUrl } from "./contentHelpers";
+import { getFaviconUrl, estimateReadingTime, getDomainFromUrl, truncate } from "./contentHelpers";
 
 describe("contentHelpers", () => {
   it("should return correct favicon URL for known sources", () => {
@@ -38,5 +38,16 @@ describe("contentHelpers", () => {
 
   it("should return empty string for invalid URL", () => {
     expect(getDomainFromUrl("not-a-url")).toBe("");
+  });
+
+  describe("truncate", () => {
+    it("should return text unchanged if length is less than or equal to max", () => {
+      expect(truncate("hello", 10)).toBe("hello");
+      expect(truncate("abc", 3)).toBe("abc");
+    });
+
+    it("should truncate and add ellipsis if length is greater than max", () => {
+      expect(truncate("hello world", 5)).toBe("hell…");
+    });
   });
 });
