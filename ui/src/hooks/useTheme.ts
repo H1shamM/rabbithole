@@ -11,11 +11,12 @@ export function useTheme() {
   });
 
   useEffect(() => {
-    // Apply dark mode attribute to html element
-    document.documentElement.setAttribute(
-      "data-theme",
-      darkMode ? "dark" : "light",
-    );
+    // Apply dark mode class to html element for Tailwind
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
     // Save to localStorage
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);

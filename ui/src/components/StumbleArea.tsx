@@ -1,4 +1,4 @@
-import { getFaviconUrl, estimateReadingTime } from "../utils/contentHelpers";
+import { getFaviconUrl } from "../utils/contentHelpers";
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,7 +39,6 @@ export function StumbleArea({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Only observe if not in test environment.
     if (process.env.NODE_ENV === "test") return;
 
     const observer = new IntersectionObserver(
@@ -68,9 +67,9 @@ export function StumbleArea({
     return (
       <Card className="p-6 text-center text-destructive">
         <p>⚠️ {error}</p>
-        <button className="mt-2 text-primary underline" onClick={onRetry}>
+        <Button variant="outline" className="mt-2" onClick={onRetry}>
           Try Again
-        </button>
+        </Button>
       </Card>
     );
   }
@@ -85,9 +84,7 @@ export function StumbleArea({
         <p className="mb-4">
           Click Stumble to discover the web, one page at a time!
         </p>
-        <Button className="stumble-btn" onClick={onRetry}>
-          🎲 Stumble
-        </Button>
+        <Button onClick={onRetry}>🎲 Stumble</Button>
       </Card>
     );
   }
@@ -97,41 +94,39 @@ export function StumbleArea({
       ? current.proxyUrl || current.url
       : "about:blank";
     return (
-      <div className="iframe-container" ref={containerRef}>
+      <Card className="iframe-container" ref={containerRef}>
         <div className="iframe-header">
-          <div className="stumble-card-header">
+          <div className="stumble-card-header flex items-center gap-2">
             <img
               src={getFaviconUrl(current.source)}
               alt=""
-              className="source-favicon"
+              className="w-4 h-4"
               loading="lazy"
             />
-            <span className="stumble-category">{current.category}</span>
-            <span className="stumble-source">{current.source}</span>
-            {estimateReadingTime(current.description) && (
-              <span className="reading-time">
-                {estimateReadingTime(current.description)}
-              </span>
-            )}
+            <span className="text-sm">{current.category}</span>
+            <span className="text-sm">• {current.source}</span>
           </div>
-          <span className="iframe-title">{current.title || current.url}</span>
-          <button
-            className="close-btn"
+          <span className="text-lg font-bold truncate">
+            {current.title || current.url}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onClose}
             aria-label="Close iframe"
           >
             ✖
-          </button>
+          </Button>
         </div>
         <iframe
           src={iframeSrc}
           title="Stumbled page"
-          className="iframe"
+          className="w-full h-screen border-none"
           onLoad={onIframeLoad}
           loading="lazy"
           sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
         />
-      </div>
+      </Card>
     );
   }
 
@@ -149,13 +144,13 @@ export function StumbleArea({
           >
             Open in new tab
           </a>
-          <button className="text-secondary underline" onClick={onRetry}>
+          <Button variant="outline" onClick={onRetry}>
             Try Another
-          </button>
+          </Button>
         </div>
-        <button className="close-btn" onClick={onClose}>
+        <Button variant="ghost" onClick={onClose} className="mt-2">
           Close
-        </button>
+        </Button>
       </Card>
     );
   }

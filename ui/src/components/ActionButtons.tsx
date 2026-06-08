@@ -36,51 +36,38 @@ export function ActionButtons({
   if (!showIframe || !current) return null;
 
   return (
-    <div className="action-bar">
+    <div className="flex justify-center gap-2 mt-4">
       <Button
-        variant={rating === "like" ? "default" : "secondary"}
+        variant={rating === "like" ? "default" : "outline"}
         size="sm"
         onClick={() => onRate("like")}
         disabled={rateLoading}
-        className="rate-btn"
         aria-label="Like"
       >
         👍
       </Button>
       <Button
-        variant={rating === "dislike" ? "default" : "secondary"}
+        variant={rating === "dislike" ? "default" : "outline"}
         size="sm"
         onClick={() => onRate("dislike")}
         disabled={rateLoading}
-        className="rate-btn"
         aria-label="Dislike"
       >
         👎
       </Button>
       <Button
-        variant="secondary"
+        variant="outline"
         size="sm"
         onClick={onToggleFavorite}
-        className={`favorite-btn ${isFavorite ? "active" : ""}`}
+        className={isFavorite ? "text-yellow-500" : ""}
         aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
       >
         {isFavorite ? "⭐" : "☆"}
       </Button>
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={onShare}
-        aria-label="Share"
-      >
+      <Button variant="outline" size="sm" onClick={onShare} aria-label="Share">
         📤
       </Button>
-      <Button
-        variant="default"
-        size="sm"
-        onClick={onNext}
-        disabled={loading}
-        className="next-btn"
-      >
+      <Button variant="default" size="sm" onClick={onNext} disabled={loading}>
         {loading ? "..." : "➡️ Next Stumble"}
       </Button>
     </div>
