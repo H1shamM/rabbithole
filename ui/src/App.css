@@ -88,11 +88,13 @@
   transform: translateY(-2px);
   filter: brightness(1.05);
   box-shadow: var(--shadow);
+  will-change: transform;
 }
 
 .btn:active {
   transform: translateY(1px) scale(0.97);
   transition-duration: 0.05s;
+  will-change: transform;
 }
 
 .btn-primary {
@@ -120,6 +122,7 @@
   font-size: 1.1rem;
   font-weight: 600;
   box-shadow: var(--shadow);
+  will-change: transform;
 }
 
 /* Action bar - floating overlay */
