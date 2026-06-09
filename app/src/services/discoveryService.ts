@@ -2,6 +2,12 @@ import type { IStoragePort, RatedItem } from "../db/storagePort.js";
 import { AppError } from "../middleware/errorHandler.js";
 import type { StumbleAsset } from "../models/asset.js";
 import type { ContentFetcher } from "../sources/ContentFetcher.js";
+import { isServableAsset } from "./assetGate.js";
+
+/** Below this, block to guarantee the user has something to stumble to. */
+const MIN_POOL = 5;
+/** Up to this, top the pool up in the background so the corpus keeps growing. */
+const TARGET_POOL = 20;
 
 export class DiscoveryService {
   constructor(
@@ -24,13 +30,16 @@ export class DiscoveryService {
     const preferences = await this.storage.getUserPreferences(userId);
     let assets = await this.storage.getAllAssets(category);
 
-    // If database has fewer than 5 assets, try to fetch from live sources
-    if (assets.length < 5) {
+    if (assets.length < MIN_POOL) {
+      // Cold start: block once so the user always has something to stumble to.
       const newAsset = await this.fetchFromLiveSources(category);
       if (newAsset) {
         await this.storage.saveAsset(newAsset);
         assets = await this.storage.getAllAssets(category);
       }
+    } else if (assets.length < TARGET_POOL) {
+      // Warm pool: grow the corpus in the background without blocking the serve.
+      void this.backgroundTopUp(category);
     }
 
     const availableAssets = assets.filter(
@@ -81,7 +90,14 @@ export class DiscoveryService {
       if (!source) continue;
       try {
         const asset = await source.fetchStumble(category);
-        if (asset && asset.url && asset.title) {
+        // Quality gate: only accept videos or pages the reader can extract, so
+        // homepages / embed-hostile pages never enter rotation as blank cards.
+        if (
+          asset &&
+          asset.url &&
+          asset.title &&
+          (await isServableAsset(asset))
+        ) {
           return asset;
         }
       } catch (error) {
@@ -89,6 +105,19 @@ export class DiscoveryService {
       }
     }
     return null;
+  }
+
+  /**
+   * Best-effort background fetch to grow the corpus toward TARGET_POOL. Never
+   * throws into the serve path — failures are swallowed.
+   */
+  private async backgroundTopUp(category: string): Promise<void> {
+    try {
+      const asset = await this.fetchFromLiveSources(category);
+      if (asset) await this.storage.saveAsset(asset);
+    } catch (error) {
+      console.error("Background top-up failed:", error);
+    }
   }
 
   async rate(
