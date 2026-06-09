@@ -66,6 +66,11 @@ export class DiscoveryService {
     if (availableAssets.length === 0)
       throw new AppError("No content available right now", 503);
 
+    const recentIds = new Set(history.slice(-COOLDOWN_WINDOW));
+    const recentSources = new Set(
+      assets.filter((a) => recentIds.has(a.id)).map((a) => a.source),
+    );
+
     const weightedAssets = availableAssets.map((asset: StumbleAsset) => {
       let weight = 1;
       const catPref = preferences.find(
@@ -77,8 +82,6 @@ export class DiscoveryService {
       if (catPref) weight += catPref.score;
       if (srcPref) weight += srcPref.score;
 
-      const recentHistory = assets.filter((a) => history.slice(-COOLDOWN_WINDOW).includes(a.id));
-      const recentSources = new Set(recentHistory.map((a) => a.source));
       if (recentSources.has(asset.source)) {
         weight *= 0.05;
       }
