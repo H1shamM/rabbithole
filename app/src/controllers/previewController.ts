@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { fetchHtml } from "../utils/fetchHtml.js";
 import { assertPublicHttpUrl } from "../utils/urlGuard.js";
-import { extractPreview } from "../services/previewService.js";
+import { extractPreview, screenshotUrl } from "../services/previewService.js";
 import { AppError } from "../middleware/errorHandler.js";
 
 /**
@@ -35,7 +35,7 @@ export class PreviewController {
       res.json({
         title: hostname,
         description: null,
-        image: null,
+        image: screenshotUrl(targetUrl),
         siteName: hostname,
         favicon: null,
       });
