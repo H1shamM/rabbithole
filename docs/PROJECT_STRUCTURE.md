@@ -3,43 +3,39 @@
 We follow a modular monorepo approach with three distinct packages.
 
 stumble-clone/
-├── app/ # Backend API (Node/TypeScript)
-│ ├── main.ts # Entry point (Express/Fastify)
-│ ├── config/ # Environment and app config
-│ │ └── settings.ts
-│ ├── db/ # Database abstraction
-│ │ ├── storage_port.ts # Interface for storage operations
-│ │ └── sqlite_adapter.ts # SQLite implementation
-│ ├── models/ # Domain models and DTOs
-│ │ └── asset.ts
-│ ├── services/ # Business logic
-│ │ └── discovery_service.ts
-│ ├── api/ # API routes (controllers)
-│ │ └── v1/
-│ ├── vitest.config.ts
-│ └── package.json
+├── app/ # Backend API (Node + TypeScript + Express 5)
+│ └── src/
+│ ├── main.ts # Entry point
+│ ├── app.ts # App wiring (DI, routes, source registration)
+│ ├── config/settings.ts
+│ ├── db/ # Database abstraction (hexagonal port/adapter)
+│ │ ├── storagePort.ts # Interface for storage operations
+│ │ └── sqliteAdapter.ts # better-sqlite3 implementation
+│ ├── models/asset.ts # Domain models (Zod schemas)
+│ ├── services/ # Business logic (discoveryService, readerService, assetGate…)
+│ ├── sources/ # ContentFetcher implementations (one per source)
+│ ├── controllers/ # Route handlers
+│ └── api/v1/ # Route definitions
 ├── extension/ # Browser extension (JavaScript)
 │ ├── background.js
 │ └── manifest.json
-├── ui/ # React frontend (Vite + TypeScript)
-│ ├── src/
-│ │ └── components/ # Reusable UI components
-│ ├── public/
-│ ├── eslint.config.js
-│ ├── vite.config.ts
-│ └── package.json
-├── tests/ # Cross‑cutting tests
-│ ├── unit/ # Unit tests for shared logic
-│ └── integration/ # Integration tests (API + DB)
-├── scripts/ # Build and utility scripts
-│ └── build-extension.sh
+├── ui/ # React 19 frontend (Vite + TypeScript + Tailwind v4)
+│ └── src/
+│ ├── components/ # UI components (PascalCase)
+│ ├── hooks/ # Hooks (useStumble, useReader…)
+│ └── contexts/
+├── tests/ # Cross‑cutting tests (Vitest)
+│ ├── unit/ # Unit tests (mocked deps)
+│ └── integration/ # Integration tests (real temp DB + endpoints)
+├── docs/ # Workflow, standards, templates, PROGRESS
+├── e2e/ # Playwright
 ├── docker-compose.yml
 └── README.md
 
 ## Key principles
 
 - Separation of concerns: the API never touches the browser extension's code directly.
-- Port/adapter pattern in app/db/ — storage_port.ts defines the interface, sqlite_adapter.ts implements it. This allows swapping SQLite for Postgres without changing service logic.
+- Port/adapter pattern in app/src/db/ — storagePort.ts defines the interface, sqliteAdapter.ts implements it. This allows swapping SQLite for Postgres without changing service logic.
 - Shared types (if any) will be placed in a shared/ package or simply kept in models/ and consumed via path alias.
 - No circular dependencies between packages.
 
@@ -51,7 +47,8 @@ stumble-clone/
 
 ## Naming conventions
 
-- File/directory: kebab-case (discovery-service.ts, my-feature/)
+- Module files: camelCase (`discoveryService.ts`); React components: PascalCase
+  (`StumbleArea.tsx`); directories: lowercase (`api/v1/`).
 - See CODING_STANDARDS.md for full naming rules.
 
 ---
