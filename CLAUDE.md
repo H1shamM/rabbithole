@@ -1,8 +1,18 @@
 # StumbleClone — Claude Code Context
 
 A modern StumbleUpon clone (serendipitous web discovery). Migrated from Gemini CLI to
-Claude Code on 2026-06-08. Build is healthy, the SaaS UI is shipped, and **in-app
-reader-first viewing is live**. Sprint 5 (S5-01…S5-04) is complete — see `docs/PROGRESS.md`.
+Claude Code on 2026-06-08. Build is healthy, the SaaS UI is shipped, in-app reader-first
+viewing is live, and the **discovery engine has been hardened** (URL dedup, content-type
+gate, session dedup, source cooldown, type-aware rendering). Sprints 5–6 are complete —
+see `docs/PROGRESS.md`.
+
+**Current focus — Content & Rendering v2 (Sprint 7, epic #169).** Three structured
+product-eval sessions proved the *engine* works but **delight is still ~0%**: the content
+pool is thin/dull and non-article content won't render (you can't iframe the arbitrary web).
+The real target is a **mobile app** (web is the prototype); "browse the site inside the app"
+is a native-WebView capability, not a web iframe. Direction: curated channel library +
+render-by-type with a **screenshot-preview** fallback. See the eval findings in PROGRESS
+and the platform/content memory notes.
 
 ## Layout (monorepo)
 
@@ -42,18 +52,37 @@ Mechanics:
 - A senior review loop can run via the `/loop` skill (poll bot PRs, review, merge). The junior loops
   via a `while/sleep` script on its laptop (Gemini CLI has no native scheduler).
 
-## 🧭 In-app reader-first viewing (S5-04, done)
+## 🧭 Discovery engine & rendering
 
-The headline feature — stumbles render *inside* the app instead of a blank iframe:
-- Backend `GET /api/v1/reader?url=` (`app/src/services/readerService.ts` + `readerController.ts`)
-  extracts the main article with `@mozilla/readability` (jsdom), **sanitizes** it (`sanitize-html`),
-  returns clean JSON; 422 when not article-like; never 500. SSRF guard in `utils/urlGuard.ts`.
-- `StumbleArea.tsx` is **reader-first hybrid**: default to the extracted reader view (`ReaderView` +
-  `useReader`), a **Reader/Live `ViewModeToggle`**, open-in-tab. **Video** stumbles (embeddable
-  `/embed/` proxyUrl, e.g. YouTube) auto-default to a 16:9 live player. When reader fails and the user
-  hasn't chosen Live, a "reader unavailable" card shows (no blank pages).
-- Search (`App.tsx`) drives the main view: results show in StumbleArea, Next cycles them, Exit returns
-  to random. Spacebar = next; rating shows a toast.
+**Selection** (`app/src/services/discoveryService.ts`, `stumble()`): weighted-random over the
+category pool. Weight = `1 + user category-pref + user source-pref`, then a **source cooldown**
+(#155) multiplies by `0.05` if the asset's source appeared in the last `COOLDOWN_WINDOW` (4)
+history ids, floored at `0.1` (disfavored, not banned). **Session dedup** (#147): the UI
+(`useStumble.ts`) tracks seen ids and sends them as `history`; the backend filters them and, when
+the pool is exhausted, fetches live then falls back to the full pool (503 only on a truly empty
+corpus). Pool grows **eagerly** toward `TARGET_POOL` (background top-up); `UNIQUE(url)` + an upsert
+prevent duplicate rows.
+
+**Content types & the gate** (`app/src/services/assetGate.ts`): every asset has a
+`type` (`article | image | video | interactive`; nullable `type` column). `classifyAsset` tags it —
+videos (`/embed/`) and known visual/interactive sources pass without article extraction; unknown
+pages must extract (`extractReadable`) to be servable. This replaced the old article-only boolean
+gate that flattened everything into a reading list.
+
+**Reader** (`readerService.ts` + `readerController.ts`): `GET /api/v1/reader?url=` extracts the main
+article with `@mozilla/readability` (jsdom), **sanitizes** (`sanitize-html`), in-memory cached,
+rejects thin/<400-char extractions; 422 when not article-like, never 500. SSRF guard in
+`utils/urlGuard.ts`.
+
+**Rendering** (`StumbleArea.tsx`, type-aware, #154): `article` → reader (`ReaderView` + `useReader`);
+`video` → 16:9 live player; `image`/`interactive` → live (visuals preserved, not stripped reader).
+A **Reader/Live `ViewModeToggle`** overrides; a "reader unavailable" card shows on extraction
+failure (no blank pages). **Known gap (Sprint 7):** the "Live" iframe still routes through `/proxy`,
+which black-screens YouTube and can't show un-iframable sites — being replaced by direct embeds +
+screenshot-preview cards (#170, #172).
+
+Search (`App.tsx`) drives the main view: results show in StumbleArea, Next cycles them, Exit returns
+to random. Spacebar = next; rating shows a toast.
 
 ## Build / CI health
 

@@ -69,7 +69,7 @@ blank pages), and a 16:9 auto-embed **video mode** for YouTube/embeddable source
 (#115, #120). Plus from the UX evaluation: **search drives the discovery view**
 (#119), rating-toast feedback (#122), and a spacebar = next shortcut (#123).
 
-## Sprint 6: Discovery Engine Quality (In Progress)
+## Sprint 6: Discovery Engine Quality (Done)
 
 Driven by a structured **product evaluation** of the stumble experience (30-stumble
 protocol, stopped early at #16). Findings: delight rate **0%**, disaster rate **81%**,
@@ -83,6 +83,11 @@ sent. Sprint closes those gaps.
 | S6-01 | Dedup asset URLs (UNIQUE + conflict-safe upsert) | S    | Done (PR #148) |
 | S6-02 | Raise stumble quality floor                      | L    | Done (PR #150) |
 | S6-03 | Session dedup + graceful exhaustion              | M    | Done (PR #151) |
+| S6-04 | Format-aware content gate (type classifier)      | L    | Done (PR #160) |
+| S6-05 | Content-type-aware rendering                     | M    | Done (PR #163) |
+| S6-06 | Per-source cooldown                              | S    | Done (PR #165) |
+| S6-07 | Reader robustness (min-length, in-memory cache)  | S    | Done (PR #158, #131) |
+| S6-08 | Language filter (Medium non-English)             | S    | Done (PR #164) |
 
 S6-01 (#145, junior `gemini-ready`): `UNIQUE(url)` on `assets`, `saveAsset` upsert via
 `ON CONFLICT(url)` preserving `rating`/`created_at`, plus a migration that collapses
@@ -101,8 +106,41 @@ on category change. Backend no longer throws when the pool is exhausted: it trie
 live fetch, then falls back to the full pool, erroring (503) only on a genuinely empty
 corpus.
 
-**Next:** re-run the 30-stumble protocol (eval session 2) to verify the targets —
-repeat rate <5%, disaster <40%, delight >10%, broken-renders ≈0.
+S6-04…08: format-aware gate (`assetGate.classifyAsset` → `article|image|video|interactive`,
+nullable `type` column), type-aware rendering (`StumbleArea` routes visual content to live, prose
+to reader), per-source cooldown (down-weights a source seen in the last 4 stumbles), reader
+min-length + in-memory cache, and a non-English filter on the Medium source.
+
+## Eval sessions 2 & 3 (verification)
+
+**Session 2 (post-S6, n=16):** the floor was fixed — broken renders 33%→**0%**, disaster
+81%→**19%**, repeats 38%→**~6%**. But **delight only 0%→6%**: the fixes removed reasons to quit
+without adding reasons to stay. New failure mode = **monotony** ("it's all articles") + source
+clustering (Bored Panda 3×) + reader stripping image-rich sites. Floor solved; ceiling untouched.
+
+**Session 3 (post-format-work, stopped at #8):** churned *fast* — **4 of 7 stumbles were Wikipedia**
+(seed pool was 55% one source; cooldown can't beat a rigged corpus), and non-article content
+(video #3, Bored Panda #6, Atlas #9) **rendered blank** (you can't iframe the arbitrary web).
+Verdict: **the engine works; the bottleneck is content + rendering, not the algorithm.** Delight
+stayed ~0 because the pool is dull and visual content won't display.
+
+## Sprint 7: Content & Rendering v2 (Planned — epic #169)
+
+The delight gap is a **content + rendering** problem. Competitive research (Cloudhiker's ~30k
+hand-reviewed sites / 19 channels; Viralwalk "Flows" & TheRandomWeb "Preview Mode" using
+screenshot previews; Discuvver/Useless Web open-in-tab) confirms: curated library = the moat,
+and nobody iframes arbitrary sites. **Platform direction:** the real target is a **mobile app**
+(web = prototype); in-app browsing is a native WebView, not a web iframe (Capacitor as the bridge).
+
+| ID    | Story                                                       | Size | Status            |
+| ----- | ----------------------------------------------------------- | ---- | ----------------- |
+| S7-01 | Fix video player (direct `/embed/`, not `/proxy`)           | S    | Todo (#170, bot)  |
+| S7-02 | Rebalance seed pool (cap any source at ~2)                  | S    | Todo (#171)       |
+| S7-03 | Render-by-type + screenshot-preview fallback                | L    | Todo (#172)       |
+| S7-04 | Curated channel content library + submission pipeline       | XL   | Todo (#173)       |
+
+**Success criteria (re-run the protocol, session 4):** format mix >30%, delight >15%, max
+same-domain ≤2, broken-renders → 0, first interest-dip materially later than #7.
 
 ### Backlog
 
