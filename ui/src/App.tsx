@@ -99,6 +99,11 @@ export function App() {
         return;
       }
       setRating(type);
+      addToast(
+        type === "like"
+          ? "Liked — we'll show you more like this"
+          : "Noted — fewer like this",
+      );
       await loadHistory();
     } catch {
       setNetworkError("Backend unreachable. Please check your connection.");
