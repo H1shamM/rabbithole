@@ -1,6 +1,13 @@
 import { getFaviconUrl } from "../utils/contentHelpers";
 import { useEffect, useRef, useState } from "react";
-import { Compass, Shuffle, AlertTriangle, X, ExternalLink } from "lucide-react";
+import {
+  Compass,
+  Shuffle,
+  AlertTriangle,
+  X,
+  ExternalLink,
+  Globe,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -151,10 +158,7 @@ export function StumbleArea({
               {current.category} · {current.source}
             </p>
           </div>
-          <ViewModeToggle
-            mode={showReader ? "reader" : "live"}
-            onChange={setViewMode}
-          />
+          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
           <Button
             variant="ghost"
             size="icon"
@@ -193,6 +197,34 @@ export function StumbleArea({
               <Skeleton className="h-72 w-full rounded-lg" />
             </Card>
           )
+        ) : viewMode === "reader" && reader.error ? (
+          <Card className="flex flex-col items-center gap-3 p-10 text-center">
+            <div className="grid size-12 place-items-center rounded-full bg-muted text-muted-foreground">
+              <AlertTriangle className="size-6" />
+            </div>
+            <p className="font-medium">
+              We couldn&apos;t generate a reader view for this page.
+            </p>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              Some pages (videos, apps, paywalls) can&apos;t be read inline.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button asChild className="gap-2">
+                <a href={current.url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="size-4" />
+                  Open in new tab
+                </a>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setViewMode("live")}
+                className="gap-2"
+              >
+                <Globe className="size-4" />
+                Show live page
+              </Button>
+            </div>
+          </Card>
         ) : iframeError ? (
           <Card className="flex flex-col items-center gap-3 p-10 text-center">
             <div className="grid size-12 place-items-center rounded-full bg-muted text-muted-foreground">
