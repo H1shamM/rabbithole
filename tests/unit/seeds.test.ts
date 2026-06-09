@@ -24,4 +24,17 @@ describe("DEFAULT_SEED_ASSETS balance", () => {
       urls.add(a.url);
     }
   });
+
+  it("every seed is assigned to a channel, spanning many channels", () => {
+    for (const a of DEFAULT_SEED_ASSETS) {
+      expect(a.channel).toBeTruthy();
+    }
+    const channels = new Set(DEFAULT_SEED_ASSETS.map((a) => a.channel));
+    expect(channels.size).toBeGreaterThanOrEqual(6);
+  });
+
+  it("is majority non-article (format variety)", () => {
+    const nonArticle = DEFAULT_SEED_ASSETS.filter((a) => a.type !== "article");
+    expect(nonArticle.length).toBeGreaterThan(DEFAULT_SEED_ASSETS.length / 2);
+  });
 });
