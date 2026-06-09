@@ -10,23 +10,16 @@ import { settings } from "./config/settings.js";
 
 export type SeedAsset = Omit<StumbleAsset, "created_at" | "last_visited_at">;
 
-// Seeds are deliberately *deep links to specific, reader-friendly articles*, not
-// site homepages. Homepage seeds (HN/Reddit/Colossal roots) can't be extracted by
-// reader-first mode and render as blank cards — the #1 quality-floor failure found
-// in product eval session 1. Wikipedia/essay permalinks render reliably in reader.
+// Seeds are deep links to specific, render-friendly content — never site homepages
+// (those blank out in reader; eval session 1). They are deliberately balanced two ways
+// after eval sessions 2–3: (1) **no single source appears more than twice** — a
+// 55%-Wikipedia pool made session 3 feel monotonous and the user churned by stumble #7;
+// (2) **format-diverse** — ~half are non-article (video / image / interactive) so the
+// stream isn't a reading list. This is a stopgap until the curated channel library (#173).
 export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
+  // --- Articles (reader-friendly, varied sources) ---
   {
     id: "t1",
-    url: "https://en.wikipedia.org/wiki/Unix_philosophy",
-    title: "The Unix Philosophy",
-    description: "Do one thing well — the design ethos behind Unix.",
-    source: "Wikipedia",
-    category: "tech",
-    rating: 0,
-    type: "article",
-  },
-  {
-    id: "t2",
     url: "https://blog.codinghorror.com/the-best-code-is-no-code-at-all/",
     title: "The Best Code is No Code At All",
     description: "A classic essay on why less code is better code.",
@@ -36,22 +29,22 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     type: "article",
   },
   {
-    id: "s1",
-    url: "https://en.wikipedia.org/wiki/Tardigrade",
-    title: "Tardigrade",
-    description: "The near-indestructible micro-animal that survives space.",
-    source: "Wikipedia",
-    category: "science",
+    id: "t2",
+    url: "https://paulgraham.com/greatwork.html",
+    title: "How to Do Great Work",
+    description: "Paul Graham on doing work that matters.",
+    source: "Paul Graham",
+    category: "tech",
     rating: 0,
     type: "article",
   },
   {
-    id: "s2",
-    url: "https://en.wikipedia.org/wiki/Cosmic_microwave_background",
-    title: "Cosmic Microwave Background",
-    description: "The faint afterglow of the Big Bang, explained.",
-    source: "Wikipedia",
-    category: "science",
+    id: "t3",
+    url: "https://www.joelonsoftware.com/2000/04/06/things-you-should-never-do-part-i/",
+    title: "Things You Should Never Do, Part I",
+    description: "Joel Spolsky on why you should never rewrite from scratch.",
+    source: "Joel on Software",
+    category: "tech",
     rating: 0,
     type: "article",
   },
@@ -66,27 +59,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     type: "article",
   },
   {
-    id: "a2",
-    url: "https://en.wikipedia.org/wiki/Bauhaus",
-    title: "Bauhaus",
-    description: "The art school that shaped modern design.",
-    source: "Wikipedia",
-    category: "art",
-    rating: 0,
-    type: "article",
-  },
-  {
     id: "r1",
-    url: "https://en.wikipedia.org/wiki/Dancing_plague_of_1518",
-    title: "The Dancing Plague of 1518",
-    description: "When dozens danced themselves to death in Strasbourg.",
-    source: "Wikipedia",
-    category: "random",
-    rating: 0,
-    type: "article",
-  },
-  {
-    id: "r2",
     url: "https://en.wikipedia.org/wiki/Voynich_manuscript",
     title: "The Voynich Manuscript",
     description: "A 600-year-old book no one has ever been able to read.",
@@ -95,36 +68,65 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     rating: 0,
     type: "article",
   },
-  // Non-article seeds so the stumble stream isn't a monotonous reading list
-  // (product eval session 2). Each renders in its own mode, not stripped reader.
+  // --- Video (embeddable /embed/ form so it's recognized as video on reload) ---
   {
     id: "v1",
-    // Stored as the /embed/ form so it's recognized as a video on reload
-    // (proxyUrl is not persisted; the type column + this URL both signal video).
     url: "https://www.youtube.com/embed/h6fcK_fRYaI",
     title: "The Egg — A Short Story",
-    description: "Kurzgesagt's animated take on a Andy Weir short story.",
+    description: "Kurzgesagt's animated take on an Andy Weir short story.",
     source: "YouTube",
     category: "science",
     rating: 0,
     type: "video",
   },
   {
+    id: "v2",
+    url: "https://www.youtube.com/embed/jNQXAC9IVRw",
+    title: "Me at the Zoo",
+    description: "The very first video ever uploaded to YouTube.",
+    source: "YouTube",
+    category: "random",
+    rating: 0,
+    type: "video",
+  },
+  // --- Image ---
+  {
     id: "i1",
     url: "https://apod.nasa.gov/apod/ap991227.html",
-    title: "Earthrise",
-    description: "The iconic NASA photograph of Earth rising over the Moon.",
+    title: "NASA Astronomy Picture of the Day",
+    description: "A daily dose of the cosmos — astronomy imagery from NASA.",
     source: "NASA APOD",
     category: "science",
     rating: 0,
     type: "image",
   },
   {
+    id: "i2",
+    url: "https://xkcd.com/1133/",
+    title: "xkcd: Up Goer Five",
+    description: "The Saturn V rocket explained using only the 1,000 most common words.",
+    source: "xkcd",
+    category: "art",
+    rating: 0,
+    type: "image",
+  },
+  // --- Interactive ---
+  {
     id: "x1",
     url: "https://pointerpointer.com/",
     title: "Pointer Pointer",
     description: "A delightfully useless interactive toy. Move your mouse.",
-    source: "UselessWeb",
+    source: "Pointer Pointer",
+    category: "random",
+    rating: 0,
+    type: "interactive",
+  },
+  {
+    id: "x2",
+    url: "https://neal.fun/",
+    title: "Neal.fun",
+    description: "A playground of weird, wonderful interactive experiments.",
+    source: "neal.fun",
     category: "random",
     rating: 0,
     type: "interactive",
