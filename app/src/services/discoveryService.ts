@@ -8,6 +8,7 @@ import { classifyAsset } from "./assetGate.js";
 const MIN_POOL = 5;
 /** Up to this, top the pool up in the background so the corpus keeps growing. */
 const TARGET_POOL = 20;
+const COOLDOWN_WINDOW = 4;
 
 export class DiscoveryService {
   constructor(
@@ -65,6 +66,11 @@ export class DiscoveryService {
     if (availableAssets.length === 0)
       throw new AppError("No content available right now", 503);
 
+    const recentIds = new Set(history.slice(-COOLDOWN_WINDOW));
+    const recentSources = new Set(
+      assets.filter((a) => recentIds.has(a.id)).map((a) => a.source),
+    );
+
     const weightedAssets = availableAssets.map((asset: StumbleAsset) => {
       let weight = 1;
       const catPref = preferences.find(
@@ -75,6 +81,11 @@ export class DiscoveryService {
       );
       if (catPref) weight += catPref.score;
       if (srcPref) weight += srcPref.score;
+
+      if (recentSources.has(asset.source)) {
+        weight *= 0.05;
+      }
+
       return { asset, weight: Math.max(0.1, weight) };
     });
     const totalWeight = weightedAssets.reduce(
