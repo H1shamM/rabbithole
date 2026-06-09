@@ -18,12 +18,14 @@ Derived from ai-email-copilot’s code standards, adapted to TypeScript and Node
 
 ## Naming
 
-- **Files**: kebab-case (discovery-service.ts, user-repository.ts).
-- **Directories**: kebab-case (api/v1/).
+- **Module files**: camelCase, matching the primary export (`discoveryService.ts`,
+  `sqliteAdapter.ts`, `assetGate.ts`, `useStumble.ts`). _(This is the established repo
+  convention — not kebab-case.)_
+- **React component files**: PascalCase (`StumbleArea.tsx`, `AssetCard.tsx`).
+- **Directories**: lowercase (`api/v1/`, `services/`, `components/`).
 - **Classes / Interfaces / Types**: PascalCase (Asset, StoragePort).
 - **Functions / Methods / Variables**: camelCase (fetchAssets, isValidUrl).
-- **Constants**: UPPER_SNAKE_CASE for true constants; for runtime configuration, camelCase is fine.
-- **React components**: PascalCase (AssetCard.tsx).
+- **Constants**: UPPER_SNAKE_CASE for true constants; camelCase for runtime config.
 
 ## Imports
 

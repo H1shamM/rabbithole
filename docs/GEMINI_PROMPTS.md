@@ -1,6 +1,14 @@
 # Gemini CLI Prompt Snippets
 
-Use these prompts verbatim when asking Gemini to implement something in stumble-clone. Each prompt assumes the assistant has read the other guide files.
+> ⚠️ **These examples are illustrative starting points and are partly dated** — they
+> predate the current codebase. Ignore their specifics where they conflict with the repo:
+> files are **camelCase** (`discoveryService.ts`, not `discovery_service.ts`), the branch is
+> **`master`** (not `main`), and **CI already exists**. In practice the junior works from
+> **`gemini-ready` GitHub issues** written with `.github/ISSUE_TEMPLATE/gemini-task.md`
+> (explicit file allowlist + acceptance criteria), not these snippets. Canonical guidance:
+> root `CLAUDE.md`, `GEMINI.md`, `CODING_STANDARDS.md`.
+
+Use these prompts as templates when asking Gemini to implement something in stumble-clone. Each prompt assumes the assistant has read the other guide files.
 
 ## Create a new API endpoint
 
