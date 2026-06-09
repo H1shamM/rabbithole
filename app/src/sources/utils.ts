@@ -27,3 +27,13 @@ export async function fetchWithTimeout(
     clearTimeout(id);
   }
 }
+
+/**
+ * Heuristic check to see if text is likely English.
+ */
+export function looksEnglish(text: string): boolean {
+  if (!text) return true;
+  // Reject if it contains accented/diacritic Latin or non-Latin letters.
+  return !/[À-ÖØ-öø-ÿĀ-ɏͰ-￿]/.test(text);
+}
+
