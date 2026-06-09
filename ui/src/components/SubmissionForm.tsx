@@ -4,6 +4,7 @@ import { PlusCircle, Send } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "../contexts/ToastContext";
 
 /**
  * Props for the SubmissionForm component.
@@ -20,20 +21,27 @@ export function SubmissionForm({ onSuccess, authenticatedFetch }: Props) {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await authenticatedFetch("http://localhost:3000/api/v1/submissions", {
+      const res = await authenticatedFetch("http://localhost:3000/api/v1/submissions", {
         method: "POST",
         body: JSON.stringify({ url, title }),
+        headers: { "Content-Type": "application/json" },
       });
+      if (!res.ok) {
+        addToast("Submission failed", "error");
+        return;
+      }
       setUrl("");
       setTitle("");
       onSuccess();
     } catch (err) {
       console.error("Submission failed", err);
+      addToast("Network error", "error");
     } finally {
       setLoading(false);
     }
