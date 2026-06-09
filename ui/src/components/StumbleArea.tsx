@@ -75,7 +75,7 @@ export function StumbleArea({
 
   // Fetch reader content for the current page while in reader mode (null = no-op).
   const readerUrl =
-    showIframe && current && viewMode === "reader" ? current.url : null;
+    showIframe && current && viewMode === "reader" && !isVideo ? current.url : null;
   const reader = useReader(authenticatedFetch, readerUrl);
 
   useEffect(() => {
@@ -141,7 +141,7 @@ export function StumbleArea({
   }
 
   if (showIframe && current) {
-    const showReader = viewMode === "reader" && !reader.error;
+    const showReader = viewMode === "reader" && !reader.error && !isVideo;
     const iframeSrc = isVisible
       ? current.proxyUrl || current.url
       : "about:blank";
