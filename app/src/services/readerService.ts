@@ -47,6 +47,8 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   },
 };
 
+const MIN_ARTICLE_CHARS = 400;
+
 /**
  * Extract readable article content from raw HTML.
  *
@@ -65,6 +67,9 @@ export function extractReadable(
 
     const content = sanitizeHtml(article.content, SANITIZE_OPTIONS);
     if (!content.trim()) return null;
+
+    if (article.textContent && article.textContent.length < MIN_ARTICLE_CHARS)
+      return null;
 
     return {
       title: article.title ?? "",
