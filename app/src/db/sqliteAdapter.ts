@@ -176,7 +176,7 @@ export class SqliteAdapter implements IStoragePort {
 
   // Asset methods
   async getAssetById(id: string): Promise<StumbleAsset | null> {
-    const row = this.db.prepare("SELECT * FROM assets WHERE id = ?").get(id);
+    const row = this.db.prepare("SELECT id, url, title, description, source, category, rating, type, created_at, last_visited_at FROM assets WHERE id = ?").get(id);
     return row ? this.mapRowToAsset(row as AssetRow) : null;
   }
 
@@ -218,7 +218,7 @@ export class SqliteAdapter implements IStoragePort {
   }
 
   async getAllAssets(category: string): Promise<StumbleAsset[]> {
-    let query = "SELECT * FROM assets WHERE 1=1 ";
+    let query = "SELECT id, url, title, description, source, category, rating, type, created_at, last_visited_at FROM assets WHERE 1=1 ";
     const params: string[] = [];
     if (category !== "all") {
       query += "AND category = ? ";
@@ -240,7 +240,7 @@ export class SqliteAdapter implements IStoragePort {
     const rows = this.db
       .prepare(
         `
-      SELECT * FROM assets 
+      SELECT id, url, title, description, source, category, rating, type, created_at, last_visited_at FROM assets 
       WHERE LOWER(title) LIKE ? OR LOWER(description) LIKE ? OR LOWER(url) LIKE ? 
       LIMIT 20
     `,
@@ -340,14 +340,14 @@ export class SqliteAdapter implements IStoragePort {
     user_id: string,
   ): Promise<{ type: string; name: string; score: number }[]> {
     return this.db
-      .prepare("SELECT * FROM user_preferences WHERE user_id = ?")
+      .prepare("SELECT id, url, title, description, source, category, rating, type, created_at, last_visited_at FROM user_preferences WHERE user_id = ?")
       .all(user_id) as { type: string; name: string; score: number }[];
   }
 
   // User auth
   async findUserByEmail(email: string): Promise<User | null> {
     const row = this.db
-      .prepare("SELECT * FROM users WHERE email = ?")
+      .prepare("SELECT id, url, title, description, source, category, rating, type, created_at, last_visited_at FROM users WHERE email = ?")
       .get(email) as UserRow | undefined;
     return row ? this.mapRowToUser(row) : null;
   }
@@ -357,13 +357,13 @@ export class SqliteAdapter implements IStoragePort {
     provider_id: string,
   ): Promise<User | null> {
     const row = this.db
-      .prepare("SELECT * FROM users WHERE provider = ? AND provider_id = ?")
+      .prepare("SELECT id, url, title, description, source, category, rating, type, created_at, last_visited_at FROM users WHERE provider = ? AND provider_id = ?")
       .get(provider, provider_id) as UserRow | undefined;
     return row ? this.mapRowToUser(row) : null;
   }
 
   async getUserById(id: string): Promise<User | null> {
-    const row = this.db.prepare("SELECT * FROM users WHERE id = ?").get(id) as
+    const row = this.db.prepare("SELECT id, url, title, description, source, category, rating, type, created_at, last_visited_at FROM users WHERE id = ?").get(id) as
       | UserRow
       | undefined;
     return row ? this.mapRowToUser(row) : null;
@@ -410,7 +410,7 @@ export class SqliteAdapter implements IStoragePort {
 
   async getAllSubmissions(): Promise<Submission[]> {
     const rows = this.db
-      .prepare("SELECT * FROM submissions ORDER BY created_at DESC")
+      .prepare("SELECT id, url, title, description, source, category, rating, type, created_at, last_visited_at FROM submissions ORDER BY created_at DESC")
       .all();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return rows.map((r: any) => ({ ...r, created_at: new Date(r.created_at) }));
@@ -450,7 +450,7 @@ export class SqliteAdapter implements IStoragePort {
     interests: string[],
     exclude_ids: string[],
   ): Promise<StumbleAsset | null> {
-    let query = "SELECT * FROM assets WHERE 1=1 ";
+    let query = "SELECT id, url, title, description, source, category, rating, type, created_at, last_visited_at FROM assets WHERE 1=1 ";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any[] = [];
     if (interests.length) {
