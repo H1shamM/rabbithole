@@ -50,19 +50,14 @@ describe("assetDedup", () => {
       ...asset1,
       id: crypto.randomUUID(),
       title: "Title 2",
-      rating: 5, // This should be ignored by ON CONFLICT
+      rating: 99, // This should be ignored by ON CONFLICT
     };
 
     await adapter.saveAsset(asset1);
-    // Mimic updating rating via updateRating
-    await adapter.updateRating(asset1.id, 2);
-    
     await adapter.saveAsset(asset2);
 
     const assets = await adapter.getAllAssets("all");
     expect(assets.length).toBe(1);
-    expect(assets[0].rating).toBe(5); // Wait, if I don't update rating in UPSERT, rating should persist. 
-    // The issue says "(do NOT overwrite rating or created_at)".
-    // Let me check my upsert logic.
+    expect(assets[0].rating).toBe(3); // Original rating preserved
   });
 });
