@@ -234,6 +234,7 @@ export function App() {
                 error={error}
                 current={current}
                 iframeError={iframeError}
+                authenticatedFetch={typedAuthenticatedFetch}
                 onRetry={fetchStumble}
                 onClose={handleClose}
                 onIframeLoad={handleIframeLoad}
