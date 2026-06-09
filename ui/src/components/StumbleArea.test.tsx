@@ -99,7 +99,7 @@ describe("StumbleArea reader-first hybrid", () => {
     expect(screen.queryByTitle("Stumbled page")).not.toBeInTheDocument();
     
     // Clicking play should show iframe
-    fireEvent.click(screen.getByRole("button", { name: "" }));
+    fireEvent.click(screen.getByRole("button", { name: /play video/i }));
     expect(screen.getByTitle("Stumbled page")).toBeInTheDocument();
   });
 

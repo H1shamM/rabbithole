@@ -240,15 +240,23 @@ export function StumbleArea({
         ) : isVideo && !isVideoPlaying ? (
           <Card className="flex flex-col items-center justify-center p-0 overflow-hidden aspect-video relative">
             <img
-              src={`https://img.youtube.com/vi/${current.url.split("/").pop()}/hqdefault.jpg`}
+              src={
+                current.url.includes("vimeo")
+                  ? `https://vumbnail.com/${current.url.split("/").pop()?.split("?")?.[0]}.jpg`
+                  : `https://img.youtube.com/vi/${current.url.split("/").pop()?.split("?")?.[0]}/hqdefault.jpg`
+              }
               alt="Video thumbnail"
               className="w-full h-full object-cover"
               loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder-video.png";
+              }}
             />
             <Button
               size="lg"
               className="absolute rounded-full size-16"
               onClick={() => setIsVideoPlaying(true)}
+              aria-label="Play video"
             >
               <div className="size-0 border-y-[12px] border-y-transparent border-l-[20px] border-l-white ml-1" />
             </Button>
