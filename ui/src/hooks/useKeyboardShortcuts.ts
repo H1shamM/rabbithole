@@ -28,6 +28,7 @@ export function useKeyboardShortcuts({
       switch (e.key) {
         case "ArrowRight":
         case "j":
+        case " ":
           e.preventDefault();
           onNext();
           break;
