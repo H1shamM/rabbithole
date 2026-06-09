@@ -5,7 +5,7 @@
 import crypto from "crypto";
 import type { ContentFetcher } from "./ContentFetcher.js";
 import type { StumbleAsset } from "../models/asset.js";
-import { fetchWithTimeout } from "./utils.js";
+import { fetchWithTimeout, looksEnglish } from "./utils.js";
 
 interface MediumItem {
   link: string;
@@ -34,9 +34,9 @@ export class MediumSource implements ContentFetcher {
 
       // Extract items with regex
       const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-      const items: MediumItem[] = [];
+      const candidates: MediumItem[] = [];
       let match;
-      while ((match = itemRegex.exec(xml)) !== null && items.length < 20) {
+      while ((match = itemRegex.exec(xml)) !== null && candidates.length < 20) {
         const itemXml = match[1];
         if (!itemXml) continue;
         const titleMatch = itemXml.match(
@@ -48,20 +48,25 @@ export class MediumSource implements ContentFetcher {
         );
 
         if (titleMatch?.[1] && linkMatch?.[1]) {
-          items.push({
-            title: titleMatch[1],
-            link: linkMatch[1],
-            description:
-              descMatch?.[1]?.replace(/<[^>]*>/g, "").slice(0, 200) ||
-              "Medium story",
-          });
+          const title = titleMatch[1];
+          const description =
+            descMatch?.[1]?.replace(/<[^>]*>/g, "").slice(0, 200) ||
+            "Medium story";
+          
+          if (looksEnglish(`${title} ${description}`)) {
+            candidates.push({
+              title,
+              link: linkMatch[1],
+              description,
+            });
+          }
         }
       }
 
-      if (items.length === 0) throw new Error("No items found");
+      if (candidates.length === 0) throw new Error("No English items found");
 
-      const randomIndex = Math.floor(Math.random() * items.length);
-      const randomItem = items[randomIndex];
+      const randomIndex = Math.floor(Math.random() * candidates.length);
+      const randomItem = candidates[randomIndex];
 
       if (!randomItem) return null;
 
