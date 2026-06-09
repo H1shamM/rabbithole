@@ -58,20 +58,24 @@ export function extractReadable(
   html: string,
   url: string,
 ): ReaderResult | null {
-  const dom = new JSDOM(html, { url });
-  const article = new Readability(dom.window.document).parse();
-  if (!article || !article.content) return null;
+  try {
+    const dom = new JSDOM(html, { url });
+    const article = new Readability(dom.window.document).parse();
+    if (!article || !article.content) return null;
 
-  const content = sanitizeHtml(article.content, SANITIZE_OPTIONS);
-  if (!content.trim()) return null;
+    const content = sanitizeHtml(article.content, SANITIZE_OPTIONS);
+    if (!content.trim()) return null;
 
-  return {
-    title: article.title ?? "",
-    byline: article.byline ?? null,
-    siteName: article.siteName ?? null,
-    excerpt: article.excerpt ?? null,
-    content,
-    textContent: article.textContent ?? "",
-    length: article.length ?? 0,
-  };
+    return {
+      title: article.title ?? "",
+      byline: article.byline ?? null,
+      siteName: article.siteName ?? null,
+      excerpt: article.excerpt ?? null,
+      content,
+      textContent: article.textContent ?? "",
+      length: article.length ?? 0,
+    };
+  } catch {
+    return null;
+  }
 }
