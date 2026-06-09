@@ -2,7 +2,7 @@ import type { IStoragePort, RatedItem } from "../db/storagePort.js";
 import { AppError } from "../middleware/errorHandler.js";
 import type { StumbleAsset } from "../models/asset.js";
 import type { ContentFetcher } from "../sources/ContentFetcher.js";
-import { isServableAsset } from "./assetGate.js";
+import { classifyAsset } from "./assetGate.js";
 
 /** Below this, block to guarantee the user has something to stumble to. */
 const MIN_POOL = 5;
@@ -108,15 +108,16 @@ export class DiscoveryService {
       if (!source) continue;
       try {
         const asset = await source.fetchStumble(category);
-        // Quality gate: only accept videos or pages the reader can extract, so
-        // homepages / embed-hostile pages never enter rotation as blank cards.
-        if (
-          asset &&
-          asset.url &&
-          asset.title &&
-          (await isServableAsset(asset))
-        ) {
-          return asset;
+        if (asset && asset.url && asset.title) {
+          // Classify the format and gate on it: videos, image galleries, and
+          // interactive sites pass alongside extractable articles; homepages /
+          // embed-hostile pages are still rejected. The type is stamped on the
+          // asset so the UI can pick the right renderer.
+          const { type, servable } = await classifyAsset(asset);
+          if (servable) {
+            asset.type = type;
+            return asset;
+          }
         }
       } catch (error) {
         console.error(`Failed to fetch from source:`, error);

@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+/**
+ * The format of a stumble's content, used by the gate to decide what's servable
+ * and by the UI to pick the right renderer (reader for prose, live/visual for
+ * the rest).
+ */
+export const ContentTypeSchema = z.enum([
+  "article",
+  "image",
+  "video",
+  "interactive",
+]);
+export type ContentType = z.infer<typeof ContentTypeSchema>;
+
 export const StumbleAssetSchema = z.object({
   id: z.string().uuid(),
   url: z.string().url(),
@@ -8,6 +21,7 @@ export const StumbleAssetSchema = z.object({
   source: z.string().min(1),
   category: z.string().min(1),
   rating: z.number().default(0),
+  type: ContentTypeSchema.optional(),
   proxyUrl: z.string().url().optional(),
   created_at: z.date(),
   last_visited_at: z.date().optional(),
