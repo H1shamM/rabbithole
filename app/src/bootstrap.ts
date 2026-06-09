@@ -23,6 +23,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     source: "Wikipedia",
     category: "tech",
     rating: 0,
+    type: "article",
   },
   {
     id: "t2",
@@ -32,6 +33,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     source: "Coding Horror",
     category: "tech",
     rating: 0,
+    type: "article",
   },
   {
     id: "s1",
@@ -41,6 +43,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     source: "Wikipedia",
     category: "science",
     rating: 0,
+    type: "article",
   },
   {
     id: "s2",
@@ -50,6 +53,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     source: "Wikipedia",
     category: "science",
     rating: 0,
+    type: "article",
   },
   {
     id: "a1",
@@ -59,6 +63,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     source: "Wikipedia",
     category: "art",
     rating: 0,
+    type: "article",
   },
   {
     id: "a2",
@@ -68,6 +73,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     source: "Wikipedia",
     category: "art",
     rating: 0,
+    type: "article",
   },
   {
     id: "r1",
@@ -77,6 +83,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     source: "Wikipedia",
     category: "random",
     rating: 0,
+    type: "article",
   },
   {
     id: "r2",
@@ -86,6 +93,41 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     source: "Wikipedia",
     category: "random",
     rating: 0,
+    type: "article",
+  },
+  // Non-article seeds so the stumble stream isn't a monotonous reading list
+  // (product eval session 2). Each renders in its own mode, not stripped reader.
+  {
+    id: "v1",
+    // Stored as the /embed/ form so it's recognized as a video on reload
+    // (proxyUrl is not persisted; the type column + this URL both signal video).
+    url: "https://www.youtube.com/embed/h6fcK_fRYaI",
+    title: "The Egg — A Short Story",
+    description: "Kurzgesagt's animated take on a Andy Weir short story.",
+    source: "YouTube",
+    category: "science",
+    rating: 0,
+    type: "video",
+  },
+  {
+    id: "i1",
+    url: "https://apod.nasa.gov/apod/ap991227.html",
+    title: "Earthrise",
+    description: "The iconic NASA photograph of Earth rising over the Moon.",
+    source: "NASA APOD",
+    category: "science",
+    rating: 0,
+    type: "image",
+  },
+  {
+    id: "x1",
+    url: "https://pointerpointer.com/",
+    title: "Pointer Pointer",
+    description: "A delightfully useless interactive toy. Move your mouse.",
+    source: "UselessWeb",
+    category: "random",
+    rating: 0,
+    type: "interactive",
   },
 ];
 

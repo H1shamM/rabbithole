@@ -4,11 +4,14 @@ import type { IStoragePort } from "../../../app/src/db/storagePort";
 import type { ContentFetcher } from "../../../app/src/sources/ContentFetcher";
 
 vi.mock("../../../app/src/services/assetGate.js", () => ({
-  isServableAsset: vi.fn(),
+  classifyAsset: vi.fn(),
 }));
 
 import { DiscoveryService } from "../../../app/src/services/discoveryService";
-import { isServableAsset } from "../../../app/src/services/assetGate.js";
+import { classifyAsset } from "../../../app/src/services/assetGate.js";
+
+const servable = { type: "article" as const, servable: true };
+const unservable = { type: "article" as const, servable: false };
 
 const asset = (id: string): StumbleAsset => ({
   id,
@@ -27,7 +30,7 @@ describe("DiscoveryService eager growth + quality gate", () => {
   let source: ContentFetcher;
 
   beforeEach(() => {
-    vi.mocked(isServableAsset).mockReset();
+    vi.mocked(classifyAsset).mockReset();
     storage = {
       getAllAssets: vi.fn(),
       getUserPreferences: vi.fn().mockResolvedValue([]),
@@ -45,7 +48,7 @@ describe("DiscoveryService eager growth + quality gate", () => {
       .mockResolvedValueOnce([]) // first read: empty pool
       .mockResolvedValueOnce([fresh]); // after save
     vi.mocked(source.fetchStumble).mockResolvedValue(fresh);
-    vi.mocked(isServableAsset).mockResolvedValue(true);
+    vi.mocked(classifyAsset).mockResolvedValue(servable);
 
     const result = await build().stumble("tech", [], "user1");
 
@@ -57,7 +60,7 @@ describe("DiscoveryService eager growth + quality gate", () => {
   it("cold start: rejects an unservable asset (gate fails -> not saved)", async () => {
     storage.getAllAssets.mockResolvedValue([]); // stays empty (gate rejected)
     vi.mocked(source.fetchStumble).mockResolvedValue(asset("junk"));
-    vi.mocked(isServableAsset).mockResolvedValue(false);
+    vi.mocked(classifyAsset).mockResolvedValue(unservable);
 
     await expect(build().stumble("tech", [], "user1")).rejects.toThrow();
     expect(storage.saveAsset).not.toHaveBeenCalled();
@@ -78,7 +81,7 @@ describe("DiscoveryService eager growth + quality gate", () => {
     const bg = asset("bg");
     storage.getAllAssets.mockResolvedValue(pool);
     vi.mocked(source.fetchStumble).mockResolvedValue(bg);
-    vi.mocked(isServableAsset).mockResolvedValue(true);
+    vi.mocked(classifyAsset).mockResolvedValue(servable);
 
     const result = await build().stumble("tech", [], "user1");
     expect(result).toBeDefined(); // served from the existing pool

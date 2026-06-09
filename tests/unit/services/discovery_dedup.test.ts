@@ -4,11 +4,13 @@ import type { IStoragePort } from "../../../app/src/db/storagePort";
 import type { ContentFetcher } from "../../../app/src/sources/ContentFetcher";
 
 vi.mock("../../../app/src/services/assetGate.js", () => ({
-  isServableAsset: vi.fn(),
+  classifyAsset: vi.fn(),
 }));
 
 import { DiscoveryService } from "../../../app/src/services/discoveryService";
-import { isServableAsset } from "../../../app/src/services/assetGate.js";
+import { classifyAsset } from "../../../app/src/services/assetGate.js";
+
+const servable = { type: "article" as const, servable: true };
 
 const asset = (id: string): StumbleAsset => ({
   id,
@@ -28,7 +30,7 @@ describe("DiscoveryService session dedup / graceful exhaustion", () => {
   const fullHistory = pool.map((a) => a.id);
 
   beforeEach(() => {
-    vi.mocked(isServableAsset).mockReset();
+    vi.mocked(classifyAsset).mockReset();
     storage = {
       getAllAssets: vi.fn(),
       getUserPreferences: vi.fn().mockResolvedValue([]),
@@ -45,7 +47,7 @@ describe("DiscoveryService session dedup / graceful exhaustion", () => {
       .mockResolvedValueOnce(pool) // initial read
       .mockResolvedValueOnce([...pool, fresh]); // after the fallback fetch+save
     vi.mocked(source.fetchStumble).mockResolvedValue(fresh);
-    vi.mocked(isServableAsset).mockResolvedValue(true);
+    vi.mocked(classifyAsset).mockResolvedValue(servable);
 
     const result = await build().stumble("tech", fullHistory, "user1");
 
