@@ -61,6 +61,10 @@ describe("useStumble", () => {
     await act(async () => {
       await result.current.fetchStumble();
     });
+    
+    // Check if calls exist
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(0);
+    
     // First direct call carries no history (nothing seen yet).
     expect(fetchMock.mock.calls[0][0]).toBe("/stumble?category=test");
     // The follow-up prefetch carries the now-seen id.
@@ -71,7 +75,8 @@ describe("useStumble", () => {
       await result.current.fetchStumble();
     });
 
-    const lastUrl = decodeURIComponent(fetchMock.mock.calls.at(-1)![0]);
+    const calls = fetchMock.mock.calls;
+    const lastUrl = decodeURIComponent(calls[calls.length - 1][0]);
     expect(lastUrl).toContain("history=");
     expect(lastUrl).toContain("1");
     expect(lastUrl).toContain("2");

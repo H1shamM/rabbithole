@@ -39,7 +39,9 @@ export function useStumble(
     } catch {
       seenIdsRef.current = [];
     }
-  }, [storageKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   useEffect(() => {
     // Reset when category changes
