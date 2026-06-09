@@ -56,15 +56,21 @@ export function StumbleArea({
   onIframeLoad,
 }: StumbleAreaProps) {
   const [isVisible, setIsVisible] = useState(import.meta.env.MODE === "test");
-  const [viewMode, setViewMode] = useState<ViewMode>("reader");
+  const [viewMode, setViewMode] = useState<ViewMode>(() =>
+    current?.proxyUrl?.includes("/embed/") ? "live" : "reader",
+  );
   const [prevId, setPrevId] = useState<string | undefined>(current?.id);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Reset to the reader view whenever a new page is stumbled (adjusting state
-  // during render — the documented pattern for syncing state to a prop change).
+  // Video stumbles (e.g. YouTube) carry an embeddable proxyUrl — show them in
+  // the live player by default instead of attempting a reader extraction.
+  const isVideo = !!current?.proxyUrl?.includes("/embed/");
+
+  // Reset the view mode whenever a new page is stumbled (adjusting state during
+  // render — the documented pattern for syncing state to a prop change).
   if (current?.id !== prevId) {
     setPrevId(current?.id);
-    setViewMode("reader");
+    setViewMode(isVideo ? "live" : "reader");
   }
 
   // Fetch reader content for the current page while in reader mode (null = no-op).
@@ -254,7 +260,11 @@ export function StumbleArea({
             <iframe
               src={iframeSrc}
               title="Stumbled page"
-              className="h-[72vh] w-full border-none bg-white"
+              className={
+                isVideo
+                  ? "aspect-video w-full border-none bg-black"
+                  : "h-[72vh] w-full border-none bg-white"
+              }
               onLoad={onIframeLoad}
               loading="lazy"
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
