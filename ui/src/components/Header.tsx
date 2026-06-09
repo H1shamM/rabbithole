@@ -19,6 +19,7 @@ interface HeaderProps {
     avatar_url?: string;
   } | null;
   onUserClick: () => void;
+  onLogout: () => void;
   searchQuery: string;
   onSearchQueryChange: (q: string) => void;
   onSearchSubmit: (e: React.FormEvent) => void;
@@ -33,6 +34,7 @@ export function Header({
   setDarkMode,
   user,
   onUserClick,
+  onLogout,
   searchQuery,
   onSearchQueryChange,
   onSearchSubmit,
@@ -86,7 +88,7 @@ export function Header({
               <DropdownMenuItem onClick={onUserClick}>
                 <User className="mr-2 size-4" /> Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onUserClick}>
+              <DropdownMenuItem onClick={onLogout}>
                 <LogOut className="mr-2 size-4" /> Logout
               </DropdownMenuItem>
             </DropdownMenuContent>

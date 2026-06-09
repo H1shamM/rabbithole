@@ -221,6 +221,7 @@ export function App() {
             onUserClick={() =>
               user ? setShowProfile(true) : setShowAuth(true)
             }
+            onLogout={logout}
             searchQuery={searchQuery}
             onSearchQueryChange={setSearchQuery}
             onSearchSubmit={handleSearch}
