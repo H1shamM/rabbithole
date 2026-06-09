@@ -29,16 +29,29 @@ export function useStumble(
   // IDs shown this session, sent as `history` so the backend never re-serves
   // them. Reset when the category changes (a different pool).
   const seenIdsRef = useRef<string[]>([]);
+  const storageKey = `stumble:seen:${category}`;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setNextStumble(null);
-    seenIdsRef.current = [];
-  }, [category]);
+    try {
+      const stored = sessionStorage.getItem(storageKey);
+      seenIdsRef.current = stored ? JSON.parse(stored) : [];
+    } catch {
+      seenIdsRef.current = [];
+    }
+  }, [category, storageKey]);
 
   const markSeen = useCallback((id: string) => {
-    if (id && !seenIdsRef.current.includes(id)) seenIdsRef.current.push(id);
-  }, []);
+    if (id && !seenIdsRef.current.includes(id)) {
+      seenIdsRef.current.push(id);
+      try {
+        sessionStorage.setItem(storageKey, JSON.stringify(seenIdsRef.current));
+      } catch (e) {
+        console.warn("Could not persist stumble history", e);
+      }
+    }
+  }, [storageKey]);
 
   const historyParam = useCallback(() => {
     const seen = seenIdsRef.current;
