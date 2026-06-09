@@ -2,6 +2,12 @@ import type { IStoragePort, RatedItem } from "../db/storagePort.js";
 import { AppError } from "../middleware/errorHandler.js";
 import type { StumbleAsset } from "../models/asset.js";
 import type { ContentFetcher } from "../sources/ContentFetcher.js";
+import { isServableAsset } from "./assetGate.js";
+
+/** Below this, block to guarantee the user has something to stumble to. */
+const MIN_POOL = 5;
+/** Up to this, top the pool up in the background so the corpus keeps growing. */
+const TARGET_POOL = 20;
 
 export class DiscoveryService {
   constructor(
@@ -24,19 +30,40 @@ export class DiscoveryService {
     const preferences = await this.storage.getUserPreferences(userId);
     let assets = await this.storage.getAllAssets(category);
 
-    // If database has fewer than 5 assets, try to fetch from live sources
-    if (assets.length < 5) {
+    if (assets.length < MIN_POOL) {
+      // Cold start: block once so the user always has something to stumble to.
       const newAsset = await this.fetchFromLiveSources(category);
       if (newAsset) {
         await this.storage.saveAsset(newAsset);
         assets = await this.storage.getAllAssets(category);
       }
+    } else if (assets.length < TARGET_POOL) {
+      // Warm pool: grow the corpus in the background without blocking the serve.
+      void this.backgroundTopUp(category);
     }
 
-    const availableAssets = assets.filter(
+    let availableAssets = assets.filter(
       (a: StumbleAsset) => !history.includes(a.id),
     );
-    if (availableAssets.length === 0) throw new Error("No assets found");
+
+    // Session pool exhausted: the user has already seen everything. Try to grow
+    // the corpus once, then fall back to the full pool — never a hard error.
+    if (availableAssets.length === 0) {
+      const fresh = await this.fetchFromLiveSources(category);
+      if (fresh) {
+        await this.storage.saveAsset(fresh);
+        assets = await this.storage.getAllAssets(category);
+        availableAssets = assets.filter(
+          (a: StumbleAsset) => !history.includes(a.id),
+        );
+      }
+      // Still nothing unseen: reset to the full pool rather than throwing.
+      if (availableAssets.length === 0) availableAssets = assets;
+    }
+
+    // Only truly empty when the corpus has no assets at all and live fetch failed.
+    if (availableAssets.length === 0)
+      throw new AppError("No content available right now", 503);
 
     const weightedAssets = availableAssets.map((asset: StumbleAsset) => {
       let weight = 1;
@@ -81,7 +108,14 @@ export class DiscoveryService {
       if (!source) continue;
       try {
         const asset = await source.fetchStumble(category);
-        if (asset && asset.url && asset.title) {
+        // Quality gate: only accept videos or pages the reader can extract, so
+        // homepages / embed-hostile pages never enter rotation as blank cards.
+        if (
+          asset &&
+          asset.url &&
+          asset.title &&
+          (await isServableAsset(asset))
+        ) {
           return asset;
         }
       } catch (error) {
@@ -89,6 +123,19 @@ export class DiscoveryService {
       }
     }
     return null;
+  }
+
+  /**
+   * Best-effort background fetch to grow the corpus toward TARGET_POOL. Never
+   * throws into the serve path — failures are swallowed.
+   */
+  private async backgroundTopUp(category: string): Promise<void> {
+    try {
+      const asset = await this.fetchFromLiveSources(category);
+      if (asset) await this.storage.saveAsset(asset);
+    } catch (error) {
+      console.error("Background top-up failed:", error);
+    }
   }
 
   async rate(
