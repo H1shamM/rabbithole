@@ -4,6 +4,10 @@ import { Compass, Shuffle, AlertTriangle, X, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { ReaderView } from "./ReaderView";
+import { ViewModeToggle, type ViewMode } from "./ViewModeToggle";
+import { useReader } from "../hooks/useReader";
+import type { AuthenticatedFetch } from "../types";
 
 interface StumbleResult {
   id: string;
@@ -21,15 +25,17 @@ interface StumbleAreaProps {
   error: string | null;
   current: StumbleResult | null;
   iframeError: boolean;
+  authenticatedFetch: AuthenticatedFetch;
   onRetry: () => void;
   onClose: () => void;
   onIframeLoad: () => void;
 }
 
 /**
- * The central discovery surface: shows the empty/ready state, a loading
- * skeleton, the embedded page (iframe) for the current stumble, or an error
- * fallback when a page cannot be framed.
+ * The central discovery surface. For an active stumble it shows a reader-first
+ * hybrid view: a clean extracted article by default (via /reader), the live
+ * page (iframe) on demand, and open-in-tab as a last resort. Also handles the
+ * empty/ready, loading, and error states.
  */
 export function StumbleArea({
   showIframe,
@@ -37,12 +43,27 @@ export function StumbleArea({
   error,
   current,
   iframeError,
+  authenticatedFetch,
   onRetry,
   onClose,
   onIframeLoad,
 }: StumbleAreaProps) {
   const [isVisible, setIsVisible] = useState(import.meta.env.MODE === "test");
+  const [viewMode, setViewMode] = useState<ViewMode>("reader");
+  const [prevId, setPrevId] = useState<string | undefined>(current?.id);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Reset to the reader view whenever a new page is stumbled (adjusting state
+  // during render — the documented pattern for syncing state to a prop change).
+  if (current?.id !== prevId) {
+    setPrevId(current?.id);
+    setViewMode("reader");
+  }
+
+  // Fetch reader content for the current page while in reader mode (null = no-op).
+  const readerUrl =
+    showIframe && current && viewMode === "reader" ? current.url : null;
+  const reader = useReader(authenticatedFetch, readerUrl);
 
   useEffect(() => {
     if (import.meta.env.MODE === "test") return;
@@ -106,13 +127,16 @@ export function StumbleArea({
     );
   }
 
-  if (showIframe && current && !iframeError) {
+  if (showIframe && current) {
+    const showReader = viewMode === "reader" && !reader.error;
     const iframeSrc = isVisible
       ? current.proxyUrl || current.url
       : "about:blank";
+
     return (
-      <Card className="overflow-hidden p-0" ref={containerRef}>
-        <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+      <div className="space-y-3" ref={containerRef}>
+        {/* Control bar */}
+        <Card className="flex flex-row items-center gap-3 p-3">
           <img
             src={getFaviconUrl(current.source)}
             alt=""
@@ -127,6 +151,10 @@ export function StumbleArea({
               {current.category} · {current.source}
             </p>
           </div>
+          <ViewModeToggle
+            mode={showReader ? "reader" : "live"}
+            onChange={setViewMode}
+          />
           <Button
             variant="ghost"
             size="icon"
@@ -141,49 +169,67 @@ export function StumbleArea({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            aria-label="Close iframe"
+            aria-label="Close"
           >
             <X />
           </Button>
-        </div>
-        <iframe
-          src={iframeSrc}
-          title="Stumbled page"
-          className="h-[70vh] w-full border-none bg-white"
-          onLoad={onIframeLoad}
-          loading="lazy"
-          sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
-        />
-      </Card>
-    );
-  }
+        </Card>
 
-  if (showIframe && iframeError && current) {
-    return (
-      <Card className="flex flex-col items-center gap-3 p-10 text-center">
-        <div className="grid size-12 place-items-center rounded-full bg-muted text-muted-foreground">
-          <AlertTriangle className="size-6" />
-        </div>
-        <p className="font-medium">This page can&apos;t be displayed here.</p>
-        <code className="max-w-full truncate rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
-          {current.url}
-        </code>
-        <div className="flex flex-wrap justify-center gap-2">
-          <Button asChild variant="outline" className="gap-2">
-            <a href={current.url} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="size-4" />
-              Open in new tab
-            </a>
-          </Button>
-          <Button onClick={onRetry} className="gap-2">
-            <Shuffle className="size-4" />
-            Try another
-          </Button>
-          <Button variant="ghost" onClick={onClose}>
-            Close
-          </Button>
-        </div>
-      </Card>
+        {/* Content */}
+        {showReader ? (
+          reader.data ? (
+            <div className="max-h-[72vh] overflow-y-auto">
+              <ReaderView
+                title={reader.data.title}
+                byline={reader.data.byline}
+                siteName={reader.data.siteName}
+                content={reader.data.content}
+              />
+            </div>
+          ) : (
+            <Card className="flex flex-col gap-4 p-6">
+              <Skeleton className="h-7 w-2/3" />
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-72 w-full rounded-lg" />
+            </Card>
+          )
+        ) : iframeError ? (
+          <Card className="flex flex-col items-center gap-3 p-10 text-center">
+            <div className="grid size-12 place-items-center rounded-full bg-muted text-muted-foreground">
+              <AlertTriangle className="size-6" />
+            </div>
+            <p className="font-medium">
+              This page can&apos;t be displayed here.
+            </p>
+            <code className="max-w-full truncate rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
+              {current.url}
+            </code>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button asChild variant="outline" className="gap-2">
+                <a href={current.url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="size-4" />
+                  Open in new tab
+                </a>
+              </Button>
+              <Button onClick={onRetry} className="gap-2">
+                <Shuffle className="size-4" />
+                Try another
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <Card className="overflow-hidden p-0">
+            <iframe
+              src={iframeSrc}
+              title="Stumbled page"
+              className="h-[72vh] w-full border-none bg-white"
+              onLoad={onIframeLoad}
+              loading="lazy"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+            />
+          </Card>
+        )}
+      </div>
     );
   }
 

@@ -115,6 +115,8 @@ describe("App Component Edge Coverage", () => {
     fireEvent.click(
       screen.getByRole("button", { name: (c) => c.includes("Stumble") }),
     );
+    // Reader-first: switch to the live view to see the embedded page.
+    fireEvent.click(await screen.findByRole("button", { name: /live/i }));
     await waitFor(() =>
       expect(screen.getByTitle("Stumbled page")).toBeInTheDocument(),
     );
