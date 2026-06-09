@@ -38,6 +38,8 @@ export class WibySource implements ContentFetcher {
         source: "Wiby",
         category: "random",
         rating: 0,
+        type: "interactive",
+        channel: "Indie & Classic Web",
         created_at: new Date(),
       };
     } catch (error) {
