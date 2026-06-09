@@ -8,6 +8,7 @@ import { classifyAsset } from "./assetGate.js";
 const MIN_POOL = 5;
 /** Up to this, top the pool up in the background so the corpus keeps growing. */
 const TARGET_POOL = 20;
+const COOLDOWN_WINDOW = 4;
 
 export class DiscoveryService {
   constructor(
@@ -75,6 +76,13 @@ export class DiscoveryService {
       );
       if (catPref) weight += catPref.score;
       if (srcPref) weight += srcPref.score;
+
+      const recentHistory = assets.filter((a) => history.slice(-COOLDOWN_WINDOW).includes(a.id));
+      const recentSources = new Set(recentHistory.map((a) => a.source));
+      if (recentSources.has(asset.source)) {
+        weight *= 0.05;
+      }
+
       return { asset, weight: Math.max(0.1, weight) };
     });
     const totalWeight = weightedAssets.reduce(
