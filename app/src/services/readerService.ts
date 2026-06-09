@@ -49,17 +49,18 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
 
 const MIN_ARTICLE_CHARS = 400;
 
+const cache = new Map<string, ReaderResult>();
+const CACHE_LIMIT = 100;
+
 /**
- * Extract readable article content from raw HTML.
- *
- * @param html - The page's raw HTML.
- * @param url - The page URL (used to resolve relative links/images).
- * @returns The sanitized article, or `null` when the page isn't article-like.
+ * Extract readable article content from raw HTML, with caching.
  */
 export function extractReadable(
   html: string,
   url: string,
 ): ReaderResult | null {
+  if (cache.has(url)) return cache.get(url)!;
+
   try {
     const dom = new JSDOM(html, { url });
     const article = new Readability(dom.window.document).parse();
@@ -71,7 +72,7 @@ export function extractReadable(
     if (article.textContent && article.textContent.length < MIN_ARTICLE_CHARS)
       return null;
 
-    return {
+    const result: ReaderResult = {
       title: article.title ?? "",
       byline: article.byline ?? null,
       siteName: article.siteName ?? null,
@@ -80,6 +81,14 @@ export function extractReadable(
       textContent: article.textContent ?? "",
       length: article.length ?? 0,
     };
+
+    // Note: Cache is keyed by URL only; same URL with different HTML returns the first extracted result.
+    if (cache.size >= CACHE_LIMIT) {
+      const firstKey = cache.keys().next().value;
+      if (firstKey) cache.delete(firstKey);
+    }
+    cache.set(url, result);
+    return result;
   } catch {
     return null;
   }
