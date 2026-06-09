@@ -31,15 +31,22 @@ export function useStumble(
   const seenIdsRef = useRef<string[]>([]);
   const storageKey = `stumble:seen:${category}`;
 
+  // Initialize from storage on mount (once)
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNextStumble(null);
     try {
       const stored = sessionStorage.getItem(storageKey);
       seenIdsRef.current = stored ? JSON.parse(stored) : [];
     } catch {
       seenIdsRef.current = [];
     }
+  }, [storageKey]);
+
+  useEffect(() => {
+    // Reset when category changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNextStumble(null);
+    seenIdsRef.current = [];
+    sessionStorage.removeItem(storageKey);
   }, [category, storageKey]);
 
   const markSeen = useCallback((id: string) => {
