@@ -1,23 +1,45 @@
 import { describe, it, expect, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { Header } from "./Header";
 
+// Mock Radix UI's DropdownMenu components to just render children
+vi.mock("@/components/ui/dropdown-menu", () => ({
+  DropdownMenu: ({ children }: React.ReactNode) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children }: React.ReactNode) => <div>{children}</div>,
+  DropdownMenuContent: ({ children }: React.ReactNode) => <div>{children}</div>,
+  DropdownMenuItem: ({
+    onClick,
+    children,
+  }: {
+    onClick: () => void;
+    children: React.ReactNode;
+  }) => <button onClick={onClick}>{children}</button>,
+}));
+
 describe("Header", () => {
-  it("calls onLogout when passed", () => {
+  it("calls onLogout and onUserClick correctly", () => {
     const onLogout = vi.fn();
+    const onUserClick = vi.fn();
     render(
       <Header
         darkMode={false}
         setDarkMode={vi.fn()}
         user={{ id: "1", email: "test@test.com" }}
-        onUserClick={vi.fn()}
+        onUserClick={onUserClick}
         onLogout={onLogout}
         searchQuery=""
         onSearchQueryChange={vi.fn()}
         onSearchSubmit={vi.fn()}
       />
     );
-    // Verify the component renders and accept that the `onLogout` prop is passed.
-    expect(onLogout).not.toHaveBeenCalled();
+
+    const logoutButtons = screen.getAllByRole("button", { name: /Logout/i });
+    fireEvent.click(logoutButtons[0]);
+    expect(onLogout).toHaveBeenCalled();
+    expect(onUserClick).not.toHaveBeenCalled();
+
+    const profileButtons = screen.getAllByRole("button", { name: /Profile/i });
+    fireEvent.click(profileButtons[0]);
+    expect(onUserClick).toHaveBeenCalled();
   });
 });
