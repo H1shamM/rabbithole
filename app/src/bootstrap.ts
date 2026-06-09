@@ -268,6 +268,28 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     type: "video",
     channel: "Videos",
   },
+  {
+    id: "v3",
+    url: "https://player.vimeo.com/video/148751763",
+    title: "Sintel",
+    description: "A visually stunning short fantasy film.",
+    source: "Vimeo",
+    category: "art",
+    rating: 0,
+    type: "video",
+    channel: "Videos",
+  },
+  {
+    id: "v4",
+    url: "https://player.vimeo.com/video/56942699",
+    title: "The Present",
+    description: "A touching short animation about a boy and a gift.",
+    source: "Vimeo",
+    category: "art",
+    rating: 0,
+    type: "video",
+    channel: "Videos",
+  },
   // === Indie & Classic Web (preview card) ===
   {
     id: "ic1",

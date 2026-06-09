@@ -81,21 +81,26 @@ describe("StumbleArea reader-first hybrid", () => {
     expect(screen.getByTitle("Stumbled page")).toBeInTheDocument();
   });
 
-  it("defaults video stumbles to the embedded live player", () => {
+  it("defaults video stumbles to a thumbnail preview", async () => {
     const fetch = vi.fn();
     render(
       <StumbleArea
         {...baseProps}
         current={{
           ...current,
+          type: "video",
           proxyUrl: "https://www.youtube.com/embed/abc123",
         }}
         authenticatedFetch={fetch}
       />,
     );
-    // Live player shown immediately; no reader extraction attempted.
+    // Should show thumbnail, not iframe
+    expect(screen.getByAltText("Video thumbnail")).toBeInTheDocument();
+    expect(screen.queryByTitle("Stumbled page")).not.toBeInTheDocument();
+    
+    // Clicking play should show iframe
+    fireEvent.click(screen.getByRole("button", { name: "" }));
     expect(screen.getByTitle("Stumbled page")).toBeInTheDocument();
-    expect(fetch).not.toHaveBeenCalled();
   });
 
   const previewResult = {
