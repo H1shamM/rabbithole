@@ -1,18 +1,19 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Header } from "./Header";
+import type { ReactNode } from "react";
 
 // Mock Radix UI's DropdownMenu components to just render children
 vi.mock("@/components/ui/dropdown-menu", () => ({
-  DropdownMenu: ({ children }: React.ReactNode) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children }: React.ReactNode) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: React.ReactNode) => <div>{children}</div>,
+  DropdownMenu: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DropdownMenuContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   DropdownMenuItem: ({
     onClick,
     children,
   }: {
     onClick: () => void;
-    children: React.ReactNode;
+    children: ReactNode;
   }) => <button onClick={onClick}>{children}</button>,
 }));
 
