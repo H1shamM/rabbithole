@@ -7,6 +7,7 @@ interface AssetRow {
   category: string;
   rating: number;
   type: string | null;
+  channel: string | null;
   created_at: string;
   last_visited_at: string | null;
 }
@@ -64,6 +65,7 @@ export class SqliteAdapter implements IStoragePort {
         category TEXT NOT NULL,
         rating INTEGER DEFAULT 0,
         type TEXT,
+        channel TEXT,
         created_at TEXT NOT NULL,
         last_visited_at TEXT
       );
@@ -129,6 +131,8 @@ export class SqliteAdapter implements IStoragePort {
     ).map((c) => c.name);
     if (!assetCols.includes("type"))
       this.db.exec("ALTER TABLE assets ADD COLUMN type TEXT");
+    if (!assetCols.includes("channel"))
+      this.db.exec("ALTER TABLE assets ADD COLUMN channel TEXT");
 
     // Dedup existing assets
     this.db.exec(`
@@ -149,6 +153,7 @@ export class SqliteAdapter implements IStoragePort {
       category: row.category,
       rating: row.rating,
       type: (row.type as StumbleAsset["type"]) || undefined,
+      channel: row.channel || undefined,
       created_at: new Date(row.created_at),
       last_visited_at: row.last_visited_at
         ? new Date(row.last_visited_at)
@@ -179,14 +184,15 @@ export class SqliteAdapter implements IStoragePort {
     this.db
       .prepare(
         `
-      INSERT INTO assets (id, url, title, description, source, category, rating, type, created_at, last_visited_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO assets (id, url, title, description, source, category, rating, type, channel, created_at, last_visited_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(url) DO UPDATE SET
         title=excluded.title,
         description=excluded.description,
         source=excluded.source,
         category=excluded.category,
         type=excluded.type,
+        channel=excluded.channel,
         last_visited_at=excluded.last_visited_at
     `,
       )
@@ -199,6 +205,7 @@ export class SqliteAdapter implements IStoragePort {
         asset.category,
         asset.rating,
         asset.type || null,
+        asset.channel || null,
         asset.created_at.toISOString(),
         asset.last_visited_at?.toISOString() || null,
       );

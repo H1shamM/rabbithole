@@ -13,6 +13,22 @@ export const ContentTypeSchema = z.enum([
 ]);
 export type ContentType = z.infer<typeof ContentTypeSchema>;
 
+/**
+ * Curated channels organize the library by format & vibe (the Cloudhiker model).
+ * Kept as a free string (not an enum) so the library can grow new channels
+ * without a schema change.
+ */
+export const CHANNELS = [
+  "Fun & Interactive",
+  "Games",
+  "Funny",
+  "Videos",
+  "Gadgets & Tools",
+  "Indie & Classic Web",
+  "Art",
+  "Deep Dives",
+] as const;
+
 export const StumbleAssetSchema = z.object({
   id: z.string().uuid(),
   url: z.string().url(),
@@ -22,6 +38,7 @@ export const StumbleAssetSchema = z.object({
   category: z.string().min(1),
   rating: z.number().default(0),
   type: ContentTypeSchema.optional(),
+  channel: z.string().optional(),
   proxyUrl: z.string().url().optional(),
   created_at: z.date(),
   last_visited_at: z.date().optional(),
