@@ -28,6 +28,8 @@ export function App() {
   const { addToast } = useToast();
   const [recommendations, setRecommendations] = useState<StumbleResult[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<StumbleResult[]>([]);
+  const [searchIndex, setSearchIndex] = useState(0);
   const { darkMode, setDarkMode } = useTheme();
   const [networkError, setNetworkError] = useState<string | null>(null);
 
@@ -56,6 +58,22 @@ export function App() {
     handleIframeLoad,
   } = useStumble(typedAuthenticatedFetch, category);
 
+  // Search-results mode: when a search returns hits, the main discovery view
+  // shows those results and Next cycles through them (not the random pool).
+  const inSearch = searchResults.length > 0;
+  const activeCurrent = inSearch
+    ? (searchResults[searchIndex] ?? null)
+    : current;
+  const activeShowIframe = inSearch ? true : showIframe;
+  const exitSearch = () => {
+    setSearchResults([]);
+    setSearchQuery("");
+    setSearchIndex(0);
+  };
+  const handleNext = inSearch
+    ? () => setSearchIndex((i) => (i + 1) % searchResults.length)
+    : fetchStumble;
+
   const {
     favorites,
     showFavorites,
@@ -69,25 +87,25 @@ export function App() {
   );
 
   useKeyboardShortcuts({
-    onNext: fetchStumble,
+    onNext: handleNext,
     onLike: () => handleRate("like"),
     onDislike: () => handleRate("dislike"),
     onToggleFavorites: () => setShowFavorites((prev) => !prev),
     onToggleHistory: () => setShowHistory((prev) => !prev),
-    enabled: !!current && showIframe,
+    enabled: !!activeCurrent && activeShowIframe,
   });
 
   const [rating, setRating] = useState<"like" | "dislike" | null>(null);
   const [rateLoading, setRateLoading] = useState(false);
 
   const handleRate = async (type: "like" | "dislike") => {
-    if (!current) return;
+    if (!activeCurrent) return;
     setRateLoading(true);
     try {
       const response = await authenticatedFetch(`/rate`, {
         method: "POST",
         body: JSON.stringify({
-          assetId: current.id,
+          assetId: activeCurrent.id,
           isPositive: type === "like",
         }),
       });
@@ -99,6 +117,11 @@ export function App() {
         return;
       }
       setRating(type);
+      addToast(
+        type === "like"
+          ? "Liked — we'll show you more like this"
+          : "Noted — fewer like this",
+      );
       await loadHistory();
     } catch {
       setNetworkError("Backend unreachable. Please check your connection.");
@@ -109,28 +132,46 @@ export function App() {
   };
 
   const handleShare = async () => {
-    if (!current) return;
+    if (!activeCurrent) return;
     if (navigator.share) {
       try {
-        await navigator.share({ title: current.title, url: current.url });
+        await navigator.share({
+          title: activeCurrent.title,
+          url: activeCurrent.url,
+        });
       } catch {
         /* ignore */
       }
     } else {
-      await navigator.clipboard.writeText(current.url);
+      await navigator.clipboard.writeText(activeCurrent.url);
       addToast("Link copied!");
     }
   };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) {
+      exitSearch();
+      return;
+    }
     try {
       const res = await authenticatedFetch(
-        `/search?q=${encodeURIComponent(searchQuery)}`,
+        `/search?q=${encodeURIComponent(q)}`,
       );
-      if (res.ok) setRecommendations(await res.json());
-      else if (res.status === 404) addToast("No results found", "info");
-      else addToast("Search failed", "error");
+      if (res.ok) {
+        const results: StumbleResult[] = await res.json();
+        if (results.length === 0) {
+          addToast("No results found", "info");
+          setSearchResults([]);
+        } else {
+          setSearchResults(results);
+          setSearchIndex(0);
+        }
+      } else if (res.status === 404) {
+        addToast("No results found", "info");
+        setSearchResults([]);
+      } else addToast("Search failed", "error");
     } catch {
       setNetworkError("Backend unreachable.");
     }
@@ -228,29 +269,48 @@ export function App() {
             className="flex-1 overflow-y-auto px-4 py-6 sm:px-6"
           >
             <div className="mx-auto w-full max-w-5xl space-y-6">
+              {inSearch && (
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-2 text-sm">
+                  <span className="truncate text-muted-foreground">
+                    {searchResults.length} result
+                    {searchResults.length === 1 ? "" : "s"} for{" "}
+                    <span className="font-medium text-foreground">
+                      “{searchQuery}”
+                    </span>{" "}
+                    · {searchIndex + 1}/{searchResults.length}
+                  </span>
+                  <button
+                    onClick={exitSearch}
+                    className="shrink-0 font-medium text-muted-foreground hover:text-foreground"
+                  >
+                    Exit search
+                  </button>
+                </div>
+              )}
+
               <StumbleArea
-                showIframe={showIframe}
-                loading={loading}
-                error={error}
-                current={current}
-                iframeError={iframeError}
+                showIframe={activeShowIframe}
+                loading={inSearch ? false : loading}
+                error={inSearch ? null : error}
+                current={activeCurrent}
+                iframeError={inSearch ? false : iframeError}
                 authenticatedFetch={typedAuthenticatedFetch}
-                onRetry={fetchStumble}
-                onClose={handleClose}
+                onRetry={handleNext}
+                onClose={inSearch ? exitSearch : handleClose}
                 onIframeLoad={handleIframeLoad}
               />
 
               <ActionButtons
-                showIframe={showIframe}
-                current={current}
-                loading={loading}
+                showIframe={activeShowIframe}
+                current={activeCurrent}
+                loading={inSearch ? false : loading}
                 rating={rating}
                 rateLoading={rateLoading}
-                isFavorite={isFavorite(current)}
+                isFavorite={isFavorite(activeCurrent)}
                 onRate={handleRate}
-                onToggleFavorite={() => toggleFavorite(current)}
+                onToggleFavorite={() => toggleFavorite(activeCurrent)}
                 onShare={handleShare}
-                onNext={fetchStumble}
+                onNext={handleNext}
               />
 
               <HistoryPanel

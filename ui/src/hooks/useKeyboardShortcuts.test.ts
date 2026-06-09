@@ -25,6 +25,12 @@ describe("useKeyboardShortcuts", () => {
     expect(mockHandlers.onNext).toHaveBeenCalled();
   });
 
+  it('should trigger onNext on " " (space) key', () => {
+    renderHook(() => useKeyboardShortcuts(mockHandlers));
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: " " }));
+    expect(mockHandlers.onNext).toHaveBeenCalled();
+  });
+
   it('should trigger onLike on "k" key', () => {
     renderHook(() => useKeyboardShortcuts(mockHandlers));
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "k" }));

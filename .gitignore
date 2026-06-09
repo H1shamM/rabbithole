@@ -45,3 +45,8 @@ playwright-report/
 # local screenshot helper (not part of the app)
 shot.mjs
 shot-*.png
+
+# local diagnostic helpers (not part of the app)
+walkthrough.mjs
+diag.mjs
+wt-*.png
