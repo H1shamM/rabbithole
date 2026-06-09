@@ -12,7 +12,7 @@ Use these prompts as templates when asking Gemini to implement something in stum
 
 ## Create a new API endpoint
 
-You are working on the stumble-clone project. Follow CLAUDE.md, CODING_STANDARDS.md, and TESTING_GUIDE.md.
+You are working on the stumble-clone project. Follow the root CLAUDE.md, CODING_STANDARDS.md, and TESTING_GUIDE.md.
 Add a new GET /api/v1/assets endpoint that returns a list of assets from the discovery service.
 
 - Add the route handler in app/api/v1/assets.ts.
