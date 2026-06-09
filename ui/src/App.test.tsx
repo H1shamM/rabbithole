@@ -180,4 +180,58 @@ describe("App Component", () => {
     await user.click(profileItem);
     expect(screen.getByText(/Profile/i)).toBeInTheDocument();
   });
+
+  it("search drives the main view and Next cycles results", async () => {
+    const results = [
+      {
+        id: "s1",
+        url: "https://a.com",
+        title: "Space Article One",
+        category: "science",
+        source: "Test",
+      },
+      {
+        id: "s2",
+        url: "https://b.com",
+        title: "Space Article Two",
+        category: "science",
+        source: "Test",
+      },
+    ];
+    window.fetch = vi.fn().mockImplementation((url: string) => {
+      const def = {
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "{}",
+      };
+      if (url.includes("/search"))
+        return Promise.resolve({ ...def, json: async () => results });
+      if (url.includes("/reader"))
+        return Promise.resolve({ ok: false, status: 422 });
+      return Promise.resolve({
+        ...def,
+        json: async () => [],
+        text: async () => "[]",
+      });
+    });
+
+    render(<App />);
+    const search = screen.getByLabelText("Search");
+    fireEvent.change(search, { target: { value: "space" } });
+    fireEvent.submit(search.closest("form")!);
+
+    await waitFor(() =>
+      expect(screen.getByText(/results for/i)).toBeInTheDocument(),
+    );
+    expect(screen.getByText("Space Article One")).toBeInTheDocument();
+
+    // Next cycles to the second result
+    fireEvent.click(screen.getByRole("button", { name: /next stumble/i }));
+    expect(screen.getByText("Space Article Two")).toBeInTheDocument();
+
+    // Exit search clears the banner
+    fireEvent.click(screen.getByRole("button", { name: /exit search/i }));
+    expect(screen.queryByText(/results for/i)).not.toBeInTheDocument();
+  });
 });
