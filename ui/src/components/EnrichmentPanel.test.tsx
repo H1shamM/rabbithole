@@ -1,7 +1,7 @@
 import { render, screen, cleanup } from "@testing-library/react";
 import { describe, it, expect, afterEach } from "vitest";
 import { EnrichmentPanel } from "./EnrichmentPanel";
-import { EnrichmentResult } from "../hooks/useEnrichment";
+import type { EnrichmentResult } from "../hooks/useEnrichment";
 
 afterEach(cleanup);
 
