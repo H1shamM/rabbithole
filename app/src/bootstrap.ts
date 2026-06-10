@@ -231,7 +231,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     source: "NASA APOD",
     category: "science",
     rating: 0,
-    type: "image",
+    type: "article",
     channel: "Art",
   },
   {

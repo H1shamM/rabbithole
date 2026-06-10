@@ -24,7 +24,6 @@ export interface AssetClassification {
  * extraction (which would either fail or strip the content's whole value).
  */
 const SOURCE_TYPE_HINTS: Record<string, ContentType> = {
-  "NASA APOD": "image",
   BoredPanda: "image",
   Colossal: "image",
   AtlasObscura: "image",
