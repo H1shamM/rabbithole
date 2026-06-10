@@ -10,11 +10,21 @@
 
 import type { ReaderResult } from "./readerService.js";
 
+/** One slide of the explainer reel: a beat with a heading, body, and emoji. */
+export interface ExplainerScene {
+  heading: string;
+  body: string;
+  /** A single emoji that illustrates this beat (zero-cost visual). */
+  emoji: string;
+}
+
 export interface EnrichmentDraft {
   /** A short, engaging summary (a few sentences). */
   summary: string;
   /** 3–5 punchy "things to know" takeaways. */
   keyPoints: string[];
+  /** 4–6 slides for the animated explainer reel (the "wow" view). */
+  scenes: ExplainerScene[];
 }
 
 /** The LLM port. Implemented by `ClaudeExplainer`; mocked in tests. */
@@ -77,6 +87,7 @@ export async function enrichReader(
   const result: EnrichmentResult = {
     summary: draft.summary.trim(),
     keyPoints: (draft.keyPoints ?? []).filter((p) => p?.trim()),
+    scenes: (draft.scenes ?? []).filter((s) => s?.heading?.trim() && s?.body?.trim()),
     image: firstImage(reader.content),
     provenance: `AI summary of ${reader.siteName || hostname(url)}`,
     sourceUrl: url,
