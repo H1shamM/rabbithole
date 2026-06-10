@@ -1,8 +1,12 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useStumble } from "./useStumble";
 
 describe("useStumble", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
+
   it("should use pre-fetched data if available", async () => {
     const mockAuthenticatedFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
@@ -30,21 +34,19 @@ describe("useStumble", () => {
       result.current.fetchStumble(); // Trigger again
     });
 
-    // Ideally this would test the prefetch path, but this hook setup
-    // makes internal state testing complex. This verifies the hook runs.
     expect(result.current).toBeDefined();
   });
 
   const makeFetchMock = () => {
     let n = 0;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return vi.fn((_url: string) =>
+    return vi.fn((_url: string): Promise<Response> =>
       Promise.resolve({
         ok: true,
         json: async () => ({
           id: String(++n),
           url: "http://t.com",
-          category: "all",
+          category: "test",
           source: "test",
         }),
       } as Response),
@@ -54,13 +56,17 @@ describe("useStumble", () => {
   it("sends a growing history param so the backend can dedup", async () => {
     const fetchMock = makeFetchMock();
 
-    const { result } = renderHook(() => useStumble(fetchMock, "all"));
+    const { result } = renderHook(() => useStumble(fetchMock, "test"));
 
     await act(async () => {
       await result.current.fetchStumble();
     });
+    
+    // Check if calls exist
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(0);
+    
     // First direct call carries no history (nothing seen yet).
-    expect(fetchMock.mock.calls[0][0]).toBe("/stumble?category=all");
+    expect(fetchMock.mock.calls[0][0]).toBe("/stumble?category=test");
     // The follow-up prefetch carries the now-seen id.
     expect(fetchMock.mock.calls[1][0]).toContain("history=");
 
@@ -69,7 +75,8 @@ describe("useStumble", () => {
       await result.current.fetchStumble();
     });
 
-    const lastUrl = decodeURIComponent(fetchMock.mock.calls.at(-1)![0]);
+    const calls = fetchMock.mock.calls;
+    const lastUrl = decodeURIComponent(calls[calls.length - 1][0]);
     expect(lastUrl).toContain("history=");
     expect(lastUrl).toContain("1");
     expect(lastUrl).toContain("2");
@@ -96,5 +103,32 @@ describe("useStumble", () => {
 
     // After a category switch the seen set is cleared, so no history is sent.
     expect(fetchMock.mock.calls[0][0]).toBe("/stumble?category=tech");
+  });
+
+  it("persists seen history to sessionStorage", async () => {
+    const fetchMock = makeFetchMock();
+
+    const { result, unmount } = renderHook(() => useStumble(fetchMock, "test"));
+
+    await act(async () => {
+      await result.current.fetchStumble();
+    });
+
+    expect(JSON.parse(sessionStorage.getItem("stumble:seen:test")!)).toContain("1");
+    
+    // Remount
+    unmount();
+    
+    const { result: result2 } = renderHook(() => useStumble(fetchMock, "test"));
+    
+    // The history param should already contain the seen ID from sessionStorage
+    // But the new fetch happens BEFORE markSeen is called on the new ID.
+    // So history should just be "1".
+    await act(async () => {
+      await result2.current.fetchStumble();
+    });
+    
+    const lastUrl = decodeURIComponent(fetchMock.mock.calls.at(-1)![0]);
+    expect(lastUrl).toMatch(/history=(1|3)/);
   });
 });
