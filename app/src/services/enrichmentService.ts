@@ -49,6 +49,7 @@ export function firstImage(html: string): string | null {
   const imgTags = html.matchAll(/<img[^>]+src="(https?:\/\/[^"]+)"/gi);
   for (const match of imgTags) {
     const src = match[1];
+    if (!src) continue;
     // Junk filter: skip small images, logos, icons, avatars, etc.
     if (
       src.includes("logo") ||
