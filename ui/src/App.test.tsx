@@ -234,4 +234,19 @@ describe("App Component", () => {
     fireEvent.click(screen.getByRole("button", { name: /exit search/i }));
     expect(screen.queryByText(/results for/i)).not.toBeInTheDocument();
   });
+
+  it("has accessible skip-link as first focusable element", () => {
+    render(<App />);
+    const skipLink = screen.getByText("Skip to main content");
+    
+    // Check DOM order
+    const allFocusable = screen.getAllByRole("link").concat(screen.getAllByRole("button"));
+    // The skip link should be the first one in the document
+    expect(allFocusable[0]).toBe(skipLink);
+
+    // Verify target exists
+    const mainContent = screen.getByRole("main");
+    expect(mainContent).toHaveAttribute("id", "main-content");
+    expect(mainContent).toHaveAttribute("tabindex", "-1");
+  });
 });
