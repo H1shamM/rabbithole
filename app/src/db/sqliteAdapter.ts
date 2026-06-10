@@ -236,13 +236,16 @@ export class SqliteAdapter implements IStoragePort {
   }
 
   async searchAssets(query: string): Promise<StumbleAsset[]> {
+    const q = `%${query.toLowerCase()}%`;
     const rows = this.db
       .prepare(
         `
-      SELECT * FROM assets WHERE title LIKE ? OR url LIKE ? LIMIT 20
+      SELECT * FROM assets 
+      WHERE LOWER(title) LIKE ? OR LOWER(description) LIKE ? OR LOWER(url) LIKE ? 
+      LIMIT 20
     `,
       )
-      .all(`%${query}%`, `%${query}%`);
+      .all(q, q, q);
     return rows.map((r) => this.mapRowToAsset(r as AssetRow));
   }
 
