@@ -13,9 +13,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ReaderView } from "./ReaderView";
 import { PreviewCard } from "./PreviewCard";
+import { EnrichmentPanel } from "./EnrichmentPanel";
 import { ViewModeToggle, type ViewMode } from "./ViewModeToggle";
 import { useReader } from "../hooks/useReader";
 import { usePreview } from "../hooks/usePreview";
+import { useEnrichment } from "../hooks/useEnrichment";
 import type { AuthenticatedFetch } from "../types";
 
 type ContentType = "article" | "image" | "video" | "interactive";
@@ -83,6 +85,10 @@ export function StumbleArea({
   const [isVisible, setIsVisible] = useState(import.meta.env.MODE === "test");
   const [viewMode, setViewMode] = useState<ViewMode>(() => defaultMode(current));
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  // Within reader mode, prefer the AI explainer; users can flip to the original.
+  const [readerView, setReaderView] = useState<"enriched" | "original">(
+    "enriched",
+  );
   const [prevId, setPrevId] = useState<string | undefined>(current?.id);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -97,6 +103,7 @@ export function StumbleArea({
     setPrevId(current?.id);
     setViewMode(defaultMode(current));
     setIsVideoPlaying(false);
+    setReaderView("enriched");
   }
 
   // Fetch reader content only for prose pages in reader mode (null = no-op).
@@ -109,6 +116,11 @@ export function StumbleArea({
   // Image/interactive content can't be embedded — fetch a preview card instead.
   const previewUrl = showIframe && current && isVisual ? current.url : null;
   const preview = usePreview(authenticatedFetch, previewUrl);
+
+  // For prose pages in reader mode, also fetch an AI explainer (in parallel with
+  // the original) so toggling between them is instant. Unavailable enrichment
+  // (422 / no key) is a no-op: the original reader view shows instead.
+  const enrichment = useEnrichment(authenticatedFetch, readerUrl);
 
   useEffect(() => {
     if (import.meta.env.MODE === "test") return;
@@ -262,22 +274,57 @@ export function StumbleArea({
             </Button>
           </Card>
         ) : showReader ? (
-          reader.data ? (
-            <div className="max-h-[72vh] overflow-y-auto">
-              <ReaderView
-                title={reader.data.title}
-                byline={reader.data.byline}
-                siteName={reader.data.siteName}
-                content={reader.data.content}
-              />
-            </div>
-          ) : (
-            <Card className="flex flex-col gap-4 p-6">
-              <Skeleton className="h-7 w-2/3" />
-              <Skeleton className="h-4 w-1/3" />
-              <Skeleton className="h-72 w-full rounded-lg" />
-            </Card>
-          )
+          <div className="space-y-3">
+            {/* Enriched/original toggle — only when an explainer is available. */}
+            {enrichment.data && (
+              <div
+                className="flex justify-center gap-1"
+                role="group"
+                aria-label="Reader view mode"
+              >
+                <Button
+                  size="sm"
+                  variant={readerView === "enriched" ? "secondary" : "ghost"}
+                  onClick={() => setReaderView("enriched")}
+                >
+                  Explainer
+                </Button>
+                <Button
+                  size="sm"
+                  variant={readerView === "original" ? "secondary" : "ghost"}
+                  onClick={() => setReaderView("original")}
+                >
+                  Original
+                </Button>
+              </div>
+            )}
+            {readerView === "enriched" && enrichment.data ? (
+              <EnrichmentPanel enrichment={enrichment.data} />
+            ) : readerView === "enriched" && enrichment.loading ? (
+              <Card className="flex flex-col gap-4 p-6">
+                <Skeleton className="h-64 w-full rounded-lg" />
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="h-4 w-1/2" />
+              </Card>
+            ) : reader.data ? (
+              // Original reader view — also the graceful fallback when the
+              // explainer is unavailable.
+              <div className="max-h-[72vh] overflow-y-auto">
+                <ReaderView
+                  title={reader.data.title}
+                  byline={reader.data.byline}
+                  siteName={reader.data.siteName}
+                  content={reader.data.content}
+                />
+              </div>
+            ) : (
+              <Card className="flex flex-col gap-4 p-6">
+                <Skeleton className="h-7 w-2/3" />
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-72 w-full rounded-lg" />
+              </Card>
+            )}
+          </div>
         ) : viewMode === "reader" && reader.error ? (
           <Card className="flex flex-col items-center gap-3 p-10 text-center">
             <div className="grid size-12 place-items-center rounded-full bg-muted text-muted-foreground">

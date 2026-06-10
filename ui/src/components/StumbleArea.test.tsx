@@ -28,14 +28,54 @@ const readerResult = {
   length: 11,
 };
 
-function makeFetch(ok = true) {
-  return vi
-    .fn()
-    .mockResolvedValue(
-      ok
-        ? { ok: true, json: async () => readerResult }
-        : { ok: false, status: 422 },
-    );
+const enrichmentResult = {
+  summary: "AI explainer summary.",
+  keyPoints: ["First point", "Second point"],
+  image: null,
+  provenance: "AI summary of example.com",
+  sourceUrl: "https://example.com/article",
+};
+
+const previewResult = {
+  title: "Preview Title",
+  description: "A preview.",
+  image: "https://cdn.test/card.png",
+  siteName: "Test",
+  favicon: null,
+};
+
+/**
+ * Routes by endpoint so /reader, /reader/enrich and /preview can return their
+ * own shapes. `enrichOk: false` simulates an unavailable explainer (422).
+ */
+function makeFetch({ enrichOk = true } = {}) {
+  return vi.fn((url: string): Promise<Response> => {
+    if (url.startsWith("/reader/enrich")) {
+      return Promise.resolve(
+        enrichOk
+          ? ({ ok: true, json: async () => enrichmentResult } as Response)
+          : ({ ok: false, status: 422 } as unknown as Response),
+      );
+    }
+    if (url.startsWith("/reader")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => readerResult,
+      } as Response);
+    }
+    if (url.startsWith("/preview")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => previewResult,
+      } as Response);
+    }
+    return Promise.resolve({ ok: false, status: 404 } as unknown as Response);
+  });
+}
+
+/** All endpoints fail — reader extraction can't produce a view. */
+function makeFailingFetch() {
+  return vi.fn().mockResolvedValue({ ok: false, status: 422 });
 }
 
 const baseProps = {
@@ -50,18 +90,45 @@ const baseProps = {
 };
 
 describe("StumbleArea reader-first hybrid", () => {
-  it("shows the reader view by default", async () => {
+  it("shows the AI explainer by default for an article", async () => {
     render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
+    await waitFor(() =>
+      expect(screen.getByText("AI explainer summary.")).toBeInTheDocument(),
+    );
+    expect(screen.getByText("First point")).toBeInTheDocument();
+  });
+
+  it("toggles from the explainer to the original reader view", async () => {
+    render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
+    await waitFor(() =>
+      expect(screen.getByText("AI explainer summary.")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /original/i }));
+    expect(screen.getByText("Reader body")).toBeInTheDocument();
+    expect(screen.getByText("Reader Title")).toBeInTheDocument();
+  });
+
+  it("falls back to the plain reader (no toggle) when the explainer is unavailable", async () => {
+    render(
+      <StumbleArea
+        {...baseProps}
+        authenticatedFetch={makeFetch({ enrichOk: false })}
+      />,
+    );
     await waitFor(() =>
       expect(screen.getByText("Reader body")).toBeInTheDocument(),
     );
-    expect(screen.getByText("Reader Title")).toBeInTheDocument();
+    // No explainer, and no enriched/original toggle when enrichment 422s.
+    expect(screen.queryByText("AI explainer summary.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /explainer/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("switches to the live iframe when Live is clicked", async () => {
     render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
     await waitFor(() =>
-      expect(screen.getByText("Reader body")).toBeInTheDocument(),
+      expect(screen.getByText("AI explainer summary.")).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole("button", { name: /live/i }));
     expect(screen.getByTitle("Stumbled page")).toBeInTheDocument();
@@ -69,7 +136,7 @@ describe("StumbleArea reader-first hybrid", () => {
 
   it("shows a fallback card (not a blank iframe) when reader extraction fails", async () => {
     render(
-      <StumbleArea {...baseProps} authenticatedFetch={makeFetch(false)} />,
+      <StumbleArea {...baseProps} authenticatedFetch={makeFailingFetch()} />,
     );
     await waitFor(() =>
       expect(screen.getByText(/generate a reader view/i)).toBeInTheDocument(),
@@ -97,26 +164,14 @@ describe("StumbleArea reader-first hybrid", () => {
     // Should show thumbnail, not iframe
     expect(screen.getByAltText("Video thumbnail")).toBeInTheDocument();
     expect(screen.queryByTitle("Stumbled page")).not.toBeInTheDocument();
-    
+
     // Clicking play should show iframe
     fireEvent.click(screen.getByRole("button", { name: /play video/i }));
     expect(screen.getByTitle("Stumbled page")).toBeInTheDocument();
   });
 
-  const previewResult = {
-    title: "Preview Title",
-    description: "A preview.",
-    image: "https://cdn.test/card.png",
-    siteName: "Test",
-    favicon: null,
-  };
-
-  function makePreviewFetch() {
-    return vi.fn().mockResolvedValue({ ok: true, json: async () => previewResult });
-  }
-
   it("renders a preview card (not an iframe or reader) for image stumbles", async () => {
-    const fetch = makePreviewFetch();
+    const fetch = makeFetch();
     render(
       <StumbleArea
         {...baseProps}
@@ -129,14 +184,14 @@ describe("StumbleArea reader-first hybrid", () => {
     );
     // No embedded iframe for un-iframable content.
     expect(screen.queryByTitle("Stumbled page")).not.toBeInTheDocument();
-    // It hit /preview, never /reader.
+    // It hit /preview, never /reader (or /reader/enrich).
     const calledUrls = fetch.mock.calls.map((c) => c[0] as string);
     expect(calledUrls.some((u) => u.startsWith("/preview"))).toBe(true);
     expect(calledUrls.some((u) => u.startsWith("/reader"))).toBe(false);
   });
 
   it("renders a preview card for interactive stumbles", async () => {
-    const fetch = makePreviewFetch();
+    const fetch = makeFetch();
     render(
       <StumbleArea
         {...baseProps}
@@ -150,7 +205,7 @@ describe("StumbleArea reader-first hybrid", () => {
     expect(screen.queryByTitle("Stumbled page")).not.toBeInTheDocument();
   });
 
-  it("still defaults article stumbles to the reader view", async () => {
+  it("still defaults article stumbles to reader mode (explainer)", async () => {
     render(
       <StumbleArea
         {...baseProps}
@@ -159,7 +214,7 @@ describe("StumbleArea reader-first hybrid", () => {
       />,
     );
     await waitFor(() =>
-      expect(screen.getByText("Reader body")).toBeInTheDocument(),
+      expect(screen.getByText("AI explainer summary.")).toBeInTheDocument(),
     );
   });
 });
