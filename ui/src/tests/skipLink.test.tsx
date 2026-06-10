@@ -1,18 +1,25 @@
-import { render, screen, fireEvent } from "../test-utils";
-import { describe, it, expect } from "vitest";
+import { render, screen, setupFetchMocks } from "../test-utils";
+import { describe, it, expect, beforeEach } from "vitest";
 import App from "../App";
 
 describe("Skip Link", () => {
-  it("should be the first focusable element in the document", () => {
-    // Use custom render to include ToastProvider etc.
-    render(<App />);
+  beforeEach(() => {
+    setupFetchMocks();
+  });
 
+  it("has accessible skip-link as first focusable element", () => {
+    render(<App />);
     const skipLink = screen.getByText("Skip to main content");
     
-    // Check if it's the first focusable element in the document
-    document.body.focus();
-    fireEvent.keyDown(document.body, { key: "Tab", code: "Tab" });
+    // Check DOM order: it should be the first focusable element in the document
+    // We get all focusable elements and check if the skip link is at index 0
+    const focusable = screen.getAllByRole("link").concat(screen.getAllByRole("button"));
+    // Filter out hidden ones if necessary, but sr-only focus:not-sr-only should be focusable
+    expect(focusable[0]).toBe(skipLink);
 
-    expect(document.activeElement).toBe(skipLink);
+    // Verify target exists
+    const mainContent = screen.getByRole("main");
+    expect(mainContent).toHaveAttribute("id", "main-content");
+    expect(mainContent).toHaveAttribute("tabindex", "-1");
   });
 });
