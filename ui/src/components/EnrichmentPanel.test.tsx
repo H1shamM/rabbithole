@@ -8,6 +8,7 @@ afterEach(cleanup);
 const mockEnrichment: EnrichmentResult = {
   summary: "This is a summary.",
   keyPoints: ["Point 1", "Point 2"],
+  scenes: [],
   image: "test.png",
   provenance: "AI Model",
   sourceUrl: "http://original.com",

@@ -31,6 +31,10 @@ const readerResult = {
 const enrichmentResult = {
   summary: "AI explainer summary.",
   keyPoints: ["First point", "Second point"],
+  scenes: [
+    { heading: "The big idea", body: "Here is the gist.", emoji: "💡" },
+    { heading: "Why it matters", body: "Because reasons.", emoji: "⭐" },
+  ],
   image: null,
   provenance: "AI summary of example.com",
   sourceUrl: "https://example.com/article",
@@ -90,18 +94,18 @@ const baseProps = {
 };
 
 describe("StumbleArea reader-first hybrid", () => {
-  it("shows the AI explainer by default for an article", async () => {
+  it("shows the AI explainer reel by default for an article", async () => {
     render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
     await waitFor(() =>
-      expect(screen.getByText("AI explainer summary.")).toBeInTheDocument(),
+      expect(screen.getByText("The big idea")).toBeInTheDocument(),
     );
-    expect(screen.getByText("First point")).toBeInTheDocument();
+    expect(screen.getByText("Here is the gist.")).toBeInTheDocument();
   });
 
   it("toggles from the explainer to the original reader view", async () => {
     render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
     await waitFor(() =>
-      expect(screen.getByText("AI explainer summary.")).toBeInTheDocument(),
+      expect(screen.getByText("The big idea")).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole("button", { name: /original/i }));
     expect(screen.getByText("Reader body")).toBeInTheDocument();
@@ -119,7 +123,7 @@ describe("StumbleArea reader-first hybrid", () => {
       expect(screen.getByText("Reader body")).toBeInTheDocument(),
     );
     // No explainer, and no enriched/original toggle when enrichment 422s.
-    expect(screen.queryByText("AI explainer summary.")).not.toBeInTheDocument();
+    expect(screen.queryByText("The big idea")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /explainer/i }),
     ).not.toBeInTheDocument();
@@ -128,7 +132,7 @@ describe("StumbleArea reader-first hybrid", () => {
   it("switches to the live iframe when Live is clicked", async () => {
     render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
     await waitFor(() =>
-      expect(screen.getByText("AI explainer summary.")).toBeInTheDocument(),
+      expect(screen.getByText("The big idea")).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole("button", { name: /live/i }));
     expect(screen.getByTitle("Stumbled page")).toBeInTheDocument();
@@ -205,7 +209,7 @@ describe("StumbleArea reader-first hybrid", () => {
     expect(screen.queryByTitle("Stumbled page")).not.toBeInTheDocument();
   });
 
-  it("still defaults article stumbles to reader mode (explainer)", async () => {
+  it("still defaults article stumbles to reader mode (explainer reel)", async () => {
     render(
       <StumbleArea
         {...baseProps}
@@ -214,7 +218,7 @@ describe("StumbleArea reader-first hybrid", () => {
       />,
     );
     await waitFor(() =>
-      expect(screen.getByText("AI explainer summary.")).toBeInTheDocument(),
+      expect(screen.getByText("The big idea")).toBeInTheDocument(),
     );
   });
 });

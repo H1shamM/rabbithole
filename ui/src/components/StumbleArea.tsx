@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ReaderView } from "./ReaderView";
 import { PreviewCard } from "./PreviewCard";
 import { EnrichmentPanel } from "./EnrichmentPanel";
+import { ExplainerReel } from "./ExplainerReel";
 import { ViewModeToggle, type ViewMode } from "./ViewModeToggle";
 import { useReader } from "../hooks/useReader";
 import { usePreview } from "../hooks/usePreview";
@@ -299,7 +300,16 @@ export function StumbleArea({
               </div>
             )}
             {readerView === "enriched" && enrichment.data ? (
-              <EnrichmentPanel enrichment={enrichment.data} />
+              enrichment.data.scenes.length > 0 ? (
+                <ExplainerReel
+                  scenes={enrichment.data.scenes}
+                  heroImage={enrichment.data.image}
+                  provenance={enrichment.data.provenance}
+                  sourceUrl={enrichment.data.sourceUrl}
+                />
+              ) : (
+                <EnrichmentPanel enrichment={enrichment.data} />
+              )
             ) : readerView === "enriched" && enrichment.loading ? (
               <Card className="flex flex-col gap-4 p-6">
                 <Skeleton className="h-64 w-full rounded-lg" />

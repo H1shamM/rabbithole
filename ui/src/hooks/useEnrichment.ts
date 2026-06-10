@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react";
 
+/** One slide of the explainer reel. */
+export interface ExplainerScene {
+  heading: string;
+  body: string;
+  emoji: string;
+}
+
 export interface EnrichmentResult {
   summary: string;
   keyPoints: string[];
+  /** Slides for the animated explainer reel (the "wow" view). */
+  scenes: ExplainerScene[];
   image: string | null;
   provenance: string;
   sourceUrl: string;
