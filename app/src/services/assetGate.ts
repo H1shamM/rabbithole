@@ -30,6 +30,7 @@ const SOURCE_TYPE_HINTS: Record<string, ContentType> = {
   xkcd: "image",
   UselessWeb: "interactive",
   DesignGallery: "interactive",
+  Wiby: "interactive",
 };
 
 /**
