@@ -1,4 +1,6 @@
 // app/src/main.ts
+// Load .env first, before any module reads process.env (settings, etc.).
+import "dotenv/config";
 import { createApp } from "./app.js";
 import { settings } from "./config/settings.js";
 import { seedDefaultAssets } from "./bootstrap.js";
