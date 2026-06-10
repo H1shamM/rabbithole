@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ExternalLink, Globe } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,8 @@ export function PreviewCard({
   preview,
   loading,
 }: PreviewCardProps) {
+  const [imgFailed, setImgFailed] = useState(false);
+
   if (loading && !preview) {
     return (
       <Card className="flex flex-col gap-4 p-6">
@@ -37,7 +40,7 @@ export function PreviewCard({
 
   const title = preview?.title || fallbackTitle || url;
   const description = preview?.description || fallbackDescription || null;
-  const image = preview?.image ?? null;
+  const image = imgFailed ? null : (preview?.image ?? null);
 
   return (
     <Card className="overflow-hidden">
@@ -48,6 +51,7 @@ export function PreviewCard({
             alt={title}
             className="max-h-[60vh] w-full bg-muted object-contain"
             loading="lazy"
+            onError={() => setImgFailed(true)}
           />
         </a>
       ) : (

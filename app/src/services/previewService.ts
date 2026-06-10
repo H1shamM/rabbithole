@@ -32,6 +32,17 @@ function absolutize(value: string | null | undefined, base: string): string | nu
 }
 
 /**
+ * Build a screenshot URL for pages that don't advertise an og:image — the
+ * conversion lever from eval session 4 ("without a good preview I won't share").
+ * Uses WordPress mShots: free, no API key, rendered client-side by the <img>, so
+ * there's no headless browser or backend capture. Swap this one function to move
+ * to a paid screenshot service later.
+ */
+export function screenshotUrl(pageUrl: string): string {
+  return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(pageUrl)}?w=1200`;
+}
+
+/**
  * Extract a preview card from raw HTML. Always returns a usable result (falls
  * back to the hostname for the title), so the UI never shows an empty card.
  */
@@ -48,7 +59,13 @@ export function extractPreview(html: string, url: string): PreviewResult {
   try {
     doc = new JSDOM(html).window.document;
   } catch {
-    return { title: hostname, description: null, image: null, siteName: hostname, favicon: null };
+    return {
+      title: hostname,
+      description: null,
+      image: screenshotUrl(url),
+      siteName: hostname,
+      favicon: null,
+    };
   }
 
   const meta = (selector: string): string | null =>
@@ -65,12 +82,15 @@ export function extractPreview(html: string, url: string): PreviewResult {
     meta('meta[name="twitter:description"]') ||
     meta('meta[name="description"]');
 
-  const image = absolutize(
-    meta('meta[property="og:image"]') ||
-      meta('meta[property="og:image:url"]') ||
-      meta('meta[name="twitter:image"]'),
-    url,
-  );
+  // Prefer the page's own og:image; otherwise fall back to a live screenshot so
+  // the card always has a real visual (not a placeholder).
+  const image =
+    absolutize(
+      meta('meta[property="og:image"]') ||
+        meta('meta[property="og:image:url"]') ||
+        meta('meta[name="twitter:image"]'),
+      url,
+    ) ?? screenshotUrl(url);
 
   const siteName = meta('meta[property="og:site_name"]') || hostname;
 

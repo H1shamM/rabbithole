@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { extractPreview } from "../../../app/src/services/previewService";
+import {
+  extractPreview,
+  screenshotUrl,
+} from "../../../app/src/services/previewService";
 
 describe("extractPreview", () => {
   it("extracts og:title, og:description and an absolute og:image", () => {
@@ -31,10 +34,28 @@ describe("extractPreview", () => {
       "https://www.foo.test/x",
     );
     expect(withTitle.title).toBe("Plain Title");
-    expect(withTitle.image).toBeNull();
 
     const bare = extractPreview("<html><body>hi</body></html>", "https://www.foo.test/x");
     expect(bare.title).toBe("foo.test");
     expect(bare.siteName).toBe("foo.test");
+  });
+
+  it("falls back to a screenshot when the page has no og:image", () => {
+    const url = "https://neal.fun/";
+    const p = extractPreview(
+      "<html><head><title>Neal</title></head><body></body></html>",
+      url,
+    );
+    // No og:image -> a real screenshot URL, not null/placeholder.
+    expect(p.image).toBe(screenshotUrl(url));
+    expect(p.image).toContain(encodeURIComponent(url));
+  });
+
+  it("prefers og:image over the screenshot fallback", () => {
+    const p = extractPreview(
+      '<html><head><meta property="og:image" content="https://cdn.x/c.png" /></head><body></body></html>',
+      "https://x.test/p",
+    );
+    expect(p.image).toBe("https://cdn.x/c.png");
   });
 });
