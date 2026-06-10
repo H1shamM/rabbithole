@@ -44,11 +44,11 @@ export const errorHandler = (
       statusCode: err.statusCode,
     });
   } else {
-    // Don't leak internal errors in production
+    // Don't leak internal errors unless in development
     const message =
-      process.env.NODE_ENV === "production"
-        ? "Internal server error"
-        : err.message;
+      process.env.NODE_ENV === "development"
+        ? err.message
+        : "Internal server error";
     res.status(500).json({
       error: message,
       statusCode: 500,
