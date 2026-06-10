@@ -44,10 +44,25 @@ export interface EnrichmentResult extends EnrichmentDraft {
 const cache = new Map<string, EnrichmentResult>();
 const CACHE_LIMIT = 200;
 
-/** Pull the first absolute `<img src>` out of sanitized reader HTML. */
+/** Pull the first valid absolute `<img src>` out of sanitized reader HTML. */
 export function firstImage(html: string): string | null {
-  const match = html.match(/<img[^>]+src="(https?:\/\/[^"]+)"/i);
-  return match?.[1] ?? null;
+  const imgTags = html.matchAll(/<img[^>]+src="(https?:\/\/[^"]+)"/gi);
+  for (const match of imgTags) {
+    const src = match[1];
+    // Junk filter: skip small images, logos, icons, avatars, etc.
+    if (
+      src.includes("logo") ||
+      src.includes("icon") ||
+      src.includes("avatar") ||
+      src.includes("spacer") ||
+      src.includes("pixel") ||
+      src.includes("spinner")
+    ) {
+      continue;
+    }
+    return src;
+  }
+  return null;
 }
 
 function hostname(url: string): string {
