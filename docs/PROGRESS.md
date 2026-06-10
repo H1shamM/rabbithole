@@ -157,14 +157,15 @@ are right; the conversion lever is preview-image quality.**
 
 ## Sprint 7 — session-5 backlog (from eval 4)
 
-| Issue | Story | Owner |
-| ----- | ----------------------------------------------------------- | ------ |
-| #179  | Screenshot/thumbnail backstop for preview cards (the lever) | senior |
-| #180  | Video thumbnail cards + more video seeds                    | gemini |
-| #181  | Persist session dedup history to `sessionStorage`          | gemini |
-| #182  | Render APOD / image+caption pages in reader                | gemini |
-| #183  | `WibySource` content fetcher (Indie & Classic Web)         | gemini |
-| #184  | Reader enrichment — AI visual explainers (the delight bet) | senior |
+| Issue | Story | Owner | Status |
+| ----- | ----------------------------------------------------------- | ------ | ------ |
+| #179  | Screenshot/thumbnail backstop for preview cards (the lever) | senior | Done (PR #187) |
+| #180  | Video thumbnail cards + more video seeds                    | gemini | Done (PR #190) |
+| #181  | Persist session dedup history to `sessionStorage`          | gemini | Done (PR #189) |
+| #182  | Render APOD / image+caption pages in reader                | gemini | Done (PR #188) |
+| #183  | `WibySource` content fetcher (Indie & Classic Web)         | gemini | Done (PR #186) |
+| #141  | Search matches description + case-insensitive               | gemini | Done (PR #166) |
+| #184  | Reader enrichment — AI visual explainers (the delight bet) | senior | In progress — backend slice (PR #191, open) |
 
 **Session-5 success criterion:** firm-send (delight) rate **> 20%** (the "maybe sends" converting
 once previews are rich), video plays/previews, zero "bare preview image" complaints.
