@@ -82,6 +82,7 @@ export function StumbleArea({
 }: StumbleAreaProps) {
   const [isVisible, setIsVisible] = useState(import.meta.env.MODE === "test");
   const [viewMode, setViewMode] = useState<ViewMode>(() => defaultMode(current));
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [prevId, setPrevId] = useState<string | undefined>(current?.id);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -95,6 +96,7 @@ export function StumbleArea({
   if (current?.id !== prevId) {
     setPrevId(current?.id);
     setViewMode(defaultMode(current));
+    setIsVideoPlaying(false);
   }
 
   // Fetch reader content only for prose pages in reader mode (null = no-op).
@@ -235,6 +237,30 @@ export function StumbleArea({
             preview={preview.data}
             loading={preview.loading}
           />
+        ) : isVideo && !isVideoPlaying ? (
+          <Card className="flex flex-col items-center justify-center p-0 overflow-hidden aspect-video relative">
+            <img
+              src={
+                current.url.includes("vimeo")
+                  ? `https://vumbnail.com/${current.url.split("/").pop()?.split("?")?.[0]}.jpg`
+                  : `https://img.youtube.com/vi/${current.url.split("/").pop()?.split("?")?.[0]}/hqdefault.jpg`
+              }
+              alt="Video thumbnail"
+              className="w-full h-full object-cover"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder-video.png";
+              }}
+            />
+            <Button
+              size="lg"
+              className="absolute rounded-full size-16"
+              onClick={() => setIsVideoPlaying(true)}
+              aria-label="Play video"
+            >
+              <div className="size-0 border-y-[12px] border-y-transparent border-l-[20px] border-l-white ml-1" />
+            </Button>
+          </Card>
         ) : showReader ? (
           reader.data ? (
             <div className="max-h-[72vh] overflow-y-auto">
