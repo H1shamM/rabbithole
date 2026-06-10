@@ -40,7 +40,7 @@ export const errorHandler = (
   // Send response
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
-      error: err.message,
+      error: err.isOperational ? err.message : "Internal server error",
       statusCode: err.statusCode,
     });
   } else {
