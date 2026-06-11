@@ -1,5 +1,5 @@
 import { getFaviconUrl } from "../utils/contentHelpers";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Compass,
   Shuffle,
@@ -83,7 +83,6 @@ export function StumbleArea({
   onClose,
   onIframeLoad,
 }: StumbleAreaProps) {
-  const [isVisible, setIsVisible] = useState(import.meta.env.MODE === "test");
   const [viewMode, setViewMode] = useState<ViewMode>(() => defaultMode(current));
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   // Within reader mode, prefer the AI explainer; users can flip to the original.
@@ -91,7 +90,6 @@ export function StumbleArea({
     "enriched",
   );
   const [prevId, setPrevId] = useState<string | undefined>(current?.id);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Video plays in the embedded player; image/interactive content shows live so
   // its visuals survive — neither should be sent through reader extraction.
@@ -122,22 +120,6 @@ export function StumbleArea({
   // the original) so toggling between them is instant. Unavailable enrichment
   // (422 / no key) is a no-op: the original reader view shows instead.
   const enrichment = useEnrichment(authenticatedFetch, readerUrl);
-
-  useEffect(() => {
-    if (import.meta.env.MODE === "test") return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "200px" },
-    );
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
 
   if (loading) {
     return (
@@ -188,12 +170,10 @@ export function StumbleArea({
   if (showIframe && current) {
     const showReader =
       viewMode === "reader" && !reader.error && !isVideo && !isVisual;
-    const iframeSrc = isVisible
-      ? current.proxyUrl || current.url
-      : "about:blank";
+    const iframeSrc = current.proxyUrl || current.url;
 
     return (
-      <div className="space-y-3" ref={containerRef}>
+      <div className="space-y-3">
         {/* Control bar */}
         <Card className="flex flex-row items-center gap-3 p-3">
           <img
@@ -401,7 +381,8 @@ export function StumbleArea({
               }
               onLoad={onIframeLoad}
               loading="lazy"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-presentation"
             />
           </Card>
         )}
