@@ -7,6 +7,7 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useTheme } from "./hooks/useTheme";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
+import { MobileNav } from "./components/MobileNav";
 import { AuthModal } from "./components/AuthModal";
 import { ProfileModal } from "./components/ProfileModal";
 import { StumbleArea } from "./components/StumbleArea";
@@ -226,6 +227,7 @@ export function App() {
             onSearchQueryChange={setSearchQuery}
             onSearchSubmit={handleSearch}
           />
+          <MobileNav category={category} onCategoryChange={setCategory} />
 
           {networkError && (
             <div
