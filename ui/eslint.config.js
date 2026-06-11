@@ -6,7 +6,9 @@ import tseslint from "typescript-eslint";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  // `android` is the generated Capacitor native project (and its build output);
+  // it is not part of the web app and must not be linted.
+  globalIgnores(["dist", "android"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
