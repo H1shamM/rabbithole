@@ -13,8 +13,16 @@ const config: CapacitorConfig = {
     androidScheme: 'http',
     cleartext: true,
   },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      launchAutoHide: true,
+      backgroundColor: '#4f46e5',
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: false,
+    },
+  },
 };
 
 export default config;
-
-// Placeholder for SplashScreen config (to be filled when Capacitor CLI works)
