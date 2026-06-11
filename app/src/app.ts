@@ -126,15 +126,13 @@ export async function createApp() {
   const readerController = new ReaderController();
   const previewController = new PreviewController();
   const explainerRepo = new SqliteExplainerRepo(storage.db);
+  const explainerService = new ExplainerService(explainerLLM!, { cache: explainerRepo });
+  const explainerController = new ExplainerController(explainerService);
   
   // Routes
   const v1Router = express.Router();
-  v1Router.get(
-    "/explainer", 
-    authenticateJWT, 
-    new ExplainerController(new ExplainerService(explainerLLM!, { cache: explainerRepo })).explain
-  );
-
+  
+  // Use controllers
   v1Router.post("/auth/register", authController.register);
   v1Router.post("/auth/login", authController.login);
   v1Router.get("/auth/me", authenticateJWT, authController.me);
