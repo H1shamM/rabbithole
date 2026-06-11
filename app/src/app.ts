@@ -1,4 +1,3 @@
-/* eslint-disable */
 // app/src/app.ts
 import express from "express";
 import cors from "cors";
@@ -91,9 +90,9 @@ export async function createApp() {
   })();
   const explainerRepo = new SqliteExplainerRepo(storage.db);
   const explainerService = new ExplainerService(explainerLLM!, { cache: explainerRepo });
+  const explainerController = new ExplainerController(explainerService);
 
-  // Routes
-
+  // Sources
   const sources: ContentFetcher[] = [
     new WikipediaSource(),
     new HackerNewsSource(),
@@ -125,9 +124,6 @@ export async function createApp() {
   const proxyController = new ProxyController();
   const readerController = new ReaderController();
   const previewController = new PreviewController();
-  const explainerRepo = new SqliteExplainerRepo(storage.db);
-  const explainerService = new ExplainerService(explainerLLM!, { cache: explainerRepo });
-  const explainerController = new ExplainerController(explainerService);
   
   // Routes
   const v1Router = express.Router();
