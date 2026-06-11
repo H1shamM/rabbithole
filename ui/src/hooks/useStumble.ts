@@ -27,6 +27,7 @@ export function useStumble(
   const iframeLoadedRef = useRef(false);
   const iframeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seenIdsRef = useRef<string[]>([]);
+  const warmedRef = useRef<Set<string>>(new Set());
   const prevCategory = useRef(category);
   const storageKey = `stumble:seen:${category}`;
 
@@ -48,6 +49,7 @@ export function useStumble(
      
     setNextStumble(null);
     seenIdsRef.current = [];
+    warmedRef.current.clear();
     sessionStorage.removeItem(storageKey);
   }, [category, storageKey]);
 
@@ -99,6 +101,28 @@ export function useStumble(
     }, 5000);
   }, [clearIframeTimeout, setBlockedState]);
 
+  // P1 (#224): warm the explainer for the next queued article so the reel is
+  // instant on switch. Articles only — video/image/interactive never hit the LLM
+  // (and the endpoint 422s for non-articles). The backend caches by
+  // (url, PROMPT_VERSION), so the later `useExplainer` fetch is a cache hit.
+  // Fire-and-forget: best-effort, never blocks or affects stumble timing.
+  const warmExplainer = useCallback(
+    (asset: StumbleResult) => {
+      const isVideo = asset.type === "video" || asset.url.includes("/embed/");
+      const isVisual = asset.type === "image" || asset.type === "interactive";
+      if (isVideo || isVisual) return;
+      if (warmedRef.current.has(asset.url)) return;
+      warmedRef.current.add(asset.url);
+      authenticatedFetch(
+        `/explainer?url=${encodeURIComponent(asset.url)}`,
+      ).catch(() => {
+        // Let a failed warm be retried later; it's purely an optimisation.
+        warmedRef.current.delete(asset.url);
+      });
+    },
+    [authenticatedFetch],
+  );
+
   const prefetchNext = useCallback(async () => {
     try {
       const res = await authenticatedFetch(
@@ -112,11 +136,12 @@ export function useStumble(
         data.proxyUrl = data.url;
       }
       setNextStumble(data);
+      warmExplainer(data);
     } catch (err) {
       console.debug("Prefetch failed", err);
       setNextStumble(null);
     }
-  }, [category, authenticatedFetch, historyParam]);
+  }, [category, authenticatedFetch, historyParam, warmExplainer]);
 
   const fetchStumble = useCallback(async () => {
     // If we have a pre-fetched next stumble, use it

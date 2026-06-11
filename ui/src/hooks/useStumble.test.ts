@@ -82,6 +82,64 @@ describe("useStumble", () => {
     expect(lastUrl).toContain("2");
   });
 
+  it("warms the explainer for the next queued article in the background", async () => {
+    let n = 0;
+    const fetchMock = vi.fn(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      (_url: string): Promise<Response> =>
+        Promise.resolve({
+          ok: true,
+          json: async () => ({
+            id: String(++n),
+            url: `http://t.com/article-${n}`,
+            category: "test",
+            source: "test",
+            type: "article",
+          }),
+        } as Response),
+    );
+
+    const { result } = renderHook(() => useStumble(fetchMock, "test"));
+    await act(async () => {
+      await result.current.fetchStumble();
+    });
+
+    // The next queued asset (id=2) gets a background /explainer warm so the reel
+    // is instant if the user switches to Explainer mode.
+    const urls = fetchMock.mock.calls.map((c) => c[0] as string);
+    expect(
+      urls.some(
+        (u) => u.startsWith("/explainer?url=") && u.includes("article-2"),
+      ),
+    ).toBe(true);
+  });
+
+  it("does not warm the explainer for a non-article next asset", async () => {
+    let n = 0;
+    const fetchMock = vi.fn(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      (_url: string): Promise<Response> =>
+        Promise.resolve({
+          ok: true,
+          json: async () => ({
+            id: String(++n),
+            url: `http://t.com/video-${n}`,
+            category: "test",
+            source: "test",
+            type: "video",
+          }),
+        } as Response),
+    );
+
+    const { result } = renderHook(() => useStumble(fetchMock, "test"));
+    await act(async () => {
+      await result.current.fetchStumble();
+    });
+
+    const urls = fetchMock.mock.calls.map((c) => c[0] as string);
+    expect(urls.some((u) => u.startsWith("/explainer"))).toBe(false);
+  });
+
   it("resets history when the category changes", async () => {
     const fetchMock = makeFetchMock();
 
