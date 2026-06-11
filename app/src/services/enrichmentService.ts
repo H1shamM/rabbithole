@@ -43,6 +43,8 @@ export interface EnrichmentResult extends EnrichmentDraft {
 
 const cache = new Map<string, EnrichmentResult>();
 const CACHE_LIMIT = 200;
+import { screenshotUrl } from "./previewService.js";
+
 
 /** Pull the first valid absolute `<img src>` out of sanitized reader HTML. */
 export function firstImage(html: string): string | null {
@@ -50,14 +52,17 @@ export function firstImage(html: string): string | null {
   for (const match of imgTags) {
     const src = match[1];
     if (!src) continue;
+    const lowerSrc = src.toLowerCase();
     // Junk filter: skip small images, logos, icons, avatars, etc.
     if (
-      src.includes("logo") ||
-      src.includes("icon") ||
-      src.includes("avatar") ||
-      src.includes("spacer") ||
-      src.includes("pixel") ||
-      src.includes("spinner")
+      lowerSrc.includes("logo") ||
+      lowerSrc.includes("icon") ||
+      lowerSrc.includes("avatar") ||
+      lowerSrc.includes("spacer") ||
+      lowerSrc.includes("pixel") ||
+      lowerSrc.includes("spinner") ||
+      lowerSrc.includes(".svg") ||
+      lowerSrc.includes("gravatar")
     ) {
       continue;
     }
@@ -65,6 +70,7 @@ export function firstImage(html: string): string | null {
   }
   return null;
 }
+
 
 function hostname(url: string): string {
   try {
@@ -104,7 +110,7 @@ export async function enrichReader(
     summary: draft.summary.trim(),
     keyPoints: (draft.keyPoints ?? []).filter((p) => p?.trim()),
     scenes: (draft.scenes ?? []).filter((s) => s?.heading?.trim() && s?.body?.trim()),
-    image: firstImage(reader.content),
+    image: firstImage(reader.content) ?? screenshotUrl(url),
     provenance: `AI summary of ${reader.siteName || hostname(url)}`,
     sourceUrl: url,
   };
