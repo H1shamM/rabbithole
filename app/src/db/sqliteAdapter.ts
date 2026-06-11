@@ -321,7 +321,7 @@ export class SqliteAdapter implements IStoragePort {
   // User preferences
   async updateUserPreference(
     user_id: string,
-    type: "category" | "source",
+    type: "category" | "source" | "channel",
     name: string,
     delta: number,
   ): Promise<void> {

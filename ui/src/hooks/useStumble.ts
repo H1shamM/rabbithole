@@ -29,6 +29,11 @@ export function useStumble(
   const seenIdsRef = useRef<string[]>([]);
   const prevCategory = useRef(category);
   const storageKey = `stumble:seen:${category}`;
+  // The id currently shown, and the last id the user actively engaged with
+  // (rated/saved). Advancing past a shown-but-not-engaged item reports a skip,
+  // a soft implicit-negative signal for topic targeting (#206).
+  const currentIdRef = useRef<string | null>(null);
+  const engagedIdRef = useRef<string | null>(null);
 
   // Initialize from storage on mount (once)
   useEffect(() => {
@@ -49,6 +54,9 @@ export function useStumble(
     setNextStumble(null);
     seenIdsRef.current = [];
     sessionStorage.removeItem(storageKey);
+    // Switching category isn't a skip — drop the outgoing-item tracking.
+    currentIdRef.current = null;
+    engagedIdRef.current = null;
   }, [category, storageKey]);
 
   const markSeen = useCallback((id: string) => {
@@ -67,6 +75,24 @@ export function useStumble(
     return seen.length ? `&history=${encodeURIComponent(seen.join(","))}` : "";
   }, []);
 
+  /** Mark the current item as actively engaged (rated/saved) — suppresses skip. */
+  const markEngaged = useCallback((id: string) => {
+    engagedIdRef.current = id;
+  }, []);
+
+  /** Report a skip for the outgoing item if the user never engaged with it. */
+  const reportSkip = useCallback(() => {
+    const id = currentIdRef.current;
+    if (id && id !== engagedIdRef.current) {
+      Promise.resolve(
+        authenticatedFetch(`/skip`, {
+          method: "POST",
+          body: JSON.stringify({ assetId: id }),
+        }),
+      ).catch(() => {});
+    }
+  }, [authenticatedFetch]);
+
   const clearIframeTimeout = useCallback(() => {
     if (iframeTimeoutRef.current) {
       clearTimeout(iframeTimeoutRef.current);
@@ -78,6 +104,9 @@ export function useStumble(
     setIframeError(true);
     clearIframeTimeout();
     if (current) {
+      // Blocked pages are auto-disliked; mark engaged so advancing doesn't also
+      // count a skip on top of the dislike.
+      engagedIdRef.current = current.id;
       authenticatedFetch(`/rate`, {
         method: "POST",
         body: JSON.stringify({
@@ -119,10 +148,13 @@ export function useStumble(
   }, [category, authenticatedFetch, historyParam]);
 
   const fetchStumble = useCallback(async () => {
+    // Advancing past the current item without engaging = an implicit skip.
+    reportSkip();
     // If we have a pre-fetched next stumble, use it
     if (nextStumble) {
       markSeen(nextStumble.id);
       setCurrent(nextStumble);
+      currentIdRef.current = nextStumble.id;
       setShowIframe(true);
       setLoading(false);
       setIframeError(false);
@@ -165,6 +197,7 @@ export function useStumble(
       }
       markSeen(data.id);
       setCurrent(data);
+      currentIdRef.current = data.id;
       setShowIframe(true);
       startIframeTimeout();
 
@@ -185,6 +218,7 @@ export function useStumble(
     prefetchNext,
     markSeen,
     historyParam,
+    reportSkip,
   ]);
 
   const handleClose = useCallback(() => {
@@ -209,5 +243,6 @@ export function useStumble(
     fetchStumble,
     handleClose,
     handleIframeLoad,
+    markEngaged,
   };
 }

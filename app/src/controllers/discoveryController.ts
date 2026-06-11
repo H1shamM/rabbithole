@@ -59,6 +59,14 @@ export class DiscoveryController {
     res.sendStatus(204);
   };
 
+  skip = async (req: AuthenticatedRequest, res: Response) => {
+    const { assetId } = req.body;
+    const userId = req.user_id;
+    if (!userId) throw new AppError("Unauthorized", 401);
+    if (assetId) await this.discoveryService.skip(assetId, userId);
+    res.sendStatus(204);
+  };
+
   getHistory = async (req: AuthenticatedRequest, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 20;
     const userId = req.user_id;

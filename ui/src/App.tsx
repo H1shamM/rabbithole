@@ -56,6 +56,7 @@ export function App() {
     fetchStumble,
     handleClose,
     handleIframeLoad,
+    markEngaged,
   } = useStumble(typedAuthenticatedFetch, category);
 
   // Search-results mode: when a search returns hits, the main discovery view
@@ -100,6 +101,8 @@ export function App() {
 
   const handleRate = async (type: "like" | "dislike") => {
     if (!activeCurrent) return;
+    // Rating is engagement — suppress the implicit skip when we advance.
+    markEngaged(activeCurrent.id);
     setRateLoading(true);
     try {
       const response = await authenticatedFetch(`/rate`, {
@@ -310,7 +313,10 @@ export function App() {
                 rateLoading={rateLoading}
                 isFavorite={isFavorite(activeCurrent)}
                 onRate={handleRate}
-                onToggleFavorite={() => toggleFavorite(activeCurrent)}
+                onToggleFavorite={() => {
+                  if (activeCurrent) markEngaged(activeCurrent.id);
+                  toggleFavorite(activeCurrent);
+                }}
                 onShare={handleShare}
                 onNext={handleNext}
               />

@@ -186,6 +186,7 @@ export async function createApp() {
     discoveryController.updatePreferences,
   );
   v1Router.post("/rate", authenticateJWT, discoveryController.rate);
+  v1Router.post("/skip", authenticateJWT, discoveryController.skip);
   v1Router.get("/history", authenticateJWT, discoveryController.getHistory);
   v1Router.post("/favorites", authenticateJWT, discoveryController.addFavorite);
   v1Router.get("/favorites", authenticateJWT, discoveryController.getFavorites);

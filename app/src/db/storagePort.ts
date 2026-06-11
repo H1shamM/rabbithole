@@ -32,7 +32,7 @@ export interface IStoragePort {
   // User preferences
   updateUserPreference(
     user_id: string,
-    type: "category" | "source",
+    type: "category" | "source" | "channel",
     name: string,
     delta: number,
   ): Promise<void>;

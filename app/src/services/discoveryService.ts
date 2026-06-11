@@ -9,6 +9,12 @@ const MIN_POOL = 5;
 /** Up to this, top the pool up in the background so the corpus keeps growing. */
 const TARGET_POOL = 20;
 const COOLDOWN_WINDOW = 4;
+/**
+ * Implicit-negative weight for a stumble the user passed without engaging — a
+ * soft signal, deliberately weaker than an explicit dislike (~1), so it takes a
+ * few repeated skips of a topic to meaningfully down-weight it.
+ */
+const SKIP_PENALTY = 0.34;
 
 export class DiscoveryService {
   constructor(
@@ -79,8 +85,16 @@ export class DiscoveryService {
       const srcPref = preferences.find(
         (p) => p.type === "source" && p.name === asset.source,
       );
+      // Channel is a finer "topic" grouping than the 5 broad categories, so it
+      // lets affinity (and skip penalties) target what the user actually likes.
+      const chanPref = asset.channel
+        ? preferences.find(
+            (p) => p.type === "channel" && p.name === asset.channel,
+          )
+        : undefined;
       if (catPref) weight += catPref.score;
       if (srcPref) weight += srcPref.score;
+      if (chanPref) weight += chanPref.score;
 
       if (recentSources.has(asset.source)) {
         weight *= 0.05;
@@ -172,6 +186,39 @@ export class DiscoveryService {
       asset.source,
       isPositive ? 1 : -1,
     );
+    if (asset.channel) {
+      await this.storage.updateUserPreference(
+        userId,
+        "channel",
+        asset.channel,
+        isPositive ? 1 : -1,
+      );
+    }
+  }
+
+  /**
+   * Implicit negative feedback: the user stumbled past this item without liking
+   * or saving it. Softly down-weights its category and channel so repeatedly
+   * skipped topics surface less — the session-5 "good, but not my topic" gap
+   * (#206). Best-effort: a missing asset is a no-op, never an error.
+   */
+  async skip(assetId: string, userId: string): Promise<void> {
+    const asset = await this.storage.getAssetById(assetId);
+    if (!asset) return;
+    await this.storage.updateUserPreference(
+      userId,
+      "category",
+      asset.category,
+      -SKIP_PENALTY,
+    );
+    if (asset.channel) {
+      await this.storage.updateUserPreference(
+        userId,
+        "channel",
+        asset.channel,
+        -SKIP_PENALTY,
+      );
+    }
   }
 
   async getHistory(userId: string, limit: number): Promise<RatedItem[]> {
