@@ -17,6 +17,16 @@ about converting "maybe send" → "send". The real target is a **mobile app** (w
 prototype); "browse the site inside the app" is a native-WebView capability, not a web iframe.
 See PROGRESS and the platform/content memory notes.
 
+**Active epic — Explainer Mode / Enrichment v1 (#215).** Formalizing the rushed v0 explainer reel
+(scene-script "re-tell" of an article, Haiku 4.5 + structured outputs, tone-aware prompt) into the
+planned hexagonal architecture per `docs/EXPLAINER_BUILD_PLAN.md`. **Merged:** B1 (#216 versioned
+prompt + adapter + truncation guard), B3 (#218 `ExplainerService`), B4 (#219 `GET /api/v1/explainer`),
+F2 (#221 SceneReel oklch tokens), F4 (#223 `ExplainerState`). **In progress:** B2 (#217 SQLite cache,
+bot), F1 (#220 `useExplainer` hook, senior). **Next:** F3 (#222 3rd ViewModeToggle mode) → P1 (#224
+prefetch) + P2 (#225 telemetry). See the Explainer table in PROGRESS for the full handoff. Two-agent
+note: the junior keeps branching off stale master + mixing issues — closed #229/#230/#232; keep each
+bot PR to one issue off current master.
+
 ## Layout (monorepo)
 
 - `app/` — Backend. Node + TypeScript + Express 5 + better-sqlite3. Hexagonal (ports & adapters).
