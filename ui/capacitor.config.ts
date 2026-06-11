@@ -12,6 +12,7 @@ const config: CapacitorConfig = {
     // Production will move the API to https and these can be removed.
     androidScheme: 'http',
     cleartext: true,
+    ...(process.env.CAP_DEV_URL ? { url: process.env.CAP_DEV_URL } : {}),
   },
   plugins: {
     SplashScreen: {
