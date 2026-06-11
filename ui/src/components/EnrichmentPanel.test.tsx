@@ -1,11 +1,11 @@
 import { render, screen, cleanup } from "@testing-library/react";
 import { describe, it, expect, afterEach } from "vitest";
 import { EnrichmentPanel } from "./EnrichmentPanel";
-import type { EnrichmentResult } from "../hooks/useEnrichment";
+import type { ExplainerResult } from "../hooks/useExplainer";
 
 afterEach(cleanup);
 
-const mockEnrichment: EnrichmentResult = {
+const mockEnrichment: ExplainerResult = {
   summary: "This is a summary.",
   keyPoints: ["Point 1", "Point 2"],
   image: "test.png",
