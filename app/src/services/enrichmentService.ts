@@ -30,7 +30,6 @@ export interface EnrichmentDraft {
   scenes: ExplainerScene[];
 }
 
-/** The LLM port. Implemented by `ClaudeExplainer`; mocked in tests. */
 export interface ExplainerLLM {
   summarize(input: { title: string; text: string }): Promise<EnrichmentDraft>;
 }

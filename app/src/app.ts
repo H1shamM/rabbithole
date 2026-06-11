@@ -133,7 +133,7 @@ export async function createApp() {
   v1Router.post("/auth/login", authController.login);
   v1Router.get("/auth/me", authenticateJWT, authController.me);
   v1Router.get("/recommendations", authenticateJWT, discoveryController.getRecommendations);
-  v1Router.post("/submissions", authenticateJWT, submissionController.submit);
+  v1Router.post("/submissions", authenticateJWT, submissionController.createSubmission);
   v1Router.get("/proxy", authenticateJWT, proxyController.proxy);
   v1Router.get("/reader", authenticateJWT, readerController.read);
   v1Router.get("/explainer", authenticateJWT, explainerController.explain);
