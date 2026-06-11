@@ -17,12 +17,13 @@ import { fetchHtml as realFetchHtml } from "../utils/fetchHtml.js";
 import { extractReadable } from "./readerService.js";
 import type { ReaderResult } from "./readerService.js";
 import { PROMPT_VERSION } from "../prompts/explainerPrompt.js";
-export {
-  firstImage,
-  type EnrichmentDraft,
-  type EnrichmentResult,
-  type ExplainerLLM,
-} from "./enrichmentService.js";
+import { firstImage } from "./enrichmentService.js";
+import type {
+  EnrichmentDraft,
+  EnrichmentResult,
+  ExplainerLLM,
+} from "../types/explainerTypes.js";
+
 
 /** The page could not be extracted as an article — not eligible for an explainer. */
 export class NotArticleError extends Error {

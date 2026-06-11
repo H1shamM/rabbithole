@@ -1,10 +1,11 @@
 import type { Database } from "better-sqlite3";
-import type { EnrichmentResult } from "../services/explainerService.js";
+import type { EnrichmentResult } from "../types/explainerTypes.js";
 
 export interface ExplainerRepo {
   get(url: string, version: string): Promise<EnrichmentResult | null>;
   put(url: string, version: string, draft: EnrichmentResult): Promise<void>;
 }
+
 
 export class SqliteExplainerRepo implements ExplainerRepo {
   constructor(private db: Database) {
@@ -19,7 +20,7 @@ export class SqliteExplainerRepo implements ExplainerRepo {
     `);
   }
 
-  async get(url: string, version: string): Promise<ExplainerResult | null> {
+  async get(url: string, version: string): Promise<EnrichmentResult | null> {
     const row = this.db
       .prepare(
         "SELECT draft_json FROM explainer_cache WHERE url = ? AND prompt_version = ?",
@@ -28,7 +29,7 @@ export class SqliteExplainerRepo implements ExplainerRepo {
     return row ? JSON.parse(row.draft_json) : null;
   }
 
-  async put(url: string, version: string, draft: ExplainerResult): Promise<void> {
+  async put(url: string, version: string, draft: EnrichmentResult): Promise<void> {
     this.db
       .prepare(
         "INSERT OR REPLACE INTO explainer_cache (url, prompt_version, draft_json, created_at) VALUES (?, ?, ?, ?)",
