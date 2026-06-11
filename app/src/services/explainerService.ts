@@ -17,7 +17,7 @@ import { fetchHtml as realFetchHtml } from "../utils/fetchHtml.js";
 import { extractReadable } from "./readerService.js";
 import type { ReaderResult } from "./readerService.js";
 import { PROMPT_VERSION } from "../prompts/explainerPrompt.js";
-import {
+export {
   firstImage,
   type EnrichmentDraft,
   type EnrichmentResult,

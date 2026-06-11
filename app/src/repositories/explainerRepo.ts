@@ -1,9 +1,9 @@
-import { Database } from "better-sqlite3";
-import { ExplainerResult } from "../services/explainerService.js";
+import type { Database } from "better-sqlite3";
+import type { EnrichmentResult } from "../services/explainerService.js";
 
 export interface ExplainerRepo {
-  get(url: string, version: string): Promise<ExplainerResult | null>;
-  put(url: string, version: string, draft: ExplainerResult): Promise<void>;
+  get(url: string, version: string): Promise<EnrichmentResult | null>;
+  put(url: string, version: string, draft: EnrichmentResult): Promise<void>;
 }
 
 export class SqliteExplainerRepo implements ExplainerRepo {
