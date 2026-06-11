@@ -8,7 +8,9 @@
  * enrichment never breaks plain reading.
  */
 
+import { JSDOM } from "jsdom";
 import type { ReaderResult } from "./readerService.js";
+import { screenshotUrl } from "./previewService.js";
 
 /** One slide of the explainer reel: a beat with a heading, body, and emoji. */
 export interface ExplainerScene {
@@ -47,10 +49,36 @@ export interface EnrichmentResult extends EnrichmentDraft {
 const cache = new Map<string, EnrichmentResult>();
 const CACHE_LIMIT = 200;
 
-/** Pull the first absolute `<img src>` out of sanitized reader HTML. */
+/**
+ * Pull the first high-quality absolute <img src> out of sanitized reader HTML.
+ * Junk-filters irrelevant small assets (logos, icons, spacers).
+ */
 export function firstImage(html: string): string | null {
-  const match = html.match(/<img[^>]+src="(https?:\/\/[^"]+)"/i);
-  return match?.[1] ?? null;
+  // Use JSDOM to properly parse attributes and junk-filter
+  const dom = new JSDOM(html);
+  const doc = dom.window.document;
+  const imgs = Array.from(doc.querySelectorAll("img"));
+
+  for (const img of imgs) {
+    const src = img.getAttribute("src");
+    if (!src || !src.startsWith("http")) continue;
+
+    const lowerSrc = src.toLowerCase();
+    const isJunkUrl = ["logo", "icon", "avatar", "spacer"].some((j) =>
+      lowerSrc.includes(j),
+    );
+    if (isJunkUrl) continue;
+
+    const widthStr = img.getAttribute("width");
+    const heightStr = img.getAttribute("height");
+    const width = widthStr ? parseInt(widthStr) : 999;
+    const height = heightStr ? parseInt(heightStr) : 999;
+    if (width <= 32 || height <= 32) continue;
+
+    return src;
+  }
+
+  return null;
 }
 
 function hostname(url: string): string {
@@ -71,6 +99,7 @@ export async function enrichReader(
   reader: ReaderResult,
   url: string,
   llm: ExplainerLLM,
+  rawHtml?: string,
 ): Promise<EnrichmentResult | null> {
   const cached = cache.get(url);
   if (cached) return cached;
@@ -87,11 +116,42 @@ export async function enrichReader(
 
   if (!draft?.summary?.trim()) return null;
 
+  // Image selection sequence:
+  // 1. First high-quality image from the article content.
+  // 2. The page's own og:image (from rawHtml if provided).
+  // 3. Fallback to a live screenshot backstop.
+  let image = firstImage(reader.content);
+
+  if (!image && rawHtml) {
+    try {
+      const doc = new JSDOM(rawHtml).window.document;
+      const og =
+        doc.querySelector('meta[property="og:image"]')?.getAttribute("content") ||
+        doc.querySelector('meta[property="og:image:url"]')?.getAttribute("content") ||
+        doc.querySelector('meta[name="twitter:image"]')?.getAttribute("content");
+      if (og) {
+        try {
+          image = new URL(og, url).href;
+        } catch {
+          // ignore invalid URLs
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }
+
+  if (!image) {
+    image = screenshotUrl(url);
+  }
+
   const result: EnrichmentResult = {
     summary: draft.summary.trim(),
     keyPoints: (draft.keyPoints ?? []).filter((p) => p?.trim()),
-    scenes: (draft.scenes ?? []).filter((s) => s?.heading?.trim() && s?.body?.trim()),
-    image: firstImage(reader.content),
+    scenes: (draft.scenes ?? []).filter(
+      (s) => s?.heading?.trim() && s?.body?.trim(),
+    ),
+    image,
     provenance: `AI summary of ${reader.siteName || hostname(url)}`,
     sourceUrl: url,
   };

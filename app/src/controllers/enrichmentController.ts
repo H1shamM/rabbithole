@@ -35,7 +35,7 @@ export class EnrichmentController {
       throw new AppError("Could not extract readable content", 422);
     }
 
-    const enriched = await enrichReader(article, targetUrl, this.llm);
+    const enriched = await enrichReader(article, targetUrl, this.llm, html);
     if (!enriched) {
       throw new AppError("Enrichment unavailable", 422);
     }
