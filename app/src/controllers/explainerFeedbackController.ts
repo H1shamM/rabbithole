@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { logger } from "../utils/logger.js";
-import { IStoragePort } from "../db/storagePort.js";
+import type { IStoragePort } from "../db/storagePort.js";
 
 export class ExplainerFeedbackController {
   constructor(private storage: IStoragePort) {}
