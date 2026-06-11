@@ -4,7 +4,9 @@ import { useFavorites } from "./hooks/useFavorites";
 import { useHistory } from "./hooks/useHistory";
 import { usePWA } from "./hooks/usePWA";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useSwipe } from "./hooks/useSwipe";
 import { useTheme } from "./hooks/useTheme";
+import { ChevronUp } from "lucide-react";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { MobileNav } from "./components/MobileNav";
@@ -74,6 +76,10 @@ export function App() {
   const handleNext = inSearch
     ? () => setSearchIndex((i) => (i + 1) % searchResults.length)
     : fetchStumble;
+
+  // Mobile: flick up on the stumble to advance (M3). Scroll-aware, so reading a
+  // long article still scrolls — see useSwipe.
+  const swipe = useSwipe({ onSwipeUp: handleNext });
 
   const {
     favorites,
@@ -292,17 +298,33 @@ export function App() {
                 </div>
               )}
 
-              <StumbleArea
-                showIframe={activeShowIframe}
-                loading={inSearch ? false : loading}
-                error={inSearch ? null : error}
-                current={activeCurrent}
-                iframeError={inSearch ? false : iframeError}
-                authenticatedFetch={typedAuthenticatedFetch}
-                onRetry={handleNext}
-                onClose={inSearch ? exitSearch : handleClose}
-                onIframeLoad={handleIframeLoad}
-              />
+              <div onTouchStart={swipe.onTouchStart} onTouchEnd={swipe.onTouchEnd}>
+                <StumbleArea
+                  showIframe={activeShowIframe}
+                  loading={inSearch ? false : loading}
+                  error={inSearch ? null : error}
+                  current={activeCurrent}
+                  iframeError={inSearch ? false : iframeError}
+                  authenticatedFetch={typedAuthenticatedFetch}
+                  onRetry={handleNext}
+                  onClose={inSearch ? exitSearch : handleClose}
+                  onIframeLoad={handleIframeLoad}
+                />
+              </div>
+
+              {/* Always-reachable "next" on mobile so a long article never
+                  requires scrolling to the bottom to skip (tester feedback). */}
+              {activeShowIframe && activeCurrent && (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  aria-label="Skip to next"
+                  className="fixed bottom-6 right-6 z-40 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:opacity-90 active:scale-95 sm:hidden"
+                  style={{ marginBottom: "env(safe-area-inset-bottom)" }}
+                >
+                  <ChevronUp className="size-6" />
+                </button>
+              )}
 
               <ActionButtons
                 showIframe={activeShowIframe}
