@@ -208,7 +208,7 @@ Formalizing + hardening the rushed v0 explainer into the planned architecture (`
 | B2 | Explainer cache (SQLite) | gemini | In progress (#217 — bot, re-pinned; first attempt #229 closed) |
 | B3 | Explainer service (reader→enrich, article gate) | senior | Done (PR #228) |
 | B4 | `GET /api/v1/explainer` endpoint | senior | Done (PR #237) |
-| F1 | `useExplainer` hook (rename `useEnrichment` → `/explainer`) | senior | In progress (#220) |
+| F1 | `useExplainer` hook (rename `useEnrichment` → `/explainer`) | senior | Done (merged) |
 | F2 | SceneReel → oklch design tokens | gemini | Done (PR #227) |
 | F3 | Explainer as 3rd ViewModeToggle mode | senior | Todo (#222 — needs F1) |
 | F4 | Explainer skeleton + unavailable card (`ExplainerState.tsx`) | gemini | Done (PR #231) |
@@ -232,6 +232,24 @@ B1 (#216): tone-aware `EXPLAINER_PROMPT` + `PROMPT_VERSION` in `prompts/`; adapt
 (whimsy/emoji dropped on Chernobyl + 1918-flu somber beats). B3 (#218): `ExplainerService.explain(url)`
 — fetch → extract (the article gate; non-extractable → `NotArticleError`) → cached draft by
 `(url, PROMPT_VERSION)` (in-memory; B2 swaps SQLite) → summarize on miss; LLM errors propagate (B4 → 503).
+
+## Mobile — Native App v1 (program, `docs/MOBILE_BUILD_PLAN.md`)
+
+Ship the app as a native mobile app (Android first) — wrap the existing `ui/` build with
+Capacitor, do not rewrite. Two core features: swipe-native discovery + browse any site inside
+the app (native WebView, not an iframe).
+
+| ID | Story | Owner | Status |
+| -- | ----- | ----- | ------ |
+| S1 | Capacitor scaffold, run existing UI on Android | senior | Scaffold done (PR #242); device-run gated on local Android SDK install |
+| S2 | Native WebView spike (GO/NO-GO on real device) | senior | Next — the keystone gate |
+
+**Where we left off:** S1 scaffold is merged — Capacitor v8 added to `ui/`, `capacitor.config.ts`
+(`webDir: dist`, `appId com.stumbleclone.app`), committed `ui/android/` native project (build
+output gitignored), `cap:sync`/`cap:android` scripts. iOS deferred (no Mac). **The dev machine has
+Java 21 + standalone adb but no Android SDK / Studio / emulator** — installing Android Studio (SDK +
+an AVD) or connecting a real device is the prerequisite to finish S1's "runs on device" acceptance
+and to attempt the S2 WebView GO/NO-GO. Do not build Phases 1+ until S2 passes.
 
 ### Backlog
 
