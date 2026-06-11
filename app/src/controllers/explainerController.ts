@@ -1,10 +1,13 @@
 import type { Request, Response } from "express";
 import { assertPublicHttpUrl } from "../utils/urlGuard.js";
 import { AppError } from "../middleware/errorHandler.js";
+import type { AuthenticatedRequest } from "../middleware/auth.js";
+import { logger } from "../utils/logger.js";
 import {
   ExplainerService,
   NotArticleError,
 } from "../services/explainerService.js";
+import { DiscoveryService } from "../services/discoveryService.js";
 import {
   ExplainerTruncatedError,
   ExplainerUnavailableError,
@@ -17,7 +20,10 @@ import {
  * LLM failure; **never 500** (the UI falls back to the plain reader view).
  */
 export class ExplainerController {
-  constructor(private readonly service: ExplainerService | null) {}
+  constructor(
+    private readonly service: ExplainerService | null,
+    private readonly discoveryService?: DiscoveryService,
+  ) {}
 
   read = async (req: Request, res: Response): Promise<void> => {
     const targetUrl = req.query.url as string | undefined;
@@ -48,5 +54,34 @@ export class ExplainerController {
       // Any other failure (network, extraction, parse) — surface as 503, never 500.
       throw new AppError("Explainer temporarily unavailable", 503);
     }
+  };
+
+  /**
+   * POST /explainer/rate — a thumbs from the Explainer view. Feeds the same
+   * category/source preference weights as a Reader-mode rating (P2, #225), and
+   * logs a format-mix event so the session-eval metric can distinguish
+   * Explainer-vs-Reader engagement.
+   */
+  rate = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const { assetId, isPositive } = req.body as {
+      assetId?: string;
+      isPositive?: boolean;
+    };
+    const userId = req.user_id;
+    if (!userId) throw new AppError("Unauthorized", 401);
+    if (!assetId || typeof isPositive !== "boolean") {
+      throw new AppError("assetId and isPositive are required", 400);
+    }
+    if (!this.discoveryService) {
+      throw new AppError("Rating is not available", 503);
+    }
+
+    await this.discoveryService.rate(assetId, isPositive, userId);
+    // Format-mix telemetry: tag the rating's source view.
+    logger.info(
+      { userId, assetId, isPositive, mode: "explainer" },
+      "explainer feedback",
+    );
+    res.sendStatus(204);
   };
 }
