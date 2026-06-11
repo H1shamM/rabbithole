@@ -15,6 +15,7 @@ import { ReaderView } from "./ReaderView";
 import { PreviewCard } from "./PreviewCard";
 import { EnrichmentPanel } from "./EnrichmentPanel";
 import { SceneReel } from "./SceneReel";
+import { ExplainerSkeleton, ExplainerUnavailableCard } from "./ExplainerState";
 import { ViewModeToggle, type ViewMode } from "./ViewModeToggle";
 import { useReader } from "../hooks/useReader";
 import { usePreview } from "../hooks/usePreview";
@@ -85,16 +86,14 @@ export function StumbleArea({
 }: StumbleAreaProps) {
   const [viewMode, setViewMode] = useState<ViewMode>(() => defaultMode(current));
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  // Within reader mode, prefer the AI explainer; users can flip to the original.
-  const [readerView, setReaderView] = useState<"enriched" | "original">(
-    "enriched",
-  );
   const [prevId, setPrevId] = useState<string | undefined>(current?.id);
 
   // Video plays in the embedded player; image/interactive content shows live so
   // its visuals survive — neither should be sent through reader extraction.
   const isVideo = isVideoStumble(current);
   const isVisual = isVisualStumble(current);
+  // Prose pages are the only assets that get a Reader / Explainer view.
+  const isArticle = !isVideo && !isVisual;
 
   // Reset the view mode whenever a new page is stumbled (adjusting state during
   // render — the documented pattern for syncing state to a prop change).
@@ -102,12 +101,11 @@ export function StumbleArea({
     setPrevId(current?.id);
     setViewMode(defaultMode(current));
     setIsVideoPlaying(false);
-    setReaderView("enriched");
   }
 
   // Fetch reader content only for prose pages in reader mode (null = no-op).
   const readerUrl =
-    showIframe && current && viewMode === "reader" && !isVideo && !isVisual
+    showIframe && current && viewMode === "reader" && isArticle
       ? current.url
       : null;
   const reader = useReader(authenticatedFetch, readerUrl);
@@ -116,10 +114,13 @@ export function StumbleArea({
   const previewUrl = showIframe && current && isVisual ? current.url : null;
   const preview = usePreview(authenticatedFetch, previewUrl);
 
-  // For prose pages in reader mode, also fetch an AI explainer (in parallel with
-  // the original) so toggling between them is instant. Unavailable enrichment
-  // (422 / no key) is a no-op: the original reader view shows instead.
-  const enrichment = useExplainer(authenticatedFetch, readerUrl);
+  // Explainer is opt-in: fetch the AI reel only when the user selects the
+  // Explainer mode on an article. 422 / no key surfaces as the unavailable card.
+  const explainerUrl =
+    showIframe && current && viewMode === "explainer" && isArticle
+      ? current.url
+      : null;
+  const explainer = useExplainer(authenticatedFetch, explainerUrl);
 
   if (loading) {
     return (
@@ -168,8 +169,8 @@ export function StumbleArea({
   }
 
   if (showIframe && current) {
-    const showReader =
-      viewMode === "reader" && !reader.error && !isVideo && !isVisual;
+    const showReader = viewMode === "reader" && !reader.error && isArticle;
+    const showExplainer = viewMode === "explainer" && isArticle;
     const iframeSrc = current.proxyUrl || current.url;
 
     return (
@@ -191,7 +192,11 @@ export function StumbleArea({
             </p>
           </div>
           {!isVisual && (
-            <ViewModeToggle mode={viewMode} onChange={setViewMode} />
+            <ViewModeToggle
+              mode={viewMode}
+              onChange={setViewMode}
+              showExplainer={isArticle}
+            />
           )}
           <Button
             variant="ghost"
@@ -254,69 +259,43 @@ export function StumbleArea({
               <div className="size-0 border-y-[12px] border-y-transparent border-l-[20px] border-l-white ml-1" />
             </Button>
           </Card>
+        ) : showExplainer ? (
+          // Opt-in AI explainer reel (article-only). Skeleton while generating;
+          // a draft with scenes renders the reel; a sceneless draft falls back to
+          // the panel; anything else (422 / error / no key) → unavailable card.
+          explainer.loading ? (
+            <ExplainerSkeleton />
+          ) : explainer.data && explainer.data.scenes.length > 0 ? (
+            <SceneReel
+              title={current.title}
+              summary={explainer.data.summary}
+              keyPoints={explainer.data.keyPoints}
+              scenes={explainer.data.scenes}
+              provenance={explainer.data.provenance}
+              sourceUrl={explainer.data.sourceUrl}
+            />
+          ) : explainer.data ? (
+            <EnrichmentPanel enrichment={explainer.data} />
+          ) : (
+            <ExplainerUnavailableCard />
+          )
         ) : showReader ? (
-          <div className="space-y-3">
-            {/* Enriched/original toggle — only when an explainer is available. */}
-            {enrichment.data && (
-              <div
-                className="flex justify-center gap-1"
-                role="group"
-                aria-label="Reader view mode"
-              >
-                <Button
-                  size="sm"
-                  variant={readerView === "enriched" ? "secondary" : "ghost"}
-                  onClick={() => setReaderView("enriched")}
-                >
-                  Explainer
-                </Button>
-                <Button
-                  size="sm"
-                  variant={readerView === "original" ? "secondary" : "ghost"}
-                  onClick={() => setReaderView("original")}
-                >
-                  Original
-                </Button>
-              </div>
-            )}
-            {readerView === "enriched" && enrichment.data ? (
-              enrichment.data.scenes.length > 0 ? (
-                <SceneReel
-                  title={current.title}
-                  summary={enrichment.data.summary}
-                  keyPoints={enrichment.data.keyPoints}
-                  scenes={enrichment.data.scenes}
-                  provenance={enrichment.data.provenance}
-                  sourceUrl={enrichment.data.sourceUrl}
-                />
-              ) : (
-                <EnrichmentPanel enrichment={enrichment.data} />
-              )
-            ) : readerView === "enriched" && enrichment.loading ? (
-              <Card className="flex flex-col gap-4 p-6">
-                <Skeleton className="h-64 w-full rounded-lg" />
-                <Skeleton className="h-6 w-2/3" />
-                <Skeleton className="h-4 w-1/2" />
-              </Card>
-            ) : reader.data ? (
-              // Original reader view — also the graceful fallback when the
-              // explainer is unavailable.
-              <div className="max-h-[72vh] overflow-y-auto">
-                <ReaderView
-                  title={reader.data.title}
-                  byline={reader.data.byline}
-                  siteName={reader.data.siteName}
-                  content={reader.data.content}
-                />
-              </div>
-            ) : (
-              <Card className="flex flex-col gap-4 p-6">
-                <Skeleton className="h-7 w-2/3" />
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-72 w-full rounded-lg" />
-              </Card>
-            )}
-          </div>
+          reader.data ? (
+            <div className="max-h-[72vh] overflow-y-auto">
+              <ReaderView
+                title={reader.data.title}
+                byline={reader.data.byline}
+                siteName={reader.data.siteName}
+                content={reader.data.content}
+              />
+            </div>
+          ) : (
+            <Card className="flex flex-col gap-4 p-6">
+              <Skeleton className="h-7 w-2/3" />
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-72 w-full rounded-lg" />
+            </Card>
+          )
         ) : viewMode === "reader" && reader.error ? (
           <Card className="flex flex-col items-center gap-3 p-10 text-center">
             <div className="grid size-12 place-items-center rounded-full bg-muted text-muted-foreground">

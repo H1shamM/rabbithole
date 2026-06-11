@@ -94,25 +94,29 @@ const baseProps = {
 };
 
 describe("StumbleArea reader-first hybrid", () => {
-  it("shows the AI explainer reel by default for an article", async () => {
+  it("renders the plain reader by default for an article (explainer is opt-in)", async () => {
     render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
+    await waitFor(() =>
+      expect(screen.getByText("Reader body")).toBeInTheDocument(),
+    );
+    expect(screen.getByText("Reader Title")).toBeInTheDocument();
+    // The reel is not shown until the user selects the Explainer mode.
+    expect(screen.queryByText("The big idea")).not.toBeInTheDocument();
+  });
+
+  it("renders the explainer reel when the Explainer mode is selected", async () => {
+    render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
+    await waitFor(() =>
+      expect(screen.getByText("Reader body")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /explainer/i }));
     await waitFor(() =>
       expect(screen.getByText("The big idea")).toBeInTheDocument(),
     );
     expect(screen.getByText("Here is the gist.")).toBeInTheDocument();
   });
 
-  it("toggles from the explainer to the original reader view", async () => {
-    render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
-    await waitFor(() =>
-      expect(screen.getByText("The big idea")).toBeInTheDocument(),
-    );
-    fireEvent.click(screen.getByRole("button", { name: /original/i }));
-    expect(screen.getByText("Reader body")).toBeInTheDocument();
-    expect(screen.getByText("Reader Title")).toBeInTheDocument();
-  });
-
-  it("falls back to the plain reader (no toggle) when the explainer is unavailable", async () => {
+  it("shows the unavailable card when the explainer 422s", async () => {
     render(
       <StumbleArea
         {...baseProps}
@@ -122,20 +126,38 @@ describe("StumbleArea reader-first hybrid", () => {
     await waitFor(() =>
       expect(screen.getByText("Reader body")).toBeInTheDocument(),
     );
-    // No explainer, and no enriched/original toggle when enrichment 422s.
+    fireEvent.click(screen.getByRole("button", { name: /explainer/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/explainer unavailable/i)).toBeInTheDocument(),
+    );
     expect(screen.queryByText("The big idea")).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /explainer/i }),
-    ).not.toBeInTheDocument();
   });
 
   it("switches to the live iframe when Live is clicked", async () => {
     render(<StumbleArea {...baseProps} authenticatedFetch={makeFetch()} />);
     await waitFor(() =>
-      expect(screen.getByText("The big idea")).toBeInTheDocument(),
+      expect(screen.getByText("Reader body")).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole("button", { name: /live/i }));
     expect(screen.getByTitle("Stumbled page")).toBeInTheDocument();
+  });
+
+  it("does not offer the Explainer mode for non-article stumbles", () => {
+    render(
+      <StumbleArea
+        {...baseProps}
+        current={{
+          ...current,
+          type: "video",
+          proxyUrl: "https://www.youtube.com/embed/abc123",
+        }}
+        authenticatedFetch={makeFetch()}
+      />,
+    );
+    // Video keeps Reader/Live but never offers the article-only Explainer.
+    expect(
+      screen.queryByRole("button", { name: /explainer/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a fallback card (not a blank iframe) when reader extraction fails", async () => {
@@ -209,7 +231,7 @@ describe("StumbleArea reader-first hybrid", () => {
     expect(screen.queryByTitle("Stumbled page")).not.toBeInTheDocument();
   });
 
-  it("still defaults article stumbles to reader mode (explainer reel)", async () => {
+  it("defaults article stumbles to the plain reader", async () => {
     render(
       <StumbleArea
         {...baseProps}
@@ -218,7 +240,7 @@ describe("StumbleArea reader-first hybrid", () => {
       />,
     );
     await waitFor(() =>
-      expect(screen.getByText("The big idea")).toBeInTheDocument(),
+      expect(screen.getByText("Reader body")).toBeInTheDocument(),
     );
   });
 });
