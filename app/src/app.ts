@@ -13,6 +13,7 @@ import { ReaderController } from "./controllers/readerController.js";
 import { PreviewController } from "./controllers/previewController.js";
 import { EnrichmentController } from "./controllers/enrichmentController.js";
 import { ExplainerController } from "./controllers/explainerController.js";
+import { ExplainerFeedbackController } from "./controllers/explainerFeedbackController.js";
 import { ExplainerService } from "./services/explainerService.js";
 import { ClaudeExplainer } from "./adapters/claudeExplainer.js";
 import type { ExplainerLLM } from "./services/enrichmentService.js";
@@ -128,6 +129,10 @@ export async function createApp() {
   // ExplainerService, with a persistent draft cache and typed 422/503 contract.
   const explainerService = explainer ? new ExplainerService(explainer) : null;
   const explainerController = new ExplainerController(explainerService);
+  const explainerFeedbackController = new ExplainerFeedbackController(
+    storage,
+    discoveryService,
+  );
   // Routes
   const v1Router = express.Router();
 
@@ -206,6 +211,7 @@ export async function createApp() {
   v1Router.get("/reader", authenticateJWT, readerController.read);
   v1Router.get("/reader/enrich", authenticateJWT, enrichmentController.read);
   v1Router.get("/explainer", authenticateJWT, explainerController.read);
+  v1Router.post("/explainer/rate", authenticateJWT, explainerFeedbackController.rate);
   v1Router.get("/preview", authenticateJWT, previewController.read);
 
   // Submission routes
