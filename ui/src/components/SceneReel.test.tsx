@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { SceneReel } from "./SceneReel";
-import type { ExplainerScene } from "../hooks/useEnrichment";
+import type { ExplainerScene } from "../hooks/useExplainer";
 
 afterEach(cleanup);
 

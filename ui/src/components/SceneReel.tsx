@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { ExplainerScene } from "../hooks/useEnrichment";
+import type { ExplainerScene } from "../hooks/useExplainer";
 
 /**
  * SceneReel
