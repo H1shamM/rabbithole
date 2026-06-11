@@ -14,6 +14,7 @@ import { PreviewController } from "./controllers/previewController.js";
 import { EnrichmentController } from "./controllers/enrichmentController.js";
 import { ExplainerController } from "./controllers/explainerController.js";
 import { ExplainerService } from "./services/explainerService.js";
+import { SqliteExplainerRepo } from "./repositories/explainerRepo.js";
 import { ClaudeExplainer } from "./adapters/claudeExplainer.js";
 import type { ExplainerLLM } from "./services/enrichmentService.js";
 import { healthCheck } from "./controllers/healthController.js";
@@ -125,8 +126,13 @@ export async function createApp() {
   })();
   const enrichmentController = new EnrichmentController(explainer);
   // The new explainer endpoint (B4): composes reader extraction + the LLM via
-  // ExplainerService, with a persistent draft cache and typed 422/503 contract.
-  const explainerService = explainer ? new ExplainerService(explainer) : null;
+  // ExplainerService. B2 (#217): back the draft cache with SQLite (keyed by
+  // url + PROMPT_VERSION) so repeat stumbles are free across restarts.
+  const explainerService = explainer
+    ? new ExplainerService(explainer, {
+        cache: new SqliteExplainerRepo(storage.db),
+      })
+    : null;
   const explainerController = new ExplainerController(explainerService);
   // Routes
   const v1Router = express.Router();
