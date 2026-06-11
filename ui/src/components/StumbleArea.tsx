@@ -18,7 +18,7 @@ import { SceneReel } from "./SceneReel";
 import { ViewModeToggle, type ViewMode } from "./ViewModeToggle";
 import { useReader } from "../hooks/useReader";
 import { usePreview } from "../hooks/usePreview";
-import { useEnrichment } from "../hooks/useEnrichment";
+import { useExplainer } from "../hooks/useExplainer";
 import type { AuthenticatedFetch } from "../types";
 
 type ContentType = "article" | "image" | "video" | "interactive";
@@ -121,7 +121,7 @@ export function StumbleArea({
   // For prose pages in reader mode, also fetch an AI explainer (in parallel with
   // the original) so toggling between them is instant. Unavailable enrichment
   // (422 / no key) is a no-op: the original reader view shows instead.
-  const enrichment = useEnrichment(authenticatedFetch, readerUrl);
+  const explainer = useExplainer(authenticatedFetch, readerUrl);
 
   useEffect(() => {
     if (import.meta.env.MODE === "test") return;
@@ -277,7 +277,7 @@ export function StumbleArea({
         ) : showReader ? (
           <div className="space-y-3">
             {/* Enriched/original toggle — only when an explainer is available. */}
-            {enrichment.data && (
+            {explainer.data && (
               <div
                 className="flex justify-center gap-1"
                 role="group"
@@ -299,20 +299,20 @@ export function StumbleArea({
                 </Button>
               </div>
             )}
-            {readerView === "enriched" && enrichment.data ? (
-              enrichment.data.scenes.length > 0 ? (
+            {readerView === "enriched" && explainer.data ? (
+              explainer.data.scenes.length > 0 ? (
                 <SceneReel
                   title={current.title}
-                  summary={enrichment.data.summary}
-                  keyPoints={enrichment.data.keyPoints}
-                  scenes={enrichment.data.scenes}
-                  provenance={enrichment.data.provenance}
-                  sourceUrl={enrichment.data.sourceUrl}
+                  summary={explainer.data.summary}
+                  keyPoints={explainer.data.keyPoints}
+                  scenes={explainer.data.scenes}
+                  provenance={explainer.data.provenance}
+                  sourceUrl={explainer.data.sourceUrl}
                 />
               ) : (
-                <EnrichmentPanel enrichment={enrichment.data} />
+                <EnrichmentPanel enrichment={explainer.data} />
               )
-            ) : readerView === "enriched" && enrichment.loading ? (
+            ) : readerView === "enriched" && explainer.loading ? (
               <Card className="flex flex-col gap-4 p-6">
                 <Skeleton className="h-64 w-full rounded-lg" />
                 <Skeleton className="h-6 w-2/3" />

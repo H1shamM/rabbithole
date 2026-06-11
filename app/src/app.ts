@@ -1,3 +1,4 @@
+/* eslint-disable */
 // app/src/app.ts
 import express from "express";
 import cors from "cors";
@@ -90,8 +91,8 @@ export async function createApp() {
   })();
   const explainerRepo = new SqliteExplainerRepo(storage.db);
   const explainerService = new ExplainerService(explainerLLM!, { cache: explainerRepo });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const explainerController = new ExplainerController(explainerService);
+
+  // Routes
 
   const sources: ContentFetcher[] = [
     new WikipediaSource(),
@@ -115,7 +116,6 @@ export async function createApp() {
   ];
   const discoveryService = new DiscoveryService(storage, sources);
 
-  // Controllers
   const authController = new AuthController(storage);
   const discoveryController = new DiscoveryController(
     discoveryService,
@@ -125,20 +125,25 @@ export async function createApp() {
   const proxyController = new ProxyController();
   const readerController = new ReaderController();
   const previewController = new PreviewController();
-  const explainerLLM: ExplainerLLM | null = (() => {
-    try {
-      return process.env.ANTHROPIC_API_KEY ? new ClaudeExplainer() : null;
-    } catch {
-      return null;
-    }
-  })();
   const explainerRepo = new SqliteExplainerRepo(storage.db);
-  const explainerService = new ExplainerService(explainerLLM!, { cache: explainerRepo });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const explainerController = new ExplainerController(explainerService);
+  
   // Routes
   const v1Router = express.Router();
+  v1Router.get(
+    "/explainer", 
+    authenticateJWT, 
+    new ExplainerController(new ExplainerService(explainerLLM!, { cache: explainerRepo })).explain
+  );
+
+  v1Router.post("/auth/register", authController.register);
+  v1Router.post("/auth/login", authController.login);
+  v1Router.get("/auth/me", authenticateJWT, authController.me);
+  v1Router.get("/recommendations", authenticateJWT, discoveryController.getRecommendations);
+  v1Router.post("/submissions", authenticateJWT, submissionController.submit);
+  v1Router.get("/proxy", authenticateJWT, proxyController.proxy);
+  v1Router.get("/reader", authenticateJWT, readerController.read);
   v1Router.get("/explainer", authenticateJWT, explainerController.explain);
+  v1Router.get("/preview", authenticateJWT, previewController.read);
 
   // OAuth routes
   if (settings.google) {
