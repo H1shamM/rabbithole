@@ -205,7 +205,7 @@ Formalizing + hardening the rushed v0 explainer into the planned architecture (`
 | ID | Story | Owner | Status |
 | -- | ----- | ----- | ------ |
 | B1 | Port + adapter + versioned prompt + truncation guard | senior | Done (PR #226) |
-| B2 | Explainer cache (SQLite) | gemini | In progress (#217 — bot, re-pinned; first attempt #229 closed) |
+| B2 | Explainer cache (SQLite) | senior | Done (PR #248 — senior takeover; bot #229/#239/#247 closed) |
 | B3 | Explainer service (reader→enrich, article gate) | senior | Done (PR #228) |
 | B4 | `GET /api/v1/explainer` endpoint | senior | Done (PR #237) |
 | F1 | `useExplainer` hook (rename `useEnrichment` → `/explainer`) | senior | Done (merged) |
@@ -213,17 +213,17 @@ Formalizing + hardening the rushed v0 explainer into the planned architecture (`
 | F3 | Explainer as 3rd ViewModeToggle mode | senior | Done (PR #245) |
 | F4 | Explainer skeleton + unavailable card (`ExplainerState.tsx`) | gemini | Done (PR #231) |
 | P1 | Prefetch next stumble's explainer | senior | Todo (#224 — needs B4✓ + F1) |
-| P2 | Explainer feedback + format-mix telemetry | gemini | Todo (#225 — needs F3; first attempt #232 closed) |
+| P2 | Explainer feedback + format-mix telemetry | senior | Todo (#225 — needs a re-scope on F3+B2; bot unassigned; #232/#244 closed) |
 
-**Where we left off (handoff):** B1/B3/B4 (backend) + F1/F2/F3/F4 (frontend) are merged.
-`GET /api/v1/explainer` is live (`ExplainerService` → adapter) and the UI hits it via `useExplainer`.
-**F3 (#245)** promoted the Explainer to a true 3rd `ViewModeToggle` mode (Reader / Live / Explainer,
-article-only, **default Reader, opt-in**); the old in-reader enriched/original sub-toggle + `readerView`
-state are gone. **Remaining:** **B2 (#217)** swaps the in-memory draft cache for the SQLite
-`ExplainerRepo` (bot, in progress); **P1 (#224, senior)** prefetches the next stumble's explainer;
-**P2 (#225, gemini)** — now **unblocked by F3** — adds Explainer feedback + format-mix telemetry.
-Bot recurring pitfalls seen this epic: branching off stale master + mixing multiple issues per PR
-(closed #229/#230/#232) — keep each bot PR to one issue off current master.
+**Where we left off (handoff):** B1–B4 (backend) + F1–F4 (frontend) are all merged; the explainer
+draft cache is now SQLite-backed (B2 #248, senior takeover — implements the existing
+`ExplainerDraftCache` port and is wired into `ExplainerService`). `GET /api/v1/explainer` is live and
+the UI hits it via `useExplainer`; **F3 (#245)** made Explainer a true 3rd `ViewModeToggle` mode
+(article-only, **default Reader, opt-in**). **Remaining:** **P1 (#224, senior)** prefetch; **P2 (#225)**
+feedback + format-mix telemetry — re-scope needed on top of F3+B2 before re-pinning to the bot (its
+#244 attempt mixed B2 in with no tests; closed). Bot recurring pitfalls this epic: stale-branch
+stacking + mixing multiple issues per PR (closed #229/#230/#232/#239/#247/#244) — one issue per PR
+off current master.
 
 B1 (#216): tone-aware `EXPLAINER_PROMPT` + `PROMPT_VERSION` in `prompts/`; adapter moved to
 `adapters/`; `ExplainerTruncatedError` on `max_tokens` (never parses a partial), try/catch →
@@ -241,14 +241,19 @@ the app (native WebView, not an iframe).
 | ID | Story | Owner | Status |
 | -- | ----- | ----- | ------ |
 | S1 | Capacitor scaffold, run existing UI on Android | senior | Scaffold done (PR #242); device-run gated on local Android SDK install |
-| S2 | Native WebView spike (GO/NO-GO on real device) | senior | Next — the keystone gate |
+| S2 | Native WebView spike (GO/NO-GO on real device) | senior | Next — the keystone gate (#250) |
+| M1.1 | Config: icons, splash, status bar | gemini | Todo (#251 — gemini-ready, unassigned) |
+| M1.2 | Dev live-reload + documented cap build loop | gemini | **In progress (#253 — assigned to bot, active mission)** |
+| M1.3 | Safe-area insets + full-bleed stumble view | gemini | Todo (#254 — gemini-ready, unassigned) |
 
 **Where we left off:** S1 scaffold is merged — Capacitor v8 added to `ui/`, `capacitor.config.ts`
 (`webDir: dist`, `appId com.stumbleclone.app`), committed `ui/android/` native project (build
 output gitignored), `cap:sync`/`cap:android` scripts. iOS deferred (no Mac). **The dev machine has
 Java 21 + standalone adb but no Android SDK / Studio / emulator** — installing Android Studio (SDK +
 an AVD) or connecting a real device is the prerequisite to finish S1's "runs on device" acceptance
-and to attempt the S2 WebView GO/NO-GO. Do not build Phases 1+ until S2 passes.
+and to attempt the **S2 (#250)** WebView GO/NO-GO. The M1.x shell tasks are now scoped as issues;
+the bot's active mission is **M1.2 (#253)** (config/scripts/docs — no device needed). M1.1/M1.3 are
+queued gemini-ready. Do not build M2 (browse) until S2 passes.
 
 ### Backlog
 
