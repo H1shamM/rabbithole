@@ -15,12 +15,12 @@ describe("firstImage junk filter", () => {
 });
 
 describe("enrichReader", () => {
-  it("falls back to screenshotUrl when no real image is found", async () => {
+  it("junk-filters logo images and falls back", async () => {
     _clearEnrichmentCache();
     const reader = {
       title: "Title",
       textContent: "Text",
-      content: "<div>No real image here</div>",
+      content: '<div><img src="https://example.com/logo.png" /><img src="https://example.com/hero.jpg" /></div>',
       siteName: "Site",
     } as any;
     const url = "https://example.com";
@@ -28,11 +28,8 @@ describe("enrichReader", () => {
       summarize: vi.fn().mockResolvedValue({ summary: "Summary" }),
     } as unknown as ExplainerLLM;
 
-    const result = await enrichReader(reader, url, llm);
+    const result = await enrichReader(reader, url, reader.content, llm);
     
-    // screenshotUrl returns a URL, so we expect it to be a valid string
-    expect(result?.image).toBeDefined();
-    expect(result?.image).not.toBeNull();
-    expect(result?.image).toContain("example.com");
+    expect(result?.image).toBe("https://example.com/hero.jpg");
   });
 });

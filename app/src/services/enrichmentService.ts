@@ -9,6 +9,8 @@
  */
 
 import type { ReaderResult } from "./readerService.js";
+import { extractPreview } from "./previewService.js";
+import { screenshotUrl } from "./previewService.js";
 
 /** One slide of the explainer reel: a beat with a heading, body, and emoji. */
 export interface ExplainerScene {
@@ -43,8 +45,6 @@ export interface EnrichmentResult extends EnrichmentDraft {
 
 const cache = new Map<string, EnrichmentResult>();
 const CACHE_LIMIT = 200;
-import { screenshotUrl } from "./previewService.js";
-
 
 /** Pull the first valid absolute `<img src>` out of sanitized reader HTML. */
 export function firstImage(html: string): string | null {
@@ -71,7 +71,6 @@ export function firstImage(html: string): string | null {
   return null;
 }
 
-
 function hostname(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -89,6 +88,7 @@ function hostname(url: string): string {
 export async function enrichReader(
   reader: ReaderResult,
   url: string,
+  html: string,
   llm: ExplainerLLM,
 ): Promise<EnrichmentResult | null> {
   const cached = cache.get(url);
@@ -110,7 +110,7 @@ export async function enrichReader(
     summary: draft.summary.trim(),
     keyPoints: (draft.keyPoints ?? []).filter((p) => p?.trim()),
     scenes: (draft.scenes ?? []).filter((s) => s?.heading?.trim() && s?.body?.trim()),
-    image: firstImage(reader.content) ?? screenshotUrl(url),
+    image: firstImage(reader.content) ?? extractPreview(html, url).image ?? screenshotUrl(url),
     provenance: `AI summary of ${reader.siteName || hostname(url)}`,
     sourceUrl: url,
   };
