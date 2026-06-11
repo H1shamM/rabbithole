@@ -12,6 +12,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      // No service worker in native (Capacitor) builds: the native layer serves
+      // the assets, and an SW just caches a stale bundle across reinstalls.
+      // Build the APK with CAP_BUILD=1 to exclude it; web keeps the PWA.
+      disable: process.env.CAP_BUILD === "1",
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "icons.svg"],
       manifest: {
