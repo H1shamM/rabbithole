@@ -16,3 +16,5 @@ const config: CapacitorConfig = {
 };
 
 export default config;
+
+// Placeholder for SplashScreen config (to be filled when Capacitor CLI works)
