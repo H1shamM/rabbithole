@@ -198,6 +198,26 @@ call, Framer-Motion slides, ~$0 extra (switched the summarizer to **Haiku 4.5** 
 **Session-5 findings → issues:** #204 (corpus → 100+ diverse/rotating — the blocker), #205 (weak
 explainer image on text-only articles), #206 (interest-fit targeting), #202 (the reel, shipped).
 
+## Explainer Mode — Enrichment v1 (epic #215)
+
+Formalizing + hardening the rushed v0 explainer into the planned architecture (`docs/EXPLAINER_BUILD_PLAN.md`).
+
+| ID | Story | Owner | Status |
+| -- | ----- | ----- | ------ |
+| B1 | Port + adapter + versioned prompt + truncation guard | senior | Done (PR #226) |
+| B2 | Explainer cache (SQLite) | gemini | Todo (#217) |
+| B3 | Explainer service (reader→enrich, article gate) | senior | Done (PR #228) |
+| B4 | `GET /api/v1/explainer` endpoint | gemini | Todo (#219) |
+| F1–F4 | useExplainer hook · SceneReel tokens · 3rd mode · states | mixed | Todo (#220–#223) |
+| P1–P2 | prefetch · telemetry | mixed | Todo (#224–#225) |
+
+B1 (#216): tone-aware `EXPLAINER_PROMPT` + `PROMPT_VERSION` in `prompts/`; adapter moved to
+`adapters/`; `ExplainerTruncatedError` on `max_tokens` (never parses a partial), try/catch →
+`ExplainerUnavailableError`; `max_tokens` 1800; `emoji?` optional. Live-validated — tone rule holds
+(whimsy/emoji dropped on Chernobyl + 1918-flu somber beats). B3 (#218): `ExplainerService.explain(url)`
+— fetch → extract (the article gate; non-extractable → `NotArticleError`) → cached draft by
+`(url, PROMPT_VERSION)` (in-memory; B2 swaps SQLite) → summarize on miss; LLM errors propagate (B4 → 503).
+
 ### Backlog
 
 - [ ] "Stumble of the Day" Email (Email Co-Pilot Integration)
