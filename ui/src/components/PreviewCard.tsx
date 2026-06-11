@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PreviewResult } from "../hooks/usePreview";
+import { useBrowse } from "../hooks/useBrowse";
 
 interface PreviewCardProps {
   url: string;
@@ -27,6 +28,7 @@ export function PreviewCard({
   loading,
 }: PreviewCardProps) {
   const [imgFailed, setImgFailed] = useState(false);
+  const { open } = useBrowse();
 
   if (loading && !preview) {
     return (
@@ -45,7 +47,12 @@ export function PreviewCard({
   return (
     <Card className="overflow-hidden">
       {image ? (
-        <a href={url} target="_blank" rel="noopener noreferrer">
+        <button
+          type="button"
+          onClick={() => open(url)}
+          className="block w-full cursor-pointer"
+          aria-label={`Open ${title}`}
+        >
           <img
             src={image}
             alt={title}
@@ -53,7 +60,7 @@ export function PreviewCard({
             loading="lazy"
             onError={() => setImgFailed(true)}
           />
-        </a>
+        </button>
       ) : (
         <div className="grid h-48 w-full place-items-center bg-muted text-muted-foreground">
           <Globe className="size-12 opacity-40" />
@@ -69,11 +76,9 @@ export function PreviewCard({
             </p>
           )}
         </div>
-        <Button asChild className="gap-2">
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="size-4" />
-            Open the site
-          </a>
+        <Button className="gap-2" onClick={() => open(url)}>
+          <ExternalLink className="size-4" />
+          Open the site
         </Button>
       </div>
     </Card>
