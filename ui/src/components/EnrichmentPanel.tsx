@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import type { EnrichmentResult } from "../hooks/useEnrichment";
+import type { EnrichmentResult } from "../hooks/useExplainer";
 
 interface EnrichmentPanelProps {
   enrichment: EnrichmentResult;

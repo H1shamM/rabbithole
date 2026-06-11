@@ -18,7 +18,7 @@ import { SceneReel } from "./SceneReel";
 import { ViewModeToggle, type ViewMode } from "./ViewModeToggle";
 import { useReader } from "../hooks/useReader";
 import { usePreview } from "../hooks/usePreview";
-import { useEnrichment } from "../hooks/useEnrichment";
+import { useExplainer } from "../hooks/useExplainer";
 import type { AuthenticatedFetch } from "../types";
 
 type ContentType = "article" | "image" | "video" | "interactive";
@@ -119,7 +119,7 @@ export function StumbleArea({
   // For prose pages in reader mode, also fetch an AI explainer (in parallel with
   // the original) so toggling between them is instant. Unavailable enrichment
   // (422 / no key) is a no-op: the original reader view shows instead.
-  const enrichment = useEnrichment(authenticatedFetch, readerUrl);
+  const enrichment = useExplainer(authenticatedFetch, readerUrl);
 
   if (loading) {
     return (

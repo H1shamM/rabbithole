@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 export interface ExplainerScene {
   heading: string;
   body: string;
-  emoji: string;
+  /** Optional — somber subjects omit the emoji rather than forcing a glyph. */
+  emoji?: string;
 }
 
 export interface EnrichmentResult {
@@ -17,9 +18,9 @@ export interface EnrichmentResult {
   sourceUrl: string;
 }
 
-export function useEnrichment(
+export function useExplainer(
   authenticatedFetch: (url: string, options?: RequestInit) => Promise<Response>,
-  url: string | null
+  url: string | null,
 ) {
   const [data, setData] = useState<EnrichmentResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,14 +39,18 @@ export function useEnrichment(
     setLoading(true);
     setError(null);
 
-    authenticatedFetch(`/reader/enrich?url=${encodeURIComponent(url)}`)
+    authenticatedFetch(`/explainer?url=${encodeURIComponent(url)}`)
       .then(async (res) => {
         if (!active) return;
         if (res.ok) {
           const json = await res.json();
           setData(json);
+        } else if (res.status === 422) {
+          // Not an article / not configured — "not available", not an error.
+          setData(null);
+          setError(null);
         } else {
-          setError("Enrichment unavailable");
+          setError("Explainer unavailable");
         }
       })
       .catch(() => {

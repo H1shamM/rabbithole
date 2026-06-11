@@ -49,12 +49,12 @@ const previewResult = {
 };
 
 /**
- * Routes by endpoint so /reader, /reader/enrich and /preview can return their
+ * Routes by endpoint so /reader, /explainer and /preview can return their
  * own shapes. `enrichOk: false` simulates an unavailable explainer (422).
  */
 function makeFetch({ enrichOk = true } = {}) {
   return vi.fn((url: string): Promise<Response> => {
-    if (url.startsWith("/reader/enrich")) {
+    if (url.startsWith("/explainer")) {
       return Promise.resolve(
         enrichOk
           ? ({ ok: true, json: async () => enrichmentResult } as Response)
@@ -188,7 +188,7 @@ describe("StumbleArea reader-first hybrid", () => {
     );
     // No embedded iframe for un-iframable content.
     expect(screen.queryByTitle("Stumbled page")).not.toBeInTheDocument();
-    // It hit /preview, never /reader (or /reader/enrich).
+    // It hit /preview, never /reader (or /explainer).
     const calledUrls = fetch.mock.calls.map((c) => c[0] as string);
     expect(calledUrls.some((u) => u.startsWith("/preview"))).toBe(true);
     expect(calledUrls.some((u) => u.startsWith("/reader"))).toBe(false);
