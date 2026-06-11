@@ -12,8 +12,10 @@ import { ProxyController } from "./controllers/proxyController.js";
 import { ReaderController } from "./controllers/readerController.js";
 import { PreviewController } from "./controllers/previewController.js";
 import { ExplainerController } from "./controllers/explainerController.js";
+import { ExplainerService } from "./services/explainerService.js";
+import { SqliteExplainerRepo } from "./repositories/explainerRepo.js";
 import { ClaudeExplainer } from "./adapters/claudeExplainer.js";
-import type { ExplainerLLM } from "./services/enrichmentService.js";
+import type { ExplainerLLM } from "./services/explainerService.js";
 import { healthCheck } from "./controllers/healthController.js";
 import { authenticateJWT } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
@@ -79,6 +81,18 @@ export async function createApp() {
   const storage = new SqliteAdapter(settings.dbPath);
   initPassport(storage);
 
+  const explainerLLM: ExplainerLLM | null = (() => {
+    try {
+      return process.env.ANTHROPIC_API_KEY ? new ClaudeExplainer() : null;
+    } catch {
+      return null;
+    }
+  })();
+  const explainerRepo = new SqliteExplainerRepo(storage.db);
+  const explainerService = new ExplainerService(explainerLLM!, { cache: explainerRepo });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const explainerController = new ExplainerController(explainerService);
+
   const sources: ContentFetcher[] = [
     new WikipediaSource(),
     new HackerNewsSource(),
@@ -111,24 +125,20 @@ export async function createApp() {
   const proxyController = new ProxyController();
   const readerController = new ReaderController();
   const previewController = new PreviewController();
-  // Reader enrichment is opt-in: only wired when an Anthropic key is present,
-  // so the app runs (and tests pass) without one — the controller then 422s and
-  // the UI falls back to the plain reader view.
-  const explainer: ExplainerLLM | null = (() => {
+  const explainerLLM: ExplainerLLM | null = (() => {
     try {
       return process.env.ANTHROPIC_API_KEY ? new ClaudeExplainer() : null;
     } catch {
       return null;
     }
   })();
-  const explainerController = new ExplainerController(explainer);
+  const explainerRepo = new SqliteExplainerRepo(storage.db);
+  const explainerService = new ExplainerService(explainerLLM!, { cache: explainerRepo });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const explainerController = new ExplainerController(explainerService);
   // Routes
   const v1Router = express.Router();
-
-  // Auth routes
-  v1Router.post("/auth/register", authController.register);
-  v1Router.post("/auth/login", authController.login);
-  v1Router.get("/auth/me", authenticateJWT, authController.me);
+  v1Router.get("/explainer", authenticateJWT, explainerController.explain);
 
   // OAuth routes
   if (settings.google) {
