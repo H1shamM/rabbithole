@@ -24,12 +24,12 @@ import {
   type ExplainerLLM,
 } from "./enrichmentService.js";
 
-export type {
-  EnrichmentDraft,
-  EnrichmentResult,
-  ExplainerLLM,
+export {
+  firstImage,
+  type EnrichmentDraft,
+  type EnrichmentResult,
+  type ExplainerLLM,
 } from "./enrichmentService.js";
-export { firstImage } from "./enrichmentService.js";
 
 
 /** The page could not be extracted as an article — not eligible for an explainer. */

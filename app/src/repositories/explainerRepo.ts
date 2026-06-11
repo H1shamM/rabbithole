@@ -1,4 +1,4 @@
-import type { Database } from "better-sqlite3";
+import Database from "better-sqlite3";
 import type { EnrichmentResult } from "../services/enrichmentService.js";
 
 export interface ExplainerRepo {
@@ -7,7 +7,8 @@ export interface ExplainerRepo {
 }
 
 export class SqliteExplainerRepo implements ExplainerRepo {
-  constructor(private db: Database) {
+  constructor(private db: Database.Database) {
+
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS explainer_cache (
         url TEXT,
