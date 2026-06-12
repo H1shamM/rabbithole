@@ -18,10 +18,36 @@ type Overlay =
 // Make old/desktop sites render mobile-friendly: a phone user-agent (so
 // responsive sites serve their mobile layout) + force a device-width viewport
 // (so non-responsive sites render at device width instead of a zoomed-out
-// ~980px desktop layout). The viewport fix is re-applied after every load.
+// ~980px desktop layout). Enhancements are re-applied after every load.
 const MOBILE_UA =
   "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36";
-const FIX_VIEWPORT = `(function(){try{var m=document.querySelector('meta[name="viewport"]');if(!m){m=document.createElement('meta');m.setAttribute('name','viewport');(document.head||document.documentElement).appendChild(m);}m.setAttribute('content','width=device-width, initial-scale=1, viewport-fit=cover');}catch(e){}})();`;
+
+// Injected stylesheet that does two jobs, applied to every page:
+//   1. Normalization — readable text + no horizontal overflow, so even
+//      non-responsive desktop sites are usable at phone width.
+//   2. Conservative cosmetic blocking — hide the worst mobile offenders (ad
+//      containers, cookie/consent walls, newsletter modals). Selectors are
+//      kept *precise* on purpose: only well-known ad-network markers and named
+//      CMP vendors, never broad substrings like `*=ad*` (which would match
+//      "header"/"load"/"gradient"). We never hide body-level scroll-lock
+//      classes (that would blank the page) and we force scroll back on so a
+//      killed modal can't leave the page frozen.
+const ENHANCE_CSS = `
+html{-webkit-text-size-adjust:100%!important;}
+img,video,iframe,embed,object,table,pre{max-width:100%!important;}
+img,video{height:auto!important;}
+body{overflow-x:hidden!important;}
+html,body{overflow-y:auto!important;}
+*{overflow-wrap:break-word;word-break:break-word;}
+ins.adsbygoogle,[id^="google_ads"],[id*="div-gpt-ad"],[class*="advertisement" i],[id*="advertisement" i],[aria-label="Advertisement" i],iframe[src*="doubleclick"],iframe[src*="googlesyndication"],iframe[src*="adservice."],iframe[src*="/ads/"]{display:none!important;}
+#onetrust-consent-sdk,.onetrust-pc-dark-filter,.qc-cmp2-container,#CybotCookiebotDialog,.fc-consent-root,#didomi-host,.trustarc-banner,.truste_overlay,.osano-cm-window,.osano-cm-dialog,[class*="cookie-banner" i],[class*="cookie-notice" i],[class*="cookie-consent" i],[id*="cookie-banner" i],[class*="gdpr" i],[id*="gdpr" i],[aria-label*="cookie" i][role="dialog"]{display:none!important;}
+[class*="newsletter" i][class*="modal" i],[class*="newsletter" i][class*="popup" i],[class*="interstitial" i]{display:none!important;}
+`;
+
+// Set the mobile viewport and (re)inject the enhancement stylesheet. Idempotent
+// — keyed on a stable id — and re-runnable after every navigation. CSS applies
+// to elements added later too, so no MutationObserver is needed.
+const ENHANCE_PAGE = `(function(){try{var m=document.querySelector('meta[name="viewport"]');if(!m){m=document.createElement('meta');m.setAttribute('name','viewport');(document.head||document.documentElement).appendChild(m);}m.setAttribute('content','width=device-width, initial-scale=1, viewport-fit=cover');var s=document.getElementById('sc-enhance');if(!s){s=document.createElement('style');s.id='sc-enhance';(document.head||document.documentElement).appendChild(s);}s.textContent=${JSON.stringify(ENHANCE_CSS)};}catch(e){}})();`;
 
 interface LiveFeedProps {
   current: StumbleResult | null;
@@ -122,8 +148,8 @@ export function LiveFeed({
       mod.WebviewOverlay.onPageLoaded(() => {
         setProgress(1);
         setLoading(false);
-        // Re-apply the mobile viewport after every navigation.
-        mod.WebviewOverlay.evaluateJavaScript(FIX_VIEWPORT).catch(() => {});
+        // Re-apply mobile viewport + readability/cosmetic stylesheet each load.
+        mod.WebviewOverlay.evaluateJavaScript(ENHANCE_PAGE).catch(() => {});
       });
       try {
         await mod.WebviewOverlay.open({
