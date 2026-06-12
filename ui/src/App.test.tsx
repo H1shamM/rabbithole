@@ -69,6 +69,8 @@ describe("App Component", () => {
     );
     fireEvent.click(screen.getByLabelText("Like"));
 
+    // History now lives in the menu — open it to verify.
+    fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
     await waitFor(() => {
       expect(screen.getByText(/View History/i)).toBeInTheDocument();
     });
