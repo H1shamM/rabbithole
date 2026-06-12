@@ -22,6 +22,9 @@ interface LiveFeedProps {
   onRate: (rating: "like" | "dislike") => void;
   onToggleFavorite: () => void;
   isFavorite: boolean;
+  /** Hide the native WebView (it renders above all React UI) while a menu /
+   *  modal is open, so that overlay isn't trapped behind the live site. */
+  paused?: boolean;
 }
 
 /**
@@ -39,6 +42,7 @@ export function LiveFeed({
   onRate,
   onToggleFavorite,
   isFavorite,
+  paused = false,
 }: LiveFeedProps) {
   const elRef = useRef<HTMLDivElement>(null);
   const overlay = useRef<Overlay | null>(null);
@@ -119,6 +123,12 @@ export function LiveFeed({
       console.error("[LiveFeed] loadUrl failed", e);
     });
   }, [current?.url]);
+
+  // Hide the native WebView (show a static snapshot) while a menu/modal is open
+  // so React overlays aren't trapped behind it; restore it on close.
+  useEffect(() => {
+    overlay.current?.toggleSnapshot(paused).catch(() => {});
+  }, [paused]);
 
   if (!native) {
     return (

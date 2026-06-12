@@ -5,6 +5,7 @@ import { useHistory } from "./hooks/useHistory";
 import { usePWA } from "./hooks/usePWA";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useSwipe } from "./hooks/useSwipe";
+import { useAnyOverlayOpen } from "./hooks/useAnyOverlayOpen";
 import { useTheme } from "./hooks/useTheme";
 import { Capacitor } from "@capacitor/core";
 import { Header } from "./components/Header";
@@ -87,6 +88,9 @@ export function App() {
   // mode is web-only.
   const isNativeReels =
     Capacitor.isNativePlatform() && activeShowIframe && !!activeCurrent;
+  // Pause (hide) the native live-site WebView whenever a menu/modal is open, so
+  // that React overlay isn't trapped behind it (#295).
+  const overlayOpen = useAnyOverlayOpen();
 
   const {
     favorites,
@@ -338,6 +342,7 @@ export function App() {
                 onRate={handleRate}
                 onToggleFavorite={() => toggleFavorite(activeCurrent)}
                 isFavorite={isFavorite(activeCurrent)}
+                paused={overlayOpen}
               />
             ) : (
               <div className="mx-auto w-full max-w-5xl space-y-6">
