@@ -6,7 +6,7 @@ import { usePWA } from "./hooks/usePWA";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useSwipe } from "./hooks/useSwipe";
 import { useTheme } from "./hooks/useTheme";
-import { Tv } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { MobileNav } from "./components/MobileNav";
@@ -82,8 +82,11 @@ export function App() {
   // long article still scrolls — see useSwipe.
   const swipe = useSwipe({ onSwipeUp: handleNext });
 
-  // Live feed mode (BV1): browse live sites inline in a native WebView.
-  const [liveFeed, setLiveFeed] = useState(false);
+  // Reels-first on mobile (#295): on native, an active stumble renders the Live
+  // feed (swipe through live sites) instead of the card/reader view. The card
+  // mode is web-only.
+  const isNativeReels =
+    Capacitor.isNativePlatform() && activeShowIframe && !!activeCurrent;
 
   const {
     favorites,
@@ -334,58 +337,50 @@ export function App() {
                 </div>
               )}
 
-              <div onTouchStart={swipe.onTouchStart} onTouchEnd={swipe.onTouchEnd}>
-                <StumbleArea
-                  showIframe={activeShowIframe}
-                  loading={inSearch ? false : loading}
-                  error={inSearch ? null : error}
-                  current={activeCurrent}
-                  iframeError={inSearch ? false : iframeError}
-                  authenticatedFetch={typedAuthenticatedFetch}
-                  onRetry={handleNext}
-                  onClose={inSearch ? exitSearch : handleClose}
-                  onIframeLoad={handleIframeLoad}
-                />
-              </div>
-
-              {/* Live feed entry (mobile): a secondary chip docked just above the
-                  primary action pill. "Next" is already covered by swipe-up and the
-                  Next Stumble button, so this stays demoted and out of their way. */}
-              {activeShowIframe && activeCurrent && !liveFeed && (
-                <button
-                  type="button"
-                  onClick={() => setLiveFeed(true)}
-                  aria-label="Open reels feed"
-                  className="fixed inset-x-0 bottom-20 z-30 mx-auto flex w-fit items-center gap-1.5 rounded-full border border-border bg-card/90 px-4 py-2 text-sm font-medium text-foreground shadow-md backdrop-blur-md active:scale-95 sm:hidden"
-                  style={{ marginBottom: "env(safe-area-inset-bottom)" }}
-                >
-                  <Tv className="size-4" /> Reels
-                </button>
-              )}
-
-              {liveFeed && activeCurrent && (
+              {isNativeReels ? (
+                // Mobile default: the live "Reels" feed (BV1) with all actions.
                 <LiveFeed
                   current={activeCurrent}
                   onNext={handleNext}
-                  onExit={() => setLiveFeed(false)}
+                  onExit={handleClose}
                   onRate={handleRate}
                   onToggleFavorite={() => toggleFavorite(activeCurrent)}
                   isFavorite={isFavorite(activeCurrent)}
                 />
-              )}
+              ) : (
+                // Web (and the native home/empty state): the card + reader view.
+                <>
+                  <div
+                    onTouchStart={swipe.onTouchStart}
+                    onTouchEnd={swipe.onTouchEnd}
+                  >
+                    <StumbleArea
+                      showIframe={activeShowIframe}
+                      loading={inSearch ? false : loading}
+                      error={inSearch ? null : error}
+                      current={activeCurrent}
+                      iframeError={inSearch ? false : iframeError}
+                      authenticatedFetch={typedAuthenticatedFetch}
+                      onRetry={handleNext}
+                      onClose={inSearch ? exitSearch : handleClose}
+                      onIframeLoad={handleIframeLoad}
+                    />
+                  </div>
 
-              <ActionButtons
-                showIframe={activeShowIframe}
-                current={activeCurrent}
-                loading={inSearch ? false : loading}
-                rating={rating}
-                rateLoading={rateLoading}
-                isFavorite={isFavorite(activeCurrent)}
-                onRate={handleRate}
-                onToggleFavorite={() => toggleFavorite(activeCurrent)}
-                onShare={handleShare}
-                onNext={handleNext}
-              />
+                  <ActionButtons
+                    showIframe={activeShowIframe}
+                    current={activeCurrent}
+                    loading={inSearch ? false : loading}
+                    rating={rating}
+                    rateLoading={rateLoading}
+                    isFavorite={isFavorite(activeCurrent)}
+                    onRate={handleRate}
+                    onToggleFavorite={() => toggleFavorite(activeCurrent)}
+                    onShare={handleShare}
+                    onNext={handleNext}
+                  />
+                </>
+              )}
             </div>
           </main>
         </div>
