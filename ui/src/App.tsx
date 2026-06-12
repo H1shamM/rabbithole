@@ -212,6 +212,31 @@ export function App() {
     ensureDevAuth();
   }, [ensureDevAuth]);
 
+  // The Library panels live in the menu (shared by the header menu and the
+  // in-reels menu so reaching Favorites/History/etc. never requires an exit).
+  const libraryPanels = (
+    <>
+      <HistoryPanel
+        history={history}
+        showHistory={showHistory}
+        setShowHistory={setShowHistory}
+        onStumble={fetchStumble}
+      />
+      <FavoritesPanel
+        favorites={favorites}
+        showFavorites={showFavorites}
+        setShowFavorites={setShowFavorites}
+        onRemove={removeFavorite}
+        onStumble={fetchStumble}
+      />
+      <RecommendationsPanel recommendations={recommendations} />
+      <SubmissionForm
+        onSuccess={() => addToast("Submitted!")}
+        authenticatedFetch={typedAuthenticatedFetch}
+      />
+    </>
+  );
+
   return (
     <ErrorBoundary>
       <div className="flex min-h-screen bg-background text-foreground pt-(--safe-top) pb-(--safe-bottom) pl-(--safe-left) pr-(--safe-right)">
@@ -243,24 +268,7 @@ export function App() {
             onSearchSubmit={handleSearch}
             leftSlot={
               <MobileNav category={category} onCategoryChange={setCategory}>
-                <HistoryPanel
-                  history={history}
-                  showHistory={showHistory}
-                  setShowHistory={setShowHistory}
-                  onStumble={fetchStumble}
-                />
-                <FavoritesPanel
-                  favorites={favorites}
-                  showFavorites={showFavorites}
-                  setShowFavorites={setShowFavorites}
-                  onRemove={removeFavorite}
-                  onStumble={fetchStumble}
-                />
-                <RecommendationsPanel recommendations={recommendations} />
-                <SubmissionForm
-                  onSuccess={() => addToast("Submitted!")}
-                  authenticatedFetch={typedAuthenticatedFetch}
-                />
+                {libraryPanels}
               </MobileNav>
             }
           />
@@ -338,7 +346,8 @@ export function App() {
               )}
 
               {isNativeReels ? (
-                // Mobile default: the live "Reels" feed (BV1) with all actions.
+                // Mobile default: the live "Reels" feed (BV1) with all actions
+                // + in-reels menu (library/categories/search) and dark toggle.
                 <LiveFeed
                   current={activeCurrent}
                   onNext={handleNext}
@@ -346,6 +355,19 @@ export function App() {
                   onRate={handleRate}
                   onToggleFavorite={() => toggleFavorite(activeCurrent)}
                   isFavorite={isFavorite(activeCurrent)}
+                  darkMode={darkMode}
+                  onToggleDark={() => setDarkMode(!darkMode)}
+                  menu={
+                    <MobileNav
+                      category={category}
+                      onCategoryChange={setCategory}
+                      searchQuery={searchQuery}
+                      onSearchQueryChange={setSearchQuery}
+                      onSearchSubmit={handleSearch}
+                    >
+                      {libraryPanels}
+                    </MobileNav>
+                  }
                 />
               ) : (
                 // Web (and the native home/empty state): the card + reader view.

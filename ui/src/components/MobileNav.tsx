@@ -1,4 +1,4 @@
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,12 +17,20 @@ interface MobileNavProps {
   /** Secondary surfaces (Library: history/favorites/recommended/submit) live
    *  in the menu rather than cluttering the discovery screen. */
   children?: ReactNode;
+  /** Optional search — surfaced in the menu so it's reachable from within the
+   *  Reels feed (which covers the header). */
+  searchQuery?: string;
+  onSearchQueryChange?: (q: string) => void;
+  onSearchSubmit?: (e: React.FormEvent) => void;
 }
 
 export function MobileNav({
   category,
   onCategoryChange,
   children,
+  searchQuery,
+  onSearchQueryChange,
+  onSearchSubmit,
 }: MobileNavProps) {
   const [open, setOpen] = useState(false);
 
@@ -39,6 +47,25 @@ export function MobileNav({
         </DialogHeader>
 
         <div className="space-y-5">
+          {onSearchSubmit && (
+            <form
+              onSubmit={(e) => {
+                onSearchSubmit(e);
+                setOpen(false);
+              }}
+              className="relative"
+            >
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                value={searchQuery ?? ""}
+                onChange={(e) => onSearchQueryChange?.(e.target.value)}
+                placeholder="Search the web…"
+                aria-label="Search"
+                className="w-full rounded-lg border border-border bg-background py-2.5 pl-9 pr-3 text-sm outline-none focus:border-primary"
+              />
+            </form>
+          )}
           <div>
             <p className="px-1 pb-2 text-[0.7rem] font-medium uppercase tracking-wider text-muted-foreground">
               Browse

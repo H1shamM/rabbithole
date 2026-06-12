@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Capacitor } from "@capacitor/core";
-import { X, ChevronUp, ThumbsUp, ThumbsDown, Heart } from "lucide-react";
+import { X, ChevronUp, ThumbsUp, ThumbsDown, Heart, Moon, Sun } from "lucide-react";
 import { getFaviconUrl } from "../utils/contentHelpers";
 import { useHaptics } from "../hooks/useHaptics";
 import type { StumbleResult } from "../hooks/useStumble";
@@ -15,6 +15,11 @@ interface LiveFeedProps {
   onRate: (rating: "like" | "dislike") => void;
   onToggleFavorite: () => void;
   isFavorite: boolean;
+  /** App tools surfaced in the reels chrome so you don't have to exit: the
+   *  menu (library/categories/search) trigger + a dark-mode toggle. */
+  menu?: ReactNode;
+  darkMode?: boolean;
+  onToggleDark?: () => void;
 }
 
 /**
@@ -32,11 +37,13 @@ export function LiveFeed({
   onRate,
   onToggleFavorite,
   isFavorite,
+  menu,
+  darkMode,
+  onToggleDark,
 }: LiveFeedProps) {
   const elRef = useRef<HTMLDivElement>(null);
   const overlay = useRef<Overlay | null>(null);
   const openedUrl = useRef<string | null>(null);
-  const snapshotActive = useRef(false);
   const native = Capacitor.isNativePlatform();
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -81,11 +88,6 @@ export function LiveFeed({
       mod.WebviewOverlay.onPageLoaded(() => {
         setProgress(1);
         setLoading(false);
-        if (snapshotActive.current) {
-          // Reveal the freshly loaded live page (end the swap freeze).
-          mod.WebviewOverlay.toggleSnapshot(false).catch(() => {});
-          snapshotActive.current = false;
-        }
       });
       try {
         await mod.WebviewOverlay.open({
@@ -107,22 +109,16 @@ export function LiveFeed({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [native]);
 
-  // Swap to the next site (loadUrl) whenever the current stumble changes.
+  // Swap to the next site (loadUrl) whenever the current stumble changes. The
+  // WebView navigates live (always scrollable) — the loading bar covers the
+  // load. (No snapshot freeze: some sites never fire onPageLoaded, which left a
+  // frozen, unscrollable snapshot.)
   useEffect(() => {
     const url = current?.url;
     if (!url || !overlay.current || openedUrl.current === url) return;
     openedUrl.current = url;
     setLoading(true);
     setProgress(0);
-    // Freeze the outgoing page to a snapshot during the swap — the native view
-    // is hidden while snapshotting, so we don't flash a half-loaded page.
-    // onPageLoaded reveals the new live page (toggleSnapshot(false)).
-    overlay.current
-      .toggleSnapshot(true)
-      .then(() => {
-        snapshotActive.current = true;
-      })
-      .catch(() => {});
     overlay.current.loadUrl(url).catch((e) => {
       console.error("[LiveFeed] loadUrl failed", e);
     });
@@ -151,9 +147,12 @@ export function LiveFeed({
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       {/* Top chrome */}
       <div
-        className="flex items-center gap-3 px-4 pb-3"
+        className="flex items-center gap-2 px-3 pb-3"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 10px)" }}
       >
+        {/* Menu (library / categories / search) — reach app functions without
+            leaving reels. */}
+        {menu && <div className="shrink-0">{menu}</div>}
         {current && (
           <img
             src={getFaviconUrl(current.source)}
@@ -169,6 +168,15 @@ export function LiveFeed({
             {current?.source}
           </p>
         </div>
+        {onToggleDark && (
+          <button
+            onClick={onToggleDark}
+            aria-label="Toggle dark mode"
+            className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            {darkMode ? <Sun className="size-5" /> : <Moon className="size-5" />}
+          </button>
+        )}
         <button
           onClick={onExit}
           aria-label="Exit live feed"
