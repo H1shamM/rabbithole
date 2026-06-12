@@ -1,5 +1,6 @@
 // ui/src/components/Header.tsx
-import { Search, Sun, Moon, User, LogOut } from "lucide-react";
+import type { ReactNode } from "react";
+import { Search, Sun, Moon, User, LogOut, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -23,6 +24,8 @@ interface HeaderProps {
   searchQuery: string;
   onSearchQueryChange: (q: string) => void;
   onSearchSubmit: (e: React.FormEvent) => void;
+  /** Leading slot for mobile (e.g. the menu trigger); hidden at lg and up. */
+  leftSlot?: ReactNode;
 }
 
 /**
@@ -38,9 +41,19 @@ export function Header({
   searchQuery,
   onSearchQueryChange,
   onSearchSubmit,
+  leftSlot,
 }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md sm:px-6">
+      {/* Mobile-only leading cluster: menu trigger + brand mark. The sidebar
+          carries the brand at lg and up, so this is hidden there. */}
+      <div className="flex items-center gap-2 lg:hidden">
+        {leftSlot}
+        <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+          <Compass className="size-4" />
+        </div>
+      </div>
+
       {/* Search */}
       <form onSubmit={onSearchSubmit} className="relative max-w-md flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
