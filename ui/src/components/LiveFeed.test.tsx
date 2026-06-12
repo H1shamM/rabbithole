@@ -26,7 +26,6 @@ const current = {
 const baseProps = {
   current,
   onNext: vi.fn(),
-  onExit: vi.fn(),
   onRate: vi.fn(),
   onToggleFavorite: vi.fn(),
   isFavorite: false,
@@ -41,26 +40,51 @@ describe("LiveFeed", () => {
   it("shows an install hint on the web (non-native)", () => {
     isNative.mockReturnValue(false);
     render(<LiveFeed {...baseProps} />);
-    expect(screen.getByText(/runs in the app/i)).toBeInTheDocument();
+    expect(screen.getByText(/runs in the android app/i)).toBeInTheDocument();
     expect(open).not.toHaveBeenCalled();
   });
 
-  it("renders chrome and wires the actions on native", () => {
+  it("wires the actions on native (Next + Like)", () => {
     isNative.mockReturnValue(true);
     const onNext = vi.fn();
-    const onExit = vi.fn();
     const onRate = vi.fn();
-    render(
-      <LiveFeed {...baseProps} onNext={onNext} onExit={onExit} onRate={onRate} />,
-    );
+    render(<LiveFeed {...baseProps} onNext={onNext} onRate={onRate} />);
 
     fireEvent.click(screen.getByRole("button", { name: /next stumble/i }));
     expect(onNext).toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: /exit live feed/i }));
-    expect(onExit).toHaveBeenCalled();
-
     fireEvent.click(screen.getByRole("button", { name: /^like$/i }));
     expect(onRate).toHaveBeenCalledWith("like");
+  });
+
+  it("enters immersive via the expand control", () => {
+    isNative.mockReturnValue(true);
+    const onToggleImmersive = vi.fn();
+    render(<LiveFeed {...baseProps} onToggleImmersive={onToggleImmersive} />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /expand to full screen/i }),
+    );
+    expect(onToggleImmersive).toHaveBeenCalled();
+  });
+
+  it("in immersive mode hides the action bar and shows a restore strip", () => {
+    isNative.mockReturnValue(true);
+    const onToggleImmersive = vi.fn();
+    render(
+      <LiveFeed
+        {...baseProps}
+        immersive
+        onToggleImmersive={onToggleImmersive}
+      />,
+    );
+
+    // The full action bar is gone in immersive mode…
+    expect(
+      screen.queryByRole("button", { name: /next stumble/i }),
+    ).not.toBeInTheDocument();
+    // …and the restore strip brings the chrome back.
+    fireEvent.click(screen.getByRole("button", { name: /show controls/i }));
+    expect(onToggleImmersive).toHaveBeenCalled();
   });
 });

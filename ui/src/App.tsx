@@ -5,8 +5,9 @@ import { useHistory } from "./hooks/useHistory";
 import { usePWA } from "./hooks/usePWA";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useSwipe } from "./hooks/useSwipe";
+import { useAnyOverlayOpen } from "./hooks/useAnyOverlayOpen";
 import { useTheme } from "./hooks/useTheme";
-import { Tv } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { MobileNav } from "./components/MobileNav";
@@ -82,8 +83,20 @@ export function App() {
   // long article still scrolls — see useSwipe.
   const swipe = useSwipe({ onSwipeUp: handleNext });
 
-  // Live feed mode (BV1): browse live sites inline in a native WebView.
-  const [liveFeed, setLiveFeed] = useState(false);
+  // Reels-first on mobile (#295): on native, an active stumble renders the Live
+  // feed (swipe through live sites) instead of the card/reader view. The card
+  // mode is web-only.
+  const isNativeReels =
+    Capacitor.isNativePlatform() && activeShowIframe && !!activeCurrent;
+  // Pause (hide) the native live-site WebView whenever a menu/modal is open, so
+  // that React overlay isn't trapped behind it (#295).
+  const overlayOpen = useAnyOverlayOpen();
+
+  // Immersive: hide the header + the feed's chrome so the live site fills the
+  // screen. Only meaningful in the live feed — gated by `isNativeReels` at the
+  // use sites, so a stale value can never hide the header off the feed.
+  const [immersive, setImmersive] = useState(false);
+  const immersiveActive = isNativeReels && immersive;
 
   const {
     favorites,
@@ -209,6 +222,31 @@ export function App() {
     ensureDevAuth();
   }, [ensureDevAuth]);
 
+  // The Library panels live in the menu (shared by the header menu and the
+  // in-reels menu so reaching Favorites/History/etc. never requires an exit).
+  const libraryPanels = (
+    <>
+      <HistoryPanel
+        history={history}
+        showHistory={showHistory}
+        setShowHistory={setShowHistory}
+        onStumble={fetchStumble}
+      />
+      <FavoritesPanel
+        favorites={favorites}
+        showFavorites={showFavorites}
+        setShowFavorites={setShowFavorites}
+        onRemove={removeFavorite}
+        onStumble={fetchStumble}
+      />
+      <RecommendationsPanel recommendations={recommendations} />
+      <SubmissionForm
+        onSuccess={() => addToast("Submitted!")}
+        authenticatedFetch={typedAuthenticatedFetch}
+      />
+    </>
+  );
+
   return (
     <ErrorBoundary>
       <div className="flex min-h-screen bg-background text-foreground pt-(--safe-top) pb-(--safe-bottom) pl-(--safe-left) pr-(--safe-right)">
@@ -227,40 +265,27 @@ export function App() {
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <Header
-            darkMode={darkMode}
-            setDarkMode={setDarkMode}
-            user={user}
-            onUserClick={() =>
-              user ? setShowProfile(true) : setShowAuth(true)
-            }
-            onLogout={logout}
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            onSearchSubmit={handleSearch}
-            leftSlot={
-              <MobileNav category={category} onCategoryChange={setCategory}>
-                <HistoryPanel
-                  history={history}
-                  showHistory={showHistory}
-                  setShowHistory={setShowHistory}
-                  onStumble={fetchStumble}
-                />
-                <FavoritesPanel
-                  favorites={favorites}
-                  showFavorites={showFavorites}
-                  setShowFavorites={setShowFavorites}
-                  onRemove={removeFavorite}
-                  onStumble={fetchStumble}
-                />
-                <RecommendationsPanel recommendations={recommendations} />
-                <SubmissionForm
-                  onSuccess={() => addToast("Submitted!")}
-                  authenticatedFetch={typedAuthenticatedFetch}
-                />
-              </MobileNav>
-            }
-          />
+          {/* Immersive mode hides the header so the live site fills the screen
+              (reels-only); the feed's restore strip brings it back. */}
+          {!immersiveActive && (
+            <Header
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
+              user={user}
+              onUserClick={() =>
+                user ? setShowProfile(true) : setShowAuth(true)
+              }
+              onLogout={logout}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              onSearchSubmit={handleSearch}
+              leftSlot={
+                <MobileNav category={category} onCategoryChange={setCategory}>
+                  {libraryPanels}
+                </MobileNav>
+              }
+            />
+          )}
 
           {networkError && (
             <div
@@ -312,81 +337,77 @@ export function App() {
           <main
             id="main-content"
             tabIndex={-1}
-            className="flex-1 overflow-y-auto px-4 py-6 sm:px-6"
+            className={
+              isNativeReels
+                ? "flex min-h-0 flex-1 flex-col"
+                : "flex-1 overflow-y-auto px-4 py-6 sm:px-6"
+            }
           >
-            <div className="mx-auto w-full max-w-5xl space-y-6">
-              {inSearch && (
-                <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-2 text-sm">
-                  <span className="truncate text-muted-foreground">
-                    {searchResults.length} result
-                    {searchResults.length === 1 ? "" : "s"} for{" "}
-                    <span className="font-medium text-foreground">
-                      “{searchQuery}”
-                    </span>{" "}
-                    · {searchIndex + 1}/{searchResults.length}
-                  </span>
-                  <button
-                    onClick={exitSearch}
-                    className="shrink-0 font-medium text-muted-foreground hover:text-foreground"
-                  >
-                    Exit search
-                  </button>
-                </div>
-              )}
-
-              <div onTouchStart={swipe.onTouchStart} onTouchEnd={swipe.onTouchEnd}>
-                <StumbleArea
-                  showIframe={activeShowIframe}
-                  loading={inSearch ? false : loading}
-                  error={inSearch ? null : error}
-                  current={activeCurrent}
-                  iframeError={inSearch ? false : iframeError}
-                  authenticatedFetch={typedAuthenticatedFetch}
-                  onRetry={handleNext}
-                  onClose={inSearch ? exitSearch : handleClose}
-                  onIframeLoad={handleIframeLoad}
-                />
-              </div>
-
-              {/* Live feed entry (mobile): a secondary chip docked just above the
-                  primary action pill. "Next" is already covered by swipe-up and the
-                  Next Stumble button, so this stays demoted and out of their way. */}
-              {activeShowIframe && activeCurrent && !liveFeed && (
-                <button
-                  type="button"
-                  onClick={() => setLiveFeed(true)}
-                  aria-label="Open reels feed"
-                  className="fixed inset-x-0 bottom-20 z-30 mx-auto flex w-fit items-center gap-1.5 rounded-full border border-border bg-card/90 px-4 py-2 text-sm font-medium text-foreground shadow-md backdrop-blur-md active:scale-95 sm:hidden"
-                  style={{ marginBottom: "env(safe-area-inset-bottom)" }}
-                >
-                  <Tv className="size-4" /> Reels
-                </button>
-              )}
-
-              {liveFeed && activeCurrent && (
-                <LiveFeed
-                  current={activeCurrent}
-                  onNext={handleNext}
-                  onExit={() => setLiveFeed(false)}
-                  onRate={handleRate}
-                  onToggleFavorite={() => toggleFavorite(activeCurrent)}
-                  isFavorite={isFavorite(activeCurrent)}
-                />
-              )}
-
-              <ActionButtons
-                showIframe={activeShowIframe}
+            {isNativeReels ? (
+              // Mobile: the live website renders inline here, inside the normal
+              // app shell — the header above stays available (no separate mode).
+              <LiveFeed
                 current={activeCurrent}
-                loading={inSearch ? false : loading}
-                rating={rating}
-                rateLoading={rateLoading}
-                isFavorite={isFavorite(activeCurrent)}
+                onNext={handleNext}
                 onRate={handleRate}
                 onToggleFavorite={() => toggleFavorite(activeCurrent)}
-                onShare={handleShare}
-                onNext={handleNext}
+                isFavorite={isFavorite(activeCurrent)}
+                paused={overlayOpen}
+                immersive={immersiveActive}
+                onToggleImmersive={() => setImmersive((v) => !v)}
               />
-            </div>
+            ) : (
+              <div className="mx-auto w-full max-w-5xl space-y-6">
+                {inSearch && (
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-2 text-sm">
+                    <span className="truncate text-muted-foreground">
+                      {searchResults.length} result
+                      {searchResults.length === 1 ? "" : "s"} for{" "}
+                      <span className="font-medium text-foreground">
+                        “{searchQuery}”
+                      </span>{" "}
+                      · {searchIndex + 1}/{searchResults.length}
+                    </span>
+                    <button
+                      onClick={exitSearch}
+                      className="shrink-0 font-medium text-muted-foreground hover:text-foreground"
+                    >
+                      Exit search
+                    </button>
+                  </div>
+                )}
+
+                <div
+                  onTouchStart={swipe.onTouchStart}
+                  onTouchEnd={swipe.onTouchEnd}
+                >
+                  <StumbleArea
+                    showIframe={activeShowIframe}
+                    loading={inSearch ? false : loading}
+                    error={inSearch ? null : error}
+                    current={activeCurrent}
+                    iframeError={inSearch ? false : iframeError}
+                    authenticatedFetch={typedAuthenticatedFetch}
+                    onRetry={handleNext}
+                    onClose={inSearch ? exitSearch : handleClose}
+                    onIframeLoad={handleIframeLoad}
+                  />
+                </div>
+
+                <ActionButtons
+                  showIframe={activeShowIframe}
+                  current={activeCurrent}
+                  loading={inSearch ? false : loading}
+                  rating={rating}
+                  rateLoading={rateLoading}
+                  isFavorite={isFavorite(activeCurrent)}
+                  onRate={handleRate}
+                  onToggleFavorite={() => toggleFavorite(activeCurrent)}
+                  onShare={handleShare}
+                  onNext={handleNext}
+                />
+              </div>
+            )}
           </main>
         </div>
       </div>
