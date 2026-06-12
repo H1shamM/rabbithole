@@ -247,6 +247,14 @@ the app (native WebView, not an iframe).
 | M1.3 | Safe-area insets + full-bleed stumble view | gemini | Done (PR #261) |
 | M2 | Browse un-iframable sites in a native in-app WebView | senior | Done (PR #263 / #270) — `useBrowse` + `@capacitor/inappbrowser` |
 | M3.1 | Swipe-up-to-next + always-visible mobile Next | senior | Done (PR #269 / #271) — scroll-aware `useSwipe` |
+| BV0 | Spike: live site inline via webview-overlay (GO/NO-GO) | senior | **PASS** on device (#279) |
+| BV1 | Live feed ("Reels") — inline live-site discovery | senior | Done (PR #281 / #280) — `LiveFeed` + `@teamhive/capacitor-webview-overlay` |
+
+> **Browse v2 (epic #278)** — the "reels of live websites" surface — is the breakthrough: **device-tested
+> as delightful** (user spent ~5 min and found a site they loved). v1 is opt-in ("Reels" button). Next
+> = BV2 polish (swipe-to-advance, snapshot transition, loading, reader-toggle). The plugin is
+> productionized: `.npmrc` legacy-peer-deps (it peer-deps Capacitor 7), `@testing-library/dom` restored,
+> AGP-9 proguard fix via patch-package + `postinstall`.
 
 **Where we left off:** Phases 0–2 are shipped and **running on a real Android device**. S1 scaffold
 (Capacitor v8), M1.1–M1.3 shell (branded indigo icon/splash, status bar, dev loop, safe-area), and
