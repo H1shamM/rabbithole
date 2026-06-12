@@ -154,6 +154,9 @@ describe("App Component Coverage", () => {
 
     render(<App />);
 
+    // Favorites now lives in the menu — open it first.
+    fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
+
     // Toggle to open favorites
     await waitFor(() =>
       expect(

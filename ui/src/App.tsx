@@ -6,7 +6,7 @@ import { usePWA } from "./hooks/usePWA";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useSwipe } from "./hooks/useSwipe";
 import { useTheme } from "./hooks/useTheme";
-import { ChevronUp, Tv } from "lucide-react";
+import { Tv } from "lucide-react";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { MobileNav } from "./components/MobileNav";
@@ -237,7 +237,26 @@ export function App() {
             onSearchQueryChange={setSearchQuery}
             onSearchSubmit={handleSearch}
           />
-          <MobileNav category={category} onCategoryChange={setCategory} />
+          <MobileNav category={category} onCategoryChange={setCategory}>
+            <HistoryPanel
+              history={history}
+              showHistory={showHistory}
+              setShowHistory={setShowHistory}
+              onStumble={fetchStumble}
+            />
+            <FavoritesPanel
+              favorites={favorites}
+              showFavorites={showFavorites}
+              setShowFavorites={setShowFavorites}
+              onRemove={removeFavorite}
+              onStumble={fetchStumble}
+            />
+            <RecommendationsPanel recommendations={recommendations} />
+            <SubmissionForm
+              onSuccess={() => addToast("Submitted!")}
+              authenticatedFetch={typedAuthenticatedFetch}
+            />
+          </MobileNav>
 
           {networkError && (
             <div
@@ -316,30 +335,18 @@ export function App() {
                 />
               </div>
 
-              {/* Always-reachable "next" on mobile so a long article never
-                  requires scrolling to the bottom to skip (tester feedback). */}
-              {activeShowIframe && activeCurrent && (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  aria-label="Skip to next"
-                  className="fixed bottom-6 right-6 z-40 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:opacity-90 active:scale-95 sm:hidden"
-                  style={{ marginBottom: "env(safe-area-inset-bottom)" }}
-                >
-                  <ChevronUp className="size-6" />
-                </button>
-              )}
-
-              {/* Live feed entry (mobile): browse live sites inline. */}
+              {/* Live feed entry (mobile): a secondary chip docked just above the
+                  primary action pill. "Next" is already covered by swipe-up and the
+                  Next Stumble button, so this stays demoted and out of their way. */}
               {activeShowIframe && activeCurrent && !liveFeed && (
                 <button
                   type="button"
                   onClick={() => setLiveFeed(true)}
                   aria-label="Open reels feed"
-                  className="fixed inset-x-0 bottom-6 z-40 mx-auto flex w-fit items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground shadow-xl ring-4 ring-primary/20 active:scale-95 sm:hidden"
+                  className="fixed inset-x-0 bottom-20 z-30 mx-auto flex w-fit items-center gap-1.5 rounded-full border border-border bg-card/90 px-4 py-2 text-sm font-medium text-foreground shadow-md backdrop-blur-md active:scale-95 sm:hidden"
                   style={{ marginBottom: "env(safe-area-inset-bottom)" }}
                 >
-                  <Tv className="size-5" /> Reels
+                  <Tv className="size-4" /> Reels
                 </button>
               )}
 
@@ -365,25 +372,6 @@ export function App() {
                 onToggleFavorite={() => toggleFavorite(activeCurrent)}
                 onShare={handleShare}
                 onNext={handleNext}
-              />
-
-              <HistoryPanel
-                history={history}
-                showHistory={showHistory}
-                setShowHistory={setShowHistory}
-                onStumble={fetchStumble}
-              />
-              <FavoritesPanel
-                favorites={favorites}
-                showFavorites={showFavorites}
-                setShowFavorites={setShowFavorites}
-                onRemove={removeFavorite}
-                onStumble={fetchStumble}
-              />
-              <RecommendationsPanel recommendations={recommendations} />
-              <SubmissionForm
-                onSuccess={() => addToast("Submitted!")}
-                authenticatedFetch={typedAuthenticatedFetch}
               />
             </div>
           </main>
