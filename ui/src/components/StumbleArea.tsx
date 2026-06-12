@@ -158,23 +158,24 @@ export function StumbleArea({
 
   if (!showIframe && !current) {
     return (
-      <Card className="flex min-h-[70vh] flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-        <div className="grid size-16 place-items-center rounded-2xl bg-primary/10 text-primary">
-          <Compass className="size-8" />
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+        <div className="mb-8 grid size-24 place-items-center rounded-3xl bg-primary/10">
+          <Compass className="size-12 text-primary" strokeWidth={1.5} />
         </div>
-        <div className="space-y-1.5">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Ready to explore?
-          </h2>
-          <p className="max-w-sm text-muted-foreground">
-            Hit Stumble to discover the web, one hidden gem at a time.
-          </p>
-        </div>
-        <Button size="lg" className="gap-2" onClick={onRetry}>
-          <Shuffle />
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Ready to explore?
+        </h2>
+        <p className="mt-3 max-w-sm text-muted-foreground">
+          Discover hidden gems from across the web — one surprise at a time.
+        </p>
+        <button
+          onClick={onRetry}
+          className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 active:scale-95"
+        >
+          <Shuffle className="size-5" />
           Stumble
-        </Button>
-      </Card>
+        </button>
+      </div>
     );
   }
 
