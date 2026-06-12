@@ -314,18 +314,19 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
     channel: "Indie & Classic Web",
   },
 
-  // --- Food & Drink (article / image / interactive) ---
+  // --- New Entries (#268) ---
+  // Food & Drink (using new types)
   { id: "fd1", url: "https://www.seriouseats.com/the-food-lab-best-roast-potatoes-all-time-recipe", title: "The Food Lab: Best Roast Potatoes", description: "The science of the perfect roast potato.", source: "Serious Eats", category: "random", rating: 0, type: "article", channel: "Food & Drink" },
-  { id: "fd2", url: "https://www.bonappetit.com/", title: "Bon Appétit", description: "Delicious recipes and culinary inspiration.", source: "Bon Appétit", category: "random", rating: 0, type: "image", channel: "Food & Drink" },
-  { id: "fd3", url: "https://www.eater.com/", title: "Eater", description: "The latest food news, reviews, and maps.", source: "Eater", category: "random", rating: 0, type: "image", channel: "Food & Drink" },
+  { id: "fd2", url: "https://www.bonappetit.com/", title: "Bon Appétit", description: "Delicious recipes and culinary inspiration.", source: "Bon Appétit", category: "random", rating: 0, type: "article", channel: "Food & Drink" },
+  { id: "fd3", url: "https://www.eater.com/", title: "Eater", description: "The latest food news, reviews, and maps.", source: "Eater", category: "random", rating: 0, type: "article", channel: "Food & Drink" },
 
-  // --- Music & Audio (interactive / video) ---
+  // Music & Audio
   { id: "m1", url: "https://radio.garden/", title: "Radio Garden", description: "Explore the world through live radio.", source: "Radio Garden", category: "random", rating: 0, type: "interactive", channel: "Music & Audio" },
   { id: "m2", url: "https://musicmap.info/", title: "Musicmap", description: "The genealogy of popular music genres.", source: "Musicmap", category: "art", rating: 0, type: "interactive", channel: "Music & Audio" },
   { id: "m3", url: "https://www.npr.org/sections/tiny-desk-concerts/", title: "NPR Tiny Desk Concerts", description: "Intimate live performances from great artists.", source: "NPR", category: "art", rating: 0, type: "video", channel: "Music & Audio" },
 
-  // --- Games (expanded) ---
-  { id: "g15", url: "https://dwarf-fortress.en.uptodown.com/windows", title: "Dwarf Fortress", description: "The deepest, most complex simulation ever made.", source: "Bay 12 Games", category: "tech", rating: 0, type: "interactive", channel: "Games" },
+  // Games
+  { id: "g15", url: "https://bay12games.com/dwarves/", title: "Dwarf Fortress", description: "The deepest, most complex simulation ever made.", source: "Bay 12 Games", category: "tech", rating: 0, type: "interactive", channel: "Games" },
   { id: "g16", url: "https://www.freeciv.org/", title: "Freeciv", description: "Open-source strategy game inspired by Civilization.", source: "Freeciv", category: "tech", rating: 0, type: "interactive", channel: "Games" },
   { id: "g17", url: "https://threesjs.com/", title: "Threes!", description: "The tiny puzzle game that started a genre.", source: "Threes!", category: "random", rating: 0, type: "interactive", channel: "Games" },
   { id: "g18", url: "https://www.kingdomofloathing.com/", title: "Kingdom of Loathing", description: "A browser-based RPG with stick-figure art and sharp wit.", source: "KoL", category: "random", rating: 0, type: "interactive", channel: "Games" },
@@ -338,7 +339,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
   { id: "g25", url: "https://www.krunker.io/", title: "Krunker.io", description: "Fast-paced pixelated first-person shooter.", source: "Krunker", category: "random", rating: 0, type: "interactive", channel: "Games" },
   { id: "g26", url: "https://www.skribbl.io/", title: "Skribbl.io", description: "Multiplayer drawing and guessing game.", source: "Skribbl", category: "art", rating: 0, type: "interactive", channel: "Games" },
 
-  // --- Science & Nature (article / video) ---
+  // Science & Nature
   { id: "sn1", url: "https://www.quantamagazine.org/", title: "Quanta Magazine", description: "In-depth physics, math, and biology reporting.", source: "Quanta", category: "science", rating: 0, type: "article", channel: "Science & Nature" },
   { id: "sn2", url: "https://www.nationalgeographic.com/", title: "National Geographic", description: "Stories about our world, humanity, and wildlife.", source: "NatGeo", category: "science", rating: 0, type: "image", channel: "Science & Nature" },
   { id: "sn3", url: "https://www.ted.com/", title: "TED Talks", description: "Ideas worth spreading from global experts.", source: "TED", category: "science", rating: 0, type: "video", channel: "Science & Nature" },
@@ -350,7 +351,7 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
   { id: "sn9", url: "https://www.bbcearth.com/", title: "BBC Earth", description: "Incredible stories from the natural world.", source: "BBC", category: "science", rating: 0, type: "image", channel: "Science & Nature" },
   { id: "sn10", url: "https://www.si.edu/", title: "Smithsonian", description: "Explore history, culture, and scientific discoveries.", source: "Smithsonian", category: "science", rating: 0, type: "image", channel: "Science & Nature" },
 
-  // --- Design & Architecture (image / interactive) ---
+  // Design & Architecture
   { id: "da1", url: "https://www.archdaily.com/", title: "ArchDaily", description: "The world's most visited architecture website.", source: "ArchDaily", category: "art", rating: 0, type: "image", channel: "Design & Architecture" },
   { id: "da2", url: "https://www.dezeen.com/", title: "Dezeen", description: "Architecture and design news and features.", source: "Dezeen", category: "art", rating: 0, type: "image", channel: "Design & Architecture" },
   { id: "da3", url: "https://99percentinvisible.org/", title: "99% Invisible", description: "Design, architecture, and the unnoticed built world.", source: "99% Invisible", category: "art", rating: 0, type: "article", channel: "Design & Architecture" },
@@ -360,14 +361,14 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
   { id: "da7", url: "https://www.canva.com/", title: "Canva", description: "Simple design tools for everyone.", source: "Canva", category: "art", rating: 0, type: "interactive", channel: "Design & Architecture" },
   { id: "da8", url: "https://www.figma.com/", title: "Figma", description: "Collaborative interface design for design teams.", source: "Figma", category: "tech", rating: 0, type: "interactive", channel: "Design & Architecture" },
 
-  // --- History (article / image) ---
+  // History
   { id: "h1", url: "https://www.history.com/", title: "History", description: "Events and stories that shaped our world.", source: "History.com", category: "random", rating: 0, type: "article", channel: "History" },
   { id: "h2", url: "https://www.loc.gov/", title: "Library of Congress", description: "Access the nation's digital history archives.", source: "Library of Congress", category: "art", rating: 0, type: "image", channel: "History" },
   { id: "h3", url: "https://www.smithsonianmag.com/history/", title: "Smithsonian History", description: "Deep dives into the stories behind historical events.", source: "Smithsonian", category: "random", rating: 0, type: "article", channel: "History" },
   { id: "h4", url: "https://www.nationalarchives.gov.uk/", title: "The National Archives", description: "Records from over 1,000 years of UK history.", source: "National Archives", category: "random", rating: 0, type: "article", channel: "History" },
   { id: "h5", url: "https://www.worldhistory.org/", title: "World History Encyclopedia", description: "The world's largest history encyclopedia.", source: "World History", category: "random", rating: 0, type: "article", channel: "History" },
 
-  // --- Technology (article / interactive) ---
+  // Technology
   { id: "t1", url: "https://arstechnica.com/", title: "Ars Technica", description: "IT, tech policy, and science news.", source: "Ars Technica", category: "tech", rating: 0, type: "article", channel: "Deep Dives" },
   { id: "t2", url: "https://www.theverge.com/", title: "The Verge", description: "Tech, science, art, and culture.", source: "The Verge", category: "tech", rating: 0, type: "article", channel: "Deep Dives" },
   { id: "t3", url: "https://www.wired.com/", title: "Wired", description: "How technology is changing our world.", source: "Wired", category: "tech", rating: 0, type: "article", channel: "Deep Dives" },
@@ -379,7 +380,6 @@ export const DEFAULT_SEED_ASSETS: SeedAsset[] = [
   { id: "t9", url: "https://www.linux.com/", title: "Linux.com", description: "All things Linux and open source.", source: "Linux.com", category: "tech", rating: 0, type: "article", channel: "Deep Dives" },
   { id: "t10", url: "https://www.raspberrypi.org/", title: "Raspberry Pi", description: "The world's favorite single-board computer.", source: "Raspberry Pi", category: "tech", rating: 0, type: "article", channel: "Deep Dives" },
 ];
-
 
 export async function ensureDevUser(storage: IStoragePort): Promise<void> {
   const devUserId = settings.devUserId;
