@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { X, ChevronUp, ThumbsUp, ThumbsDown, Heart } from "lucide-react";
 import { getFaviconUrl } from "../utils/contentHelpers";
+import { useHaptics } from "../hooks/useHaptics";
 import type { StumbleResult } from "../hooks/useStumble";
 
 type Overlay =
@@ -39,6 +40,29 @@ export function LiveFeed({
   const native = Capacitor.isNativePlatform();
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const { impact } = useHaptics();
+  const swipeStart = useRef<{ y: number; t: number } | null>(null);
+
+  // Advance to the next site with a tactile tap. The freeze-swap transition
+  // (toggleSnapshot) is handled by the loadUrl effect below.
+  const advance = () => {
+    impact("medium");
+    onNext();
+  };
+
+  // The bottom handle is React chrome (outside the native overlay's element),
+  // so it reliably captures the flick the live WebView would otherwise eat.
+  const onHandleTouchStart = (e: React.TouchEvent) => {
+    swipeStart.current = { y: e.touches[0].clientY, t: Date.now() };
+  };
+  const onHandleTouchEnd = (e: React.TouchEvent) => {
+    const s = swipeStart.current;
+    swipeStart.current = null;
+    if (!s) return;
+    const dy = e.changedTouches[0].clientY - s.y;
+    const dt = Date.now() - s.t;
+    if (dy < -45 && dt < 600) advance();
+  };
 
   // Open the inline webview once on mount; close it on exit.
   useEffect(() => {
@@ -168,46 +192,73 @@ export function LiveFeed({
       {/* The native live-site overlay is positioned over this element. */}
       <div ref={elRef} className="flex-1 bg-white" />
 
-      {/* Bottom action bar: rating cluster (left) + prominent Next (right). */}
+      {/* Bottom chrome: swipe-up handle + action bar (rating cluster + Next). */}
       <div
-        className="flex items-center justify-between gap-2 border-t border-border px-4 pt-3"
+        className="border-t border-border"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 10px)" }}
       >
-        <div className="flex items-center gap-1">
+        {/* Flick this handle up to advance — it lives in the chrome (outside
+            the native overlay), so the gesture isn't eaten by the live site. */}
+        <div
+          onTouchStart={onHandleTouchStart}
+          onTouchEnd={onHandleTouchEnd}
+          onClick={advance}
+          role="button"
+          aria-label="Swipe up for the next site"
+          className="flex touch-none flex-col items-center gap-1 pb-1 pt-2.5"
+        >
+          <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+          <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            Swipe up for next
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 px-4 pt-1">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => {
+                impact("light");
+                onRate("dislike");
+              }}
+              aria-label="Dislike"
+              className="grid size-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <ThumbsDown className="size-5" />
+            </button>
+            <button
+              onClick={() => {
+                impact("light");
+                onToggleFavorite();
+              }}
+              aria-label="Save to favorites"
+              className={
+                "grid size-11 place-items-center rounded-full transition-colors hover:bg-muted " +
+                (isFavorite
+                  ? "text-red-500"
+                  : "text-muted-foreground hover:text-foreground")
+              }
+            >
+              <Heart className={isFavorite ? "size-5 fill-current" : "size-5"} />
+            </button>
+            <button
+              onClick={() => {
+                impact("light");
+                onRate("like");
+              }}
+              aria-label="Like"
+              className="grid size-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <ThumbsUp className="size-5" />
+            </button>
+          </div>
           <button
-            onClick={() => onRate("dislike")}
-            aria-label="Dislike"
-            className="grid size-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onClick={advance}
+            aria-label="Next stumble"
+            className="flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-sm transition active:scale-95"
           >
-            <ThumbsDown className="size-5" />
-          </button>
-          <button
-            onClick={onToggleFavorite}
-            aria-label="Save to favorites"
-            className={
-              "grid size-11 place-items-center rounded-full transition-colors hover:bg-muted " +
-              (isFavorite
-                ? "text-red-500"
-                : "text-muted-foreground hover:text-foreground")
-            }
-          >
-            <Heart className={isFavorite ? "size-5 fill-current" : "size-5"} />
-          </button>
-          <button
-            onClick={() => onRate("like")}
-            aria-label="Like"
-            className="grid size-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <ThumbsUp className="size-5" />
+            <ChevronUp className="size-5" /> Next
           </button>
         </div>
-        <button
-          onClick={onNext}
-          aria-label="Next stumble"
-          className="flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-sm transition active:scale-95"
-        >
-          <ChevronUp className="size-5" /> Next
-        </button>
       </div>
     </div>
   );
