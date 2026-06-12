@@ -236,27 +236,29 @@ export function App() {
             searchQuery={searchQuery}
             onSearchQueryChange={setSearchQuery}
             onSearchSubmit={handleSearch}
+            leftSlot={
+              <MobileNav category={category} onCategoryChange={setCategory}>
+                <HistoryPanel
+                  history={history}
+                  showHistory={showHistory}
+                  setShowHistory={setShowHistory}
+                  onStumble={fetchStumble}
+                />
+                <FavoritesPanel
+                  favorites={favorites}
+                  showFavorites={showFavorites}
+                  setShowFavorites={setShowFavorites}
+                  onRemove={removeFavorite}
+                  onStumble={fetchStumble}
+                />
+                <RecommendationsPanel recommendations={recommendations} />
+                <SubmissionForm
+                  onSuccess={() => addToast("Submitted!")}
+                  authenticatedFetch={typedAuthenticatedFetch}
+                />
+              </MobileNav>
+            }
           />
-          <MobileNav category={category} onCategoryChange={setCategory}>
-            <HistoryPanel
-              history={history}
-              showHistory={showHistory}
-              setShowHistory={setShowHistory}
-              onStumble={fetchStumble}
-            />
-            <FavoritesPanel
-              favorites={favorites}
-              showFavorites={showFavorites}
-              setShowFavorites={setShowFavorites}
-              onRemove={removeFavorite}
-              onStumble={fetchStumble}
-            />
-            <RecommendationsPanel recommendations={recommendations} />
-            <SubmissionForm
-              onSuccess={() => addToast("Submitted!")}
-              authenticatedFetch={typedAuthenticatedFetch}
-            />
-          </MobileNav>
 
           {networkError && (
             <div
