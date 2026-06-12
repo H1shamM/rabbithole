@@ -92,6 +92,12 @@ export function App() {
   // that React overlay isn't trapped behind it (#295).
   const overlayOpen = useAnyOverlayOpen();
 
+  // Immersive: hide the header + the feed's chrome so the live site fills the
+  // screen. Only meaningful in the live feed — gated by `isNativeReels` at the
+  // use sites, so a stale value can never hide the header off the feed.
+  const [immersive, setImmersive] = useState(false);
+  const immersiveActive = isNativeReels && immersive;
+
   const {
     favorites,
     showFavorites,
@@ -259,23 +265,27 @@ export function App() {
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <Header
-            darkMode={darkMode}
-            setDarkMode={setDarkMode}
-            user={user}
-            onUserClick={() =>
-              user ? setShowProfile(true) : setShowAuth(true)
-            }
-            onLogout={logout}
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            onSearchSubmit={handleSearch}
-            leftSlot={
-              <MobileNav category={category} onCategoryChange={setCategory}>
-                {libraryPanels}
-              </MobileNav>
-            }
-          />
+          {/* Immersive mode hides the header so the live site fills the screen
+              (reels-only); the feed's restore strip brings it back. */}
+          {!immersiveActive && (
+            <Header
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
+              user={user}
+              onUserClick={() =>
+                user ? setShowProfile(true) : setShowAuth(true)
+              }
+              onLogout={logout}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              onSearchSubmit={handleSearch}
+              leftSlot={
+                <MobileNav category={category} onCategoryChange={setCategory}>
+                  {libraryPanels}
+                </MobileNav>
+              }
+            />
+          )}
 
           {networkError && (
             <div
@@ -343,6 +353,8 @@ export function App() {
                 onToggleFavorite={() => toggleFavorite(activeCurrent)}
                 isFavorite={isFavorite(activeCurrent)}
                 paused={overlayOpen}
+                immersive={immersiveActive}
+                onToggleImmersive={() => setImmersive((v) => !v)}
               />
             ) : (
               <div className="mx-auto w-full max-w-5xl space-y-6">

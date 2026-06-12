@@ -56,4 +56,35 @@ describe("LiveFeed", () => {
     fireEvent.click(screen.getByRole("button", { name: /^like$/i }));
     expect(onRate).toHaveBeenCalledWith("like");
   });
+
+  it("enters immersive via the expand control", () => {
+    isNative.mockReturnValue(true);
+    const onToggleImmersive = vi.fn();
+    render(<LiveFeed {...baseProps} onToggleImmersive={onToggleImmersive} />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /expand to full screen/i }),
+    );
+    expect(onToggleImmersive).toHaveBeenCalled();
+  });
+
+  it("in immersive mode hides the action bar and shows a restore strip", () => {
+    isNative.mockReturnValue(true);
+    const onToggleImmersive = vi.fn();
+    render(
+      <LiveFeed
+        {...baseProps}
+        immersive
+        onToggleImmersive={onToggleImmersive}
+      />,
+    );
+
+    // The full action bar is gone in immersive mode…
+    expect(
+      screen.queryByRole("button", { name: /next stumble/i }),
+    ).not.toBeInTheDocument();
+    // …and the restore strip brings the chrome back.
+    fireEvent.click(screen.getByRole("button", { name: /show controls/i }));
+    expect(onToggleImmersive).toHaveBeenCalled();
+  });
 });
