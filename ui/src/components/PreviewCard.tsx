@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { ExternalLink, Globe } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { PreviewResult } from "../hooks/usePreview";
 import { useBrowse } from "../hooks/useBrowse";
+import type { PreviewResult } from "../hooks/usePreview";
 
 interface PreviewCardProps {
   url: string;
@@ -18,7 +16,8 @@ interface PreviewCardProps {
 /**
  * A rich "open this site" card for content that can't be embedded inline
  * (interactive sites, image galleries). Shows the page's preview image when
- * available, with title/description and a prominent open-in-new-tab action.
+ * available, with title/description, a domain hint, and a prominent open
+ * action (in-app native WebView on mobile via useBrowse, new tab on web).
  */
 export function PreviewCard({
   url,
@@ -32,55 +31,74 @@ export function PreviewCard({
 
   if (loading && !preview) {
     return (
-      <Card className="flex flex-col gap-4 p-6">
-        <Skeleton className="h-64 w-full rounded-lg" />
-        <Skeleton className="h-6 w-2/3" />
-        <Skeleton className="h-4 w-1/2" />
-      </Card>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <Skeleton className="aspect-video w-full rounded-none" />
+        <div className="space-y-3 p-5">
+          <Skeleton className="h-6 w-2/3" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+      </div>
     );
   }
 
   const title = preview?.title || fallbackTitle || url;
   const description = preview?.description || fallbackDescription || null;
   const image = imgFailed ? null : (preview?.image ?? null);
+  const hostname = (() => {
+    try {
+      return new URL(url).hostname.replace(/^www\./, "");
+    } catch {
+      return url;
+    }
+  })();
 
   return (
-    <Card className="overflow-hidden">
-      {image ? (
-        <button
-          type="button"
-          onClick={() => open(url)}
-          className="block w-full cursor-pointer"
-          aria-label={`Open ${title}`}
-        >
+    <div className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
+      {/* Hero image */}
+      <button
+        type="button"
+        onClick={() => open(url)}
+        className="block w-full cursor-pointer"
+        aria-label={`Open ${title}`}
+      >
+        {image ? (
           <img
             src={image}
             alt={title}
-            className="max-h-[60vh] w-full bg-muted object-contain"
+            className="aspect-video w-full bg-muted object-cover transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
             onError={() => setImgFailed(true)}
           />
-        </button>
-      ) : (
-        <div className="grid h-48 w-full place-items-center bg-muted text-muted-foreground">
-          <Globe className="size-12 opacity-40" />
-        </div>
-      )}
+        ) : (
+          <div className="flex aspect-video w-full items-center justify-center bg-muted text-muted-foreground">
+            <Globe className="size-12 opacity-30" />
+          </div>
+        )}
+      </button>
 
-      <div className="space-y-3 p-6">
-        <div className="space-y-1">
-          <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-          {description && (
-            <p className="line-clamp-3 text-sm text-muted-foreground">
-              {description}
-            </p>
-          )}
+      {/* Content */}
+      <div className="space-y-2 p-5">
+        <h2 className="line-clamp-2 text-base font-semibold text-foreground transition-colors group-hover:text-primary">
+          {title}
+        </h2>
+        {description && (
+          <p className="line-clamp-3 text-sm text-muted-foreground">
+            {description}
+          </p>
+        )}
+        <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+          <Globe className="size-3" />
+          <span className="truncate">{hostname}</span>
         </div>
-        <Button className="gap-2" onClick={() => open(url)}>
+        <button
+          onClick={() => open(url)}
+          className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
+        >
           <ExternalLink className="size-4" />
           Open the site
-        </Button>
+        </button>
       </div>
-    </Card>
+    </div>
   );
 }
