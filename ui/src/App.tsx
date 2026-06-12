@@ -323,87 +323,74 @@ export function App() {
           <main
             id="main-content"
             tabIndex={-1}
-            className="flex-1 overflow-y-auto px-4 py-6 sm:px-6"
+            className={
+              isNativeReels
+                ? "flex min-h-0 flex-1 flex-col"
+                : "flex-1 overflow-y-auto px-4 py-6 sm:px-6"
+            }
           >
-            <div className="mx-auto w-full max-w-5xl space-y-6">
-              {inSearch && (
-                <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-2 text-sm">
-                  <span className="truncate text-muted-foreground">
-                    {searchResults.length} result
-                    {searchResults.length === 1 ? "" : "s"} for{" "}
-                    <span className="font-medium text-foreground">
-                      “{searchQuery}”
-                    </span>{" "}
-                    · {searchIndex + 1}/{searchResults.length}
-                  </span>
-                  <button
-                    onClick={exitSearch}
-                    className="shrink-0 font-medium text-muted-foreground hover:text-foreground"
-                  >
-                    Exit search
-                  </button>
-                </div>
-              )}
+            {isNativeReels ? (
+              // Mobile: the live website renders inline here, inside the normal
+              // app shell — the header above stays available (no separate mode).
+              <LiveFeed
+                current={activeCurrent}
+                onNext={handleNext}
+                onRate={handleRate}
+                onToggleFavorite={() => toggleFavorite(activeCurrent)}
+                isFavorite={isFavorite(activeCurrent)}
+              />
+            ) : (
+              <div className="mx-auto w-full max-w-5xl space-y-6">
+                {inSearch && (
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-2 text-sm">
+                    <span className="truncate text-muted-foreground">
+                      {searchResults.length} result
+                      {searchResults.length === 1 ? "" : "s"} for{" "}
+                      <span className="font-medium text-foreground">
+                        “{searchQuery}”
+                      </span>{" "}
+                      · {searchIndex + 1}/{searchResults.length}
+                    </span>
+                    <button
+                      onClick={exitSearch}
+                      className="shrink-0 font-medium text-muted-foreground hover:text-foreground"
+                    >
+                      Exit search
+                    </button>
+                  </div>
+                )}
 
-              {isNativeReels ? (
-                // Mobile default: the live "Reels" feed (BV1) with all actions
-                // + in-reels menu (library/categories/search) and dark toggle.
-                <LiveFeed
+                <div
+                  onTouchStart={swipe.onTouchStart}
+                  onTouchEnd={swipe.onTouchEnd}
+                >
+                  <StumbleArea
+                    showIframe={activeShowIframe}
+                    loading={inSearch ? false : loading}
+                    error={inSearch ? null : error}
+                    current={activeCurrent}
+                    iframeError={inSearch ? false : iframeError}
+                    authenticatedFetch={typedAuthenticatedFetch}
+                    onRetry={handleNext}
+                    onClose={inSearch ? exitSearch : handleClose}
+                    onIframeLoad={handleIframeLoad}
+                  />
+                </div>
+
+                <ActionButtons
+                  showIframe={activeShowIframe}
                   current={activeCurrent}
-                  onNext={handleNext}
-                  onExit={handleClose}
+                  loading={inSearch ? false : loading}
+                  rating={rating}
+                  rateLoading={rateLoading}
+                  isFavorite={isFavorite(activeCurrent)}
                   onRate={handleRate}
                   onToggleFavorite={() => toggleFavorite(activeCurrent)}
-                  isFavorite={isFavorite(activeCurrent)}
-                  darkMode={darkMode}
-                  onToggleDark={() => setDarkMode(!darkMode)}
-                  menu={
-                    <MobileNav
-                      category={category}
-                      onCategoryChange={setCategory}
-                      searchQuery={searchQuery}
-                      onSearchQueryChange={setSearchQuery}
-                      onSearchSubmit={handleSearch}
-                    >
-                      {libraryPanels}
-                    </MobileNav>
-                  }
+                  onShare={handleShare}
+                  onNext={handleNext}
                 />
-              ) : (
-                // Web (and the native home/empty state): the card + reader view.
-                <>
-                  <div
-                    onTouchStart={swipe.onTouchStart}
-                    onTouchEnd={swipe.onTouchEnd}
-                  >
-                    <StumbleArea
-                      showIframe={activeShowIframe}
-                      loading={inSearch ? false : loading}
-                      error={inSearch ? null : error}
-                      current={activeCurrent}
-                      iframeError={inSearch ? false : iframeError}
-                      authenticatedFetch={typedAuthenticatedFetch}
-                      onRetry={handleNext}
-                      onClose={inSearch ? exitSearch : handleClose}
-                      onIframeLoad={handleIframeLoad}
-                    />
-                  </div>
-
-                  <ActionButtons
-                    showIframe={activeShowIframe}
-                    current={activeCurrent}
-                    loading={inSearch ? false : loading}
-                    rating={rating}
-                    rateLoading={rateLoading}
-                    isFavorite={isFavorite(activeCurrent)}
-                    onRate={handleRate}
-                    onToggleFavorite={() => toggleFavorite(activeCurrent)}
-                    onShare={handleShare}
-                    onNext={handleNext}
-                  />
-                </>
-              )}
-            </div>
+              </div>
+            )}
           </main>
         </div>
       </div>

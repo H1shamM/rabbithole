@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
-import { X, ChevronUp, ThumbsUp, ThumbsDown, Heart, Moon, Sun } from "lucide-react";
+import { ChevronUp, ThumbsUp, ThumbsDown, Heart } from "lucide-react";
 import { getFaviconUrl } from "../utils/contentHelpers";
 import { useHaptics } from "../hooks/useHaptics";
 import type { StumbleResult } from "../hooks/useStumble";
@@ -8,38 +8,37 @@ import type { StumbleResult } from "../hooks/useStumble";
 type Overlay =
   (typeof import("@teamhive/capacitor-webview-overlay"))["WebviewOverlay"];
 
+// Make old/desktop sites render mobile-friendly: a phone user-agent (so
+// responsive sites serve their mobile layout) + force a device-width viewport
+// (so non-responsive sites render at device width instead of a zoomed-out
+// ~980px desktop layout). The viewport fix is re-applied after every load.
+const MOBILE_UA =
+  "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36";
+const FIX_VIEWPORT = `(function(){try{var m=document.querySelector('meta[name="viewport"]');if(!m){m=document.createElement('meta');m.setAttribute('name','viewport');(document.head||document.documentElement).appendChild(m);}m.setAttribute('content','width=device-width, initial-scale=1, viewport-fit=cover');}catch(e){}})();`;
+
 interface LiveFeedProps {
   current: StumbleResult | null;
   onNext: () => void;
-  onExit: () => void;
   onRate: (rating: "like" | "dislike") => void;
   onToggleFavorite: () => void;
   isFavorite: boolean;
-  /** App tools surfaced in the reels chrome so you don't have to exit: the
-   *  menu (library/categories/search) trigger + a dark-mode toggle. */
-  menu?: ReactNode;
-  darkMode?: boolean;
-  onToggleDark?: () => void;
 }
 
 /**
- * Live feed mode (BV1, #280): the current stumble's site renders inline,
- * full-screen, in a native WebView (@teamhive/capacitor-webview-overlay) — the
- * "reels of live websites" surface. The native overlay occupies the middle
- * element only, so the top/bottom app chrome (rendered in the Capacitor
- * WebView) stays visible above it. Tap Next → loadUrl the next stumble.
- * Native-only; on web it shows an install hint.
+ * The live-site discovery surface on mobile: the current stumble's website
+ * renders **inline in the content area** via a native WebView overlay
+ * (@teamhive/capacitor-webview-overlay). It lives *inside the normal app shell*
+ * — the app header (search / menu / dark / account) stays above it and is
+ * always available — so this is not a separate full-screen "mode". The native
+ * overlay covers the middle element only; the context bar above and the action
+ * bar below are React chrome. Native-only. Fills its parent (h-full).
  */
 export function LiveFeed({
   current,
   onNext,
-  onExit,
   onRate,
   onToggleFavorite,
   isFavorite,
-  menu,
-  darkMode,
-  onToggleDark,
 }: LiveFeedProps) {
   const elRef = useRef<HTMLDivElement>(null);
   const overlay = useRef<Overlay | null>(null);
@@ -50,8 +49,6 @@ export function LiveFeed({
   const { impact } = useHaptics();
   const swipeStart = useRef<{ y: number; t: number } | null>(null);
 
-  // Advance to the next site with a tactile tap. The freeze-swap transition
-  // (toggleSnapshot) is handled by the loadUrl effect below.
   const advance = () => {
     impact("medium");
     onNext();
@@ -71,7 +68,7 @@ export function LiveFeed({
     if (dy < -45 && dt < 600) advance();
   };
 
-  // Open the inline webview once on mount; close it on exit.
+  // Open the inline webview once on mount; close it on unmount.
   useEffect(() => {
     if (!native || !elRef.current || !current) return;
     let cancelled = false;
@@ -79,7 +76,6 @@ export function LiveFeed({
       const mod = await import("@teamhive/capacitor-webview-overlay");
       if (cancelled || !elRef.current) return;
       overlay.current = mod.WebviewOverlay;
-      // Loading bar (chrome) + reveal the new page once it has loaded.
       mod.WebviewOverlay.onProgress((p) => {
         const v = p.value > 1 ? p.value / 100 : p.value;
         setProgress(v);
@@ -88,11 +84,14 @@ export function LiveFeed({
       mod.WebviewOverlay.onPageLoaded(() => {
         setProgress(1);
         setLoading(false);
+        // Re-apply the mobile viewport after every navigation.
+        mod.WebviewOverlay.evaluateJavaScript(FIX_VIEWPORT).catch(() => {});
       });
       try {
         await mod.WebviewOverlay.open({
           url: current.url,
           element: elRef.current,
+          userAgent: MOBILE_UA,
         });
         openedUrl.current = current.url;
       } catch (e) {
@@ -105,14 +104,11 @@ export function LiveFeed({
       overlay.current = null;
       openedUrl.current = null;
     };
-    // Open once; URL changes are handled by the effect below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [native]);
 
-  // Swap to the next site (loadUrl) whenever the current stumble changes. The
-  // WebView navigates live (always scrollable) — the loading bar covers the
-  // load. (No snapshot freeze: some sites never fire onPageLoaded, which left a
-  // frozen, unscrollable snapshot.)
+  // Navigate the same overlay to each new stumble. The WebView stays live
+  // (always scrollable) — the loading bar covers the load.
   useEffect(() => {
     const url = current?.url;
     if (!url || !overlay.current || openedUrl.current === url) return;
@@ -126,68 +122,34 @@ export function LiveFeed({
 
   if (!native) {
     return (
-      <div className="fixed inset-0 z-50 grid place-items-center bg-background p-8 text-center">
-        <div className="space-y-3">
-          <p className="text-lg font-semibold">Live feed runs in the app</p>
-          <p className="text-sm text-muted-foreground">
-            Install the Android app to browse live sites inline.
-          </p>
-          <button
-            className="rounded-md bg-primary px-4 py-2 text-primary-foreground"
-            onClick={onExit}
-          >
-            Back
-          </button>
-        </div>
+      <div className="grid h-full place-items-center bg-background p-8 text-center text-sm text-muted-foreground">
+        Live site browsing runs in the Android app.
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      {/* Top chrome */}
-      <div
-        className="flex items-center gap-2 px-3 pb-3"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 10px)" }}
-      >
-        {/* Menu (library / categories / search) — reach app functions without
-            leaving reels. */}
-        {menu && <div className="shrink-0">{menu}</div>}
+    <div className="flex h-full flex-col bg-background">
+      {/* Context bar: which site you're viewing. */}
+      <div className="flex items-center gap-2 px-4 py-2">
         {current && (
           <img
             src={getFaviconUrl(current.source)}
             alt=""
-            className="size-6 shrink-0 rounded-md border border-border"
+            className="size-5 shrink-0 rounded border border-border"
           />
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold leading-tight">
+          <p className="truncate text-sm font-medium leading-tight">
             {current?.title || current?.url}
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {current?.source}
           </p>
         </div>
-        {onToggleDark && (
-          <button
-            onClick={onToggleDark}
-            aria-label="Toggle dark mode"
-            className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            {darkMode ? <Sun className="size-5" /> : <Moon className="size-5" />}
-          </button>
-        )}
-        <button
-          onClick={onExit}
-          aria-label="Exit live feed"
-          className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <X className="size-5" />
-        </button>
       </div>
 
-      {/* Loading bar — sits in the chrome (outside the overlay rect) so it
-          stays visible above the native view. */}
+      {/* Loading bar — outside the overlay rect so it stays visible. */}
       <div className="h-0.5 w-full bg-muted">
         {loading && (
           <div
@@ -200,20 +162,15 @@ export function LiveFeed({
       {/* The native live-site overlay is positioned over this element. */}
       <div ref={elRef} className="flex-1 bg-white" />
 
-      {/* Bottom chrome: swipe-up handle + action bar (rating cluster + Next). */}
-      <div
-        className="border-t border-border"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 10px)" }}
-      >
-        {/* Flick this handle up to advance — it lives in the chrome (outside
-            the native overlay), so the gesture isn't eaten by the live site. */}
+      {/* Bottom: swipe-up handle + action bar (rating cluster + Next). */}
+      <div className="border-t border-border pb-3">
         <div
           onTouchStart={onHandleTouchStart}
           onTouchEnd={onHandleTouchEnd}
           onClick={advance}
           role="button"
           aria-label="Swipe up for the next site"
-          className="flex touch-none flex-col items-center gap-1 pb-1 pt-2.5"
+          className="flex touch-none flex-col items-center gap-1 pb-1 pt-2"
         >
           <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
           <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
