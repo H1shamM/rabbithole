@@ -1,0 +1,22 @@
+name: Lint
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir: [app, ui]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: cd ${{ matrix.dir }} && npm ci
+      - name: Lint
+        run: cd ${{ matrix.dir }} && npm run lint
+      - name: Typecheck
+        run: cd ${{ matrix.dir }} && npm run typecheck

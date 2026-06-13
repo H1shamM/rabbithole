@@ -1,77 +1,98 @@
 # Development Workflow — stumble-clone
 
-Based on ai-email-copilot’s professional workflow. This is the standard for every change.
+**This is the contract.** Every change to this repo follows it — senior (Claude,
+`H1shamM`) and junior (`H1shamM-bot`, Gemini) alike. It was written with judgment,
+deliberately, to hold the bar as the project scales. If "present-tired me" wants to
+skip a step, this document wins. Point me here.
 
-> **Two-agent note:** this repo is built by a senior (Claude, `H1shamM`) and a junior
-> (`H1shamM-bot`, Gemini). `master` is branch-protected (PR + green CI + 1 code-owner
+> **Two-agent note:** `master` is branch-protected (PR + green CI + 1 code-owner
 > review); the junior cannot merge. The senior reviews every bot PR and admin-merges.
-> See the root `CLAUDE.md` and `GEMINI.md` for the full model. The lifecycle below
-> applies to both agents.
+> See root `CLAUDE.md` and `GEMINI.md`.
 
-## Overview
+## The Contract — non-negotiables
 
-- **Branching:** `master` is always deployable. All work happens in `feat/`/`fix/` branches.
-- **Issues:** every task starts as a GitHub issue using the templates in TEMPLATES.md.
-- **PRs:** every merge to `master` requires a pull request with passing CI and a completed checklist.
-- **CI:** automated tests + lint on every PR (`test (app)` + `test (ui)`).
-- **Documentation:** PROGRESS.md updated on every merge.
+1. **No direct commits to `master`.** Every change goes through a `feat/`|`fix/`
+   branch and a PR. (Admin bypass exists for the owner only to _admin-merge own PRs_
+   once CI is green — never to push code straight to `master`.)
+2. **Every PR has a linked issue.** No issue = the work isn't planned. Stop and plan
+   it first (create the issue, then branch).
+3. **Every feature PR includes tests.** No "I'll add them later."
+4. **CI must be green to merge.** No "merge red, fix after."
+5. **Coverage must not drop.** Same or up, per package. CI enforces it (see below).
+6. **No new dependency without a one-line justification** in the PR body.
+7. **No dead code or scratch scripts in the repo root.** Scripts live in `scripts/`.
+8. **No log files committed.** `.gitignore` covers `*.log`; the `guards` CI check
+   fails if one slips in.
+9. **Docs stay accurate in the same PR.** If a PR changes behavior, it updates
+   `README.md` / `CLAUDE.md` / `PROGRESS.md` in that same PR — not "next time."
+10. **Friday sprint report.** Append a short entry to `docs/SPRINT_REPORTS.md`:
+    what shipped, what slipped, what's next.
 
 ## Issue → PR lifecycle
 
-1. Pick a task from PROGRESS.md (or a new idea).
-2. Create a GitHub issue with the user‑story or bug template.
-3. Create a branch from master:
-   - For stories: feat/<short-kebab>
-   - For bugs: fix/<short-kebab>
-4. Implement the code, always writing tests along the way.
-5. Run the pre‑push checks:
-   npm run lint
-   npm run format
-   npm test
-   npm run test:coverage (verify >=80%)
-6. Commit with a conventional commit message:
-   feat(discovery): add URL validation to asset discovery
-   Closes #12
-7. Push and open a pull request using the PR template (in TEMPLATES.md).
-8. Monitor CI — fix any failures.
-9. Self‑review the PR, then squash‑merge once CI is green.
-10. Post‑merge:
-    - Close the issue with a comment linking the PR.
-    - Update PROGRESS.md (mark the task done).
-    - Delete the feature branch.
+1. Pick a task from `PROGRESS.md` (or a new idea → make it an issue first).
+2. Create a GitHub issue (templates in `TEMPLATES.md` / `.github/ISSUE_TEMPLATE/`).
+3. Branch from `master`: `feat/<short-kebab>` (stories) or `fix/<short-kebab>` (bugs).
+4. Implement, **writing tests as you go**.
+5. Pre-push checks (both affected packages): `npm run lint` · `npm run typecheck` ·
+   `npm test` · confirm coverage didn't drop.
+6. Conventional Commit, e.g. `feat(discovery): add URL validation` + `Closes #12`.
+7. Push, open a PR with the template. Keep PRs **reviewable: ≤500 changed lines**
+   excluding generated files — split if larger.
+8. Monitor CI; fix failures. Never merge red.
+9. Review against the issue's acceptance criteria, then **squash-merge** on green.
+10. Post-merge: close the issue (link the PR), update `PROGRESS.md`, delete the branch.
 
-## CI/CD
+## CI enforces the contract (automation, not willpower)
 
-CI is live: `.github/workflows/ci.yml` runs on PRs — **Node 24**, `npm ci` → lint → `npm test`
-for both packages (the required checks are `test (app)` and `test (ui)`). `master` is
-branch-protected on these checks + a code-owner review.
+`.github/workflows/` runs on every PR to `master` (Node 24, `npm ci`):
 
-- **Deploy** (`deploy.yml`): future — deploy the API to a cloud environment, ideally OIDC-based
-  zero-secret access.
+- **`lint`** (`lint (app)` / `lint (ui)`) — eslint + typecheck per package. Fails on
+  any lint or type error.
+- **`tests`** (`test (app)` / `test (ui)`) — `npm test -- --coverage` per package.
+  Fails on a red test **and if coverage drops** below the committed floor (thresholds
+  live in each package's vitest config).
+- **`guards`** — fails if any `*.log` file is committed.
+
+Locally, **husky + lint-staged** run `eslint --fix` + typecheck on staged files before
+each commit.
+
+> **Pending:** a **Prettier** formatting gate (one-shot reformat + `format:check` +
+> pre-commit prettier) is tracked in its own issue — see #313. Until it lands, eslint
+> is the style gate. Do not claim a format gate exists before that PR merges.
+
+Coverage baselines (raise only upward): **UI — statements ≥ 73 / branches ≥ 74 /
+functions ≥ 64 / lines ≥ 75.** **App — thresholds set once the hermetic-fixtures fix
+(#306) makes coverage reliably measurable.**
+
+## The "STOP ME" rules (the agent enforces these)
+
+Whenever work is requested in this repo:
+
+1. "Merge to master directly" → **refuse**, ask for a PR.
+2. "Add a feature" with no issue → **refuse**, ask which issue / create one first.
+3. "Skip the tests this once" → **refuse**, explain that this is how projects rot.
+4. New dep with no reason → **ask** for the one-line justification.
+5. Log file or root scratch script committed → **revert it**, say where it belongs.
+6. `PROGRESS.md` untouched 10+ days → **remind**.
+7. Coverage drops in a PR → **block**, ask which tests to add.
+8. PR > 500 changed lines (excl. generated) → **suggest splitting** before reviewing.
 
 ## Commit conventions
 
-Use Conventional Commits:
-
-- feat: – new feature
-- fix: – bug fix
-- refactor: – code restructuring without functional change
-- test: – adding or updating tests
-- docs: – documentation only
-- chore: – tooling, build, CI
-
-Append a scope if helpful (e.g., feat(api):, fix(ui):).
+Conventional Commits: `feat` · `fix` · `refactor` · `test` · `docs` · `chore`
+(+ optional scope, e.g. `fix(ui):`). **No `Co-Authored-By: Claude` trailer** (portfolio
+repo — author is Hisham only).
 
 ## Weekly sprint cycle
 
-- Monday: review backlog, create issues for the week’s tasks, estimate size (S/M/L).
-- Daily: work on tasks, keep PROGRESS.md current.
-- Friday: review what shipped, update PROGRESS.md, celebrate wins.
+- **Monday:** triage backlog, create the week's issues, size S/M/L.
+- **Daily:** work tasks, keep `PROGRESS.md` current.
+- **Friday:** append the sprint report to `docs/SPRINT_REPORTS.md`; update `PROGRESS.md`.
 
 ## Tools
 
-Use gh CLI for issues and PRs.
-Do not use git push to create PRs — always use the PR creation flow.
+`gh` CLI for issues and PRs. Always use the PR flow — never improvise a merge.
 
 ---
 
