@@ -1,4 +1,4 @@
-# StumbleClone 🚀
+# Rabbithole 🚀
 
 **A modern, production-ready reimagining of the classic serendipitous discovery experience.**
 
@@ -6,7 +6,7 @@
 
 ## 🎯 Project Goal
 
-StumbleClone aims to provide a fast, reliable, and serendipitous discovery engine for the open web. Built using **Modular Monolith** and **Hexagonal (Ports & Adapters)** design, it transforms the way users discover hidden gems online.
+Rabbithole aims to provide a fast, reliable, and serendipitous discovery engine for the open web. Built using **Modular Monolith** and **Hexagonal (Ports & Adapters)** design, it transforms the way users discover hidden gems online.
 
 ---
 
@@ -21,7 +21,7 @@ StumbleClone aims to provide a fast, reliable, and serendipitous discovery engin
 | **Community Driven**        | Users can submit high-quality links for moderation.                                                                                                |
 | **Scalable Architecture**   | Hexagonal design ensures maintainability and modularity.                                                                                           |
 
-> **🧭 Direction (Content & Rendering v2):** StumbleClone is evolving from a web prototype toward a
+> **🧭 Direction (Content & Rendering v2):** Rabbithole is evolving from a web prototype toward a
 > **mobile discovery app**. Current focus is a curated, channel-organized content library and
 > render-by-type with screenshot previews — informed by three structured product-eval sessions.
 > See [`docs/PROGRESS.md`](docs/PROGRESS.md).
@@ -64,7 +64,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser to start stu
 
 ## 📱 Mobile Experience
 
-StumbleClone is a fully functional **Progressive Web App (PWA)**. Open the app in your mobile browser, then select **"Add to Home Screen"** for a seamless, native-like experience with offline caching.
+Rabbithole is a fully functional **Progressive Web App (PWA)**. Open the app in your mobile browser, then select **"Add to Home Screen"** for a seamless, native-like experience with offline caching.
 
 ---
 

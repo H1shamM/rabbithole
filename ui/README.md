@@ -1,4 +1,4 @@
-# StumbleClone — Frontend (`ui/`)
+# Rabbithole — Frontend (`ui/`)
 
 The React 19 + Vite + TypeScript + Tailwind v4 (shadcn/ui) frontend.
 

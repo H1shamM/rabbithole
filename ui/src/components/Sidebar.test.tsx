@@ -14,7 +14,7 @@ describe("Sidebar", () => {
 
   it("renders the brand and category nav", () => {
     render(<Sidebar {...baseProps} />);
-    expect(screen.getByText("StumbleClone")).toBeInTheDocument();
+    expect(screen.getByText("Rabbithole")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Discover" }),
     ).toBeInTheDocument();

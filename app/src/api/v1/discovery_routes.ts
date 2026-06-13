@@ -1,5 +1,5 @@
 /**
- * @fileoverview Discovery router for StumbleClone.
+ * @fileoverview Discovery router for Rabbithole.
  */
 
 import { Router } from "express";

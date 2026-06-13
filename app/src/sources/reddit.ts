@@ -72,7 +72,7 @@ export class RedditSource implements ContentFetcher {
         url,
         {
           headers: {
-            "User-Agent": "StumbleClone/1.0 (by /u/stumblebot)",
+            "User-Agent": "Rabbithole/1.0 (by /u/stumblebot)",
           },
         },
         8000,

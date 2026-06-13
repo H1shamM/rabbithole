@@ -1,4 +1,4 @@
-# Monitoring & Analytics — StumbleClone
+# Monitoring & Analytics — Rabbithole
 
 ## Error Monitoring (Sentry)
 

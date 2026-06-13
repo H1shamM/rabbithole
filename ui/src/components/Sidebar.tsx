@@ -24,7 +24,7 @@ export function Sidebar({
           <Compass className="size-5" />
         </div>
         <span className="text-base font-semibold tracking-tight">
-          StumbleClone
+          Rabbithole
         </span>
       </div>
 

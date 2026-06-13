@@ -1,4 +1,4 @@
-# StumbleClone Project Progress
+# Rabbithole Project Progress
 
 ## Sprint 1: Foundation (Done)
 
