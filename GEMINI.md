@@ -1,4 +1,4 @@
-# StumbleClone Architectural Standards
+# Rabbithole Architectural Standards
 
 ## 🤖 Junior Developer Operating Protocol (READ FIRST — these are hard rules)
 

@@ -1,4 +1,4 @@
-# StumbleClone — Product Requirements (v1)
+# Rabbithole — Product Requirements (v1)
 
 **Status:** living document · **Owner:** Hisham · **Last updated:** 2026-06-13
 
@@ -15,7 +15,7 @@ Algorithmic feeds optimize for engagement, not delight — they show you more of
 you already clicked. The serendipitous, "show me something good I'd never have
 searched for" experience that StumbleUpon pioneered is gone.
 
-**StumbleClone brings it back as a native mobile app:** one tap surfaces a genuinely
+**Rabbithole brings it back as a native mobile app:** one tap surfaces a genuinely
 interesting corner of the open web, and — the part that made StumbleUpon magic — you
 **browse the real site right inside the app**, then swipe to the next.
 

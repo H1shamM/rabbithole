@@ -1,4 +1,4 @@
-# StumbleClone — Claude Code Context
+# Rabbithole — Claude Code Context
 
 A modern StumbleUpon clone (serendipitous web discovery). Migrated from Gemini CLI to
 Claude Code on 2026-06-08. Build is healthy, the SaaS UI is shipped, in-app reader-first

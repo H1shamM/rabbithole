@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "StumbleClone",
+  "name": "Rabbithole",
   "version": "1.0",
   "description": "A serendipitous discovery engine.",
   "permissions": ["sidePanel", "tabs", "storage"],
@@ -8,7 +8,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Open StumbleClone"
+    "default_title": "Open Rabbithole"
   },
   "side_panel": {
     "default_path": "index.html"

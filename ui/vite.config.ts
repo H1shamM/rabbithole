@@ -19,7 +19,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "icons.svg"],
       manifest: {
-        name: "StumbleClone",
+        name: "Rabbithole",
         short_name: "Stumble",
         description: "A serendipitous discovery engine.",
         theme_color: "#ffffff",

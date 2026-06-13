@@ -11,7 +11,7 @@ export async function fetchHtml(
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; StumbleClone/1.0)",
+        "User-Agent": "Mozilla/5.0 (compatible; Rabbithole/1.0)",
       },
     });
     clearTimeout(timeoutId);
