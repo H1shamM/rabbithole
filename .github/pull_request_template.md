@@ -1,4 +1,4 @@
-Closes #<!-- issue number -->
+Closes #<!-- issue number — REQUIRED. No issue? Stop and create one first. -->
 
 ### Summary
 
@@ -7,14 +7,20 @@ Closes #<!-- issue number -->
 ### Changes
 
 <!-- List the specific files/modules touched. -->
+
 -
 
-### Test Plan
+### Checklist (all required before merge)
 
-- [ ] `npm run lint` passes (affected package)
-- [ ] `npm test` passes (affected package)
-- [ ] Manual check (if UI/API): <!-- steps -->
+- [ ] Linked to an issue above
+- [ ] Tests added/updated for this change
+- [ ] `npm run lint` + `npm run typecheck` pass (affected package)
+- [ ] `npm test` passes and **coverage did not drop**
+- [ ] Docs updated in THIS PR (README / CLAUDE.md / PROGRESS.md) if behavior changed
+- [ ] No new dependencies — or justified here: <!-- one line, or "none" -->
+- [ ] No log files or root scratch scripts added
+- [ ] < 500 changed lines (excl. generated) — or explain why a split isn't possible
 
 ### Screenshots / notes
 
-<!-- If UI changes, or anything the reviewer should know. -->
+<!-- UI changes, or anything the reviewer should know. -->
