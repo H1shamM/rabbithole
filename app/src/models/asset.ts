@@ -14,6 +14,13 @@ export const ContentTypeSchema = z.enum([
 export type ContentType = z.infer<typeof ContentTypeSchema>;
 
 /**
+ * Content-safety verdict (#332). Only `pass` assets are ever served. `pending`
+ * = not yet classified (never served — fail-closed); `flag` = blocked.
+ */
+export const SafetyStatusSchema = z.enum(["pending", "pass", "flag"]);
+export type SafetyStatus = z.infer<typeof SafetyStatusSchema>;
+
+/**
  * Curated channels organize the library by format & vibe (the Cloudhiker model).
  * Kept as a free string (not an enum) so the library can grow new channels
  * without a schema change.
@@ -40,6 +47,7 @@ export const StumbleAssetSchema = z.object({
   type: ContentTypeSchema.optional(),
   channel: z.string().optional(),
   proxyUrl: z.string().url().optional(),
+  safetyStatus: SafetyStatusSchema.optional(),
   created_at: z.date(),
   last_visited_at: z.date().optional(),
 });

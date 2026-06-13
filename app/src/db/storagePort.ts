@@ -16,6 +16,14 @@ export interface IStoragePort {
   getAllCategories(): Promise<string[]>;
   searchAssets(query: string): Promise<StumbleAsset[]>;
 
+  // Content safety (#332): set a verdict; list assets awaiting classification.
+  setAssetSafety(
+    id: string,
+    status: "pending" | "pass" | "flag",
+    reason?: string,
+  ): Promise<void>;
+  getAssetsNeedingSafety(limit: number): Promise<StumbleAsset[]>;
+
   // Rating & History
   saveRating(
     user_id: string,

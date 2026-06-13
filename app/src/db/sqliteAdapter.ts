@@ -10,6 +10,9 @@ interface AssetRow {
   channel: string | null;
   created_at: string;
   last_visited_at: string | null;
+  safety_status: string | null;
+  safety_reason: string | null;
+  safety_checked_at: string | null;
 }
 import Database from "better-sqlite3";
 import crypto from "crypto";
@@ -133,6 +136,17 @@ export class SqliteAdapter implements IStoragePort {
       this.db.exec("ALTER TABLE assets ADD COLUMN type TEXT");
     if (!assetCols.includes("channel"))
       this.db.exec("ALTER TABLE assets ADD COLUMN channel TEXT");
+    // Content-safety verdict (#332/#333). Existing + new rows default to 'pass'
+    // (non-breaking); the classifier (#335) sets real verdicts and the seed
+    // backfill (#336) introduces 'pending'/fail-closed. Only 'pass' is served.
+    if (!assetCols.includes("safety_status"))
+      this.db.exec(
+        "ALTER TABLE assets ADD COLUMN safety_status TEXT DEFAULT 'pass'",
+      );
+    if (!assetCols.includes("safety_reason"))
+      this.db.exec("ALTER TABLE assets ADD COLUMN safety_reason TEXT");
+    if (!assetCols.includes("safety_checked_at"))
+      this.db.exec("ALTER TABLE assets ADD COLUMN safety_checked_at TEXT");
 
     // Dedup existing assets
     this.db.exec(`
@@ -154,6 +168,8 @@ export class SqliteAdapter implements IStoragePort {
       rating: row.rating,
       type: (row.type as StumbleAsset["type"]) || undefined,
       channel: row.channel || undefined,
+      safetyStatus:
+        (row.safety_status as StumbleAsset["safetyStatus"]) || undefined,
       created_at: new Date(row.created_at),
       last_visited_at: row.last_visited_at
         ? new Date(row.last_visited_at)
@@ -217,8 +233,30 @@ export class SqliteAdapter implements IStoragePort {
       .run(delta, id);
   }
 
+  async setAssetSafety(
+    id: string,
+    status: "pending" | "pass" | "flag",
+    reason?: string,
+  ): Promise<void> {
+    this.db
+      .prepare(
+        "UPDATE assets SET safety_status = ?, safety_reason = ?, safety_checked_at = ? WHERE id = ?",
+      )
+      .run(status, reason ?? null, new Date().toISOString(), id);
+  }
+
+  async getAssetsNeedingSafety(limit: number): Promise<StumbleAsset[]> {
+    const rows = this.db
+      .prepare(
+        "SELECT * FROM assets WHERE safety_status IS NULL OR safety_status = 'pending' LIMIT ?",
+      )
+      .all(limit);
+    return rows.map((r) => this.mapRowToAsset(r as AssetRow));
+  }
+
   async getAllAssets(category: string): Promise<StumbleAsset[]> {
-    let query = "SELECT * FROM assets WHERE 1=1 ";
+    // Fail-closed: only safety-passed assets ever enter the stumble pool (#333).
+    let query = "SELECT * FROM assets WHERE safety_status = 'pass' ";
     const params: string[] = [];
     if (category !== "all") {
       query += "AND category = ? ";
@@ -240,8 +278,9 @@ export class SqliteAdapter implements IStoragePort {
     const rows = this.db
       .prepare(
         `
-      SELECT * FROM assets 
-      WHERE LOWER(title) LIKE ? OR LOWER(description) LIKE ? OR LOWER(url) LIKE ? 
+      SELECT * FROM assets
+      WHERE safety_status = 'pass'
+        AND (LOWER(title) LIKE ? OR LOWER(description) LIKE ? OR LOWER(url) LIKE ?)
       LIMIT 20
     `,
       )
@@ -437,7 +476,7 @@ export class SqliteAdapter implements IStoragePort {
       FROM assets a
       LEFT JOIN ratings r ON a.id = r.asset_id AND r.user_id = ?
       LEFT JOIN user_preferences up ON a.category = up.name AND up.user_id = ? AND up.type = 'category'
-      WHERE r.asset_id IS NULL
+      WHERE r.asset_id IS NULL AND a.safety_status = 'pass'
       ORDER BY COALESCE(up.score, 0) + a.rating DESC
       LIMIT ?
     `,
@@ -450,7 +489,7 @@ export class SqliteAdapter implements IStoragePort {
     interests: string[],
     exclude_ids: string[],
   ): Promise<StumbleAsset | null> {
-    let query = "SELECT * FROM assets WHERE 1=1 ";
+    let query = "SELECT * FROM assets WHERE safety_status = 'pass' ";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any[] = [];
     if (interests.length) {
