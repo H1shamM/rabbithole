@@ -16,6 +16,8 @@ import { ExplainerController } from "./controllers/explainerController.js";
 import { ExplainerService } from "./services/explainerService.js";
 import { SqliteExplainerRepo } from "./repositories/explainerRepo.js";
 import { ClaudeExplainer } from "./adapters/claudeExplainer.js";
+import { ClaudeSafety } from "./adapters/claudeSafety.js";
+import { createSafetyClassifier } from "./services/safetyService.js";
 import type { ExplainerLLM } from "./services/enrichmentService.js";
 import { healthCheck } from "./controllers/healthController.js";
 import { authenticateJWT } from "./middleware/auth.js";
@@ -106,7 +108,16 @@ export async function createApp() {
     new ScienceWebSource(),
     new WibySource(),
   ];
-  const discoveryService = new DiscoveryService(storage, sources);
+  // Safety gate (#335): LLM-backed when ANTHROPIC_API_KEY is set, else
+  // heuristics-only. Only passing assets are ingested/served.
+  const safetyClassifier = createSafetyClassifier(
+    process.env.ANTHROPIC_API_KEY ? new ClaudeSafety() : undefined,
+  );
+  const discoveryService = new DiscoveryService(
+    storage,
+    sources,
+    safetyClassifier,
+  );
 
   // Controllers
   const authController = new AuthController(storage);
