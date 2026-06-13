@@ -41,7 +41,7 @@ keep bot PRs to one issue off current master (recurring pitfall: stale branches 
 - `ui/` — Frontend. React 19 + Vite 8 + TypeScript 6 + Tailwind v4 + shadcn/ui (Radix).
   - `npm run dev` → http://localhost:5173. `npm run build` (tsc -b && vite build).
   - `npm test` (vitest), `npm run lint`, `npm run typecheck` (= `tsc -b`).
-- `docs/` — workflow/standards/templates/PROGRESS. `extension/` — Chrome ext. `e2e/` — Playwright.
+- `docs/` — workflow/standards/templates/PROGRESS. `extension/` — Chrome ext.
 
 Run both: `cd app && npm start` then `cd ui && npm run dev`.
 

@@ -28,7 +28,6 @@ stumble-clone/
 │ ├── unit/ # Unit tests (mocked deps)
 │ └── integration/ # Integration tests (real temp DB + endpoints)
 ├── docs/ # Workflow, standards, templates, PROGRESS
-├── e2e/ # Playwright
 ├── docker-compose.yml
 └── README.md
 
