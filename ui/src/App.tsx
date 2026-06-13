@@ -402,6 +402,7 @@ export function App() {
                   rating={rating}
                   rateLoading={rateLoading}
                   isFavorite={isFavorite(activeCurrent)}
+                  authenticatedFetch={typedAuthenticatedFetch}
                   onRate={handleRate}
                   onToggleFavorite={() => toggleFavorite(activeCurrent)}
                   onShare={handleShare}

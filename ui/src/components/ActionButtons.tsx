@@ -1,4 +1,3 @@
-// ui/src/components/ActionButtons.tsx
 import {
   ThumbsUp,
   ThumbsDown,
@@ -6,9 +5,11 @@ import {
   Share2,
   Shuffle,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/useToast";
 
 interface ActionButtonsProps {
   showIframe: boolean;
@@ -23,6 +24,7 @@ interface ActionButtonsProps {
   rating: "like" | "dislike" | null;
   rateLoading: boolean;
   isFavorite: boolean;
+  authenticatedFetch: (url: string, init?: RequestInit) => Promise<Response>;
   onRate: (type: "like" | "dislike") => void;
   onToggleFavorite: () => void;
   onShare: () => void;
@@ -40,12 +42,27 @@ export function ActionButtons({
   rating,
   rateLoading,
   isFavorite,
+  authenticatedFetch,
   onRate,
   onToggleFavorite,
   onShare,
   onNext,
 }: ActionButtonsProps) {
+  const { addToast } = useToast();
+
   if (!showIframe || !current) return null;
+
+  const handleReport = async () => {
+    try {
+      await authenticatedFetch("/report", {
+        method: "POST",
+        body: JSON.stringify({ assetId: current.id }),
+      });
+      addToast("Reported for review");
+    } catch {
+      addToast("Failed to report");
+    }
+  };
 
   return (
     <div className="sticky bottom-4 z-20 mx-auto flex w-fit items-center gap-1.5 rounded-full border border-border bg-card/90 p-1.5 shadow-lg backdrop-blur-md">
@@ -113,6 +130,15 @@ export function ActionButtons({
         aria-label="Share"
       >
         <Share2 />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-10 rounded-full text-muted-foreground hover:bg-muted hover:text-destructive active:scale-90"
+        onClick={handleReport}
+        aria-label="Report"
+      >
+        <AlertTriangle />
       </Button>
     </div>
   );
