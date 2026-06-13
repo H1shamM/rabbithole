@@ -75,3 +75,61 @@ export function screenHeuristics(
 
   return { verdict: "unknown" };
 }
+
+/** What the asset's `safety_status` should become (#333 schema). */
+export type SafetyVerdict =
+  | { status: "pass" }
+  | { status: "flag"; category: SafetyCategory; reason: string }
+  | { status: "pending"; reason: string };
+
+/** The asset fields the safety pipeline reads. */
+export type SafetyInput = Pick<StumbleAsset, "url" | "title" | "description">;
+
+/**
+ * Port for the LLM safety classifier (#335). Implemented by an adapter in
+ * `adapters/` (hexagonal). Returns a pass/flag judgement for a single asset.
+ */
+export interface SafetyLLM {
+  classify(asset: SafetyInput): Promise<{
+    verdict: "pass" | "flag";
+    category?: SafetyCategory;
+    reason?: string;
+  }>;
+}
+
+/** Runs the full cheapest-first safety pipeline for one asset. */
+export interface SafetyClassifier {
+  classify(asset: SafetyInput): Promise<SafetyVerdict>;
+}
+
+/**
+ * Build the classifier: heuristics first (free), then the LLM for whatever the
+ * heuristics can't decide. Fail-closed — an LLM error yields `pending` (not
+ * served), never a false `pass`. With no LLM configured it degrades to
+ * heuristics-only (flags the blatant, passes the rest) — fine for dev/CI, but
+ * production must set `ANTHROPIC_API_KEY` for real coverage.
+ */
+export function createSafetyClassifier(llm?: SafetyLLM): SafetyClassifier {
+  return {
+    async classify(asset) {
+      const h = screenHeuristics(asset);
+      if (h.verdict === "flag") {
+        return { status: "flag", category: h.category, reason: h.reason };
+      }
+      if (!llm) return { status: "pass" };
+      try {
+        const r = await llm.classify(asset);
+        if (r.verdict === "flag") {
+          return {
+            status: "flag",
+            category: r.category ?? "spam",
+            reason: r.reason ?? "flagged by classifier",
+          };
+        }
+        return { status: "pass" };
+      } catch {
+        return { status: "pending", reason: "safety classifier unavailable" };
+      }
+    },
+  };
+}

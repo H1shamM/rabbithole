@@ -3,6 +3,10 @@ import { AppError } from "../middleware/errorHandler.js";
 import type { StumbleAsset } from "../models/asset.js";
 import type { ContentFetcher } from "../sources/ContentFetcher.js";
 import { classifyAsset } from "./assetGate.js";
+import {
+  createSafetyClassifier,
+  type SafetyClassifier,
+} from "./safetyService.js";
 
 /** Below this, block to guarantee the user has something to stumble to. */
 const MIN_POOL = 5;
@@ -14,6 +18,9 @@ export class DiscoveryService {
   constructor(
     private storage: IStoragePort,
     private sources: ContentFetcher[],
+    // Safety gate (#335). Defaults to heuristics-only so existing callers/tests
+    // keep working; app.ts injects the LLM-backed classifier when configured.
+    private safety: SafetyClassifier = createSafetyClassifier(),
   ) {}
 
   async getRecommendations(
@@ -127,6 +134,10 @@ export class DiscoveryService {
           const { type, servable } = await classifyAsset(asset);
           if (servable) {
             asset.type = type;
+            // Safety gate (#335): never serve or persist non-passing content.
+            // flag/pending (incl. LLM error) → skip to the next source.
+            const verdict = await this.safety.classify(asset);
+            if (verdict.status !== "pass") continue;
             return asset;
           }
         }
