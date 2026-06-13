@@ -106,10 +106,14 @@ to random. Spacebar = next; rating shows a toast.
 
 ## Build / CI health
 
-`npm run build` ✓, lint ✓, typecheck (`tsc -b`) ✓, full test suite ✓.
-- **CI runs Node 24** (`.github/workflows/ci.yml`) to match local npm 11 — this fixed the recurring
-  `npm ci` "lock out of sync" failures. If you add a dep and CI's `npm ci` complains, regenerate the
-  lock fully: `rm <pkg>/package-lock.json <pkg>/node_modules && npm install`.
+`npm run build` ✓, lint ✓, typecheck (`tsc -b`) ✓, full test suite ✓ (app 101, ui 99 — green
+locally and in CI).
+- **CI** (Node 24) is split into three workflows — `lint.yml` (eslint + typecheck), `tests.yml`
+  (test + coverage), `guards.yml` (no committed `*.log`); required checks `lint (app)`/`lint (ui)`/
+  `test (app)`/`test (ui)`/`guards`. **Coverage is gated** via `thresholds` in each `vitest.config.ts`
+  (app ≥69 stmts; ui ≥73 stmts) — a PR that drops coverage fails CI. See `docs/WORKFLOW.md` (the contract).
+- If you add a dep and CI's `npm ci` complains "lock out of sync", regenerate the lock fully:
+  `rm <pkg>/package-lock.json <pkg>/node_modules && npm install`.
 - **Tailwind v4** is wired via `@tailwindcss/vite` in `ui/vite.config.ts` (without it `@import
   "tailwindcss"` is inert and the app renders with zero CSS — the original "terrible UI"). The reader
   prose uses `@tailwindcss/typography` (`@plugin` in `globals.css`).
@@ -126,6 +130,9 @@ to random. Spacebar = next; rating shows a toast.
 - Tests rely on: empty-state button accessible name `"Stumble"`; `iframe title="Stumbled page"`;
   ActionButtons aria-labels (`Like`/`Dislike`/`Save to favorites`). Vitest has no auto-cleanup — call
   `afterEach(cleanup)` in component tests.
+- **DB tests must be hermetic** (#306): construct `SqliteAdapter`/`Database` with `":memory:"` and
+  `close()` in `afterEach`/`afterAll`. Never use a shared on-disk `test_*.db` — the open handle fails
+  `unlink` on Windows (`EBUSY`), leaving stateful files that pass in CI's clean checkout but fail locally.
 - Husky + lint-staged pre-commit (eslint --fix). Prettier for formatting.
 - Local helper scripts (`shot.mjs`, `walkthrough.mjs`, `diag.mjs`, `*.png`) are gitignored.
 

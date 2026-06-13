@@ -4,17 +4,17 @@ import {
   seedDefaultAssets,
   DEFAULT_SEED_ASSETS,
 } from "../../app/src/bootstrap";
-import fs from "fs";
 
-const DB_PATH = "test_bootstrap.db";
+// Hermetic: a fresh in-memory DB per test, closed afterward — no shared file.
+let storage: SqliteAdapter;
 
 afterEach(() => {
-  if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
+  storage?.db.close();
 });
 
 describe("bootstrap data seeding", () => {
   it("seeds default assets when called against an empty database", async () => {
-    const storage = new SqliteAdapter(DB_PATH);
+    storage = new SqliteAdapter(":memory:");
     await seedDefaultAssets(storage);
 
     const categories = await storage.getAllCategories();
@@ -30,7 +30,7 @@ describe("bootstrap data seeding", () => {
   });
 
   it("is idempotent when seeding the same data multiple times", async () => {
-    const storage = new SqliteAdapter(DB_PATH);
+    storage = new SqliteAdapter(":memory:");
     await seedDefaultAssets(storage);
     await seedDefaultAssets(storage);
 

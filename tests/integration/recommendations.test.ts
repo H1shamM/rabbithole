@@ -4,16 +4,14 @@ import express from "express";
 import { createDiscoveryRouter } from "../../app/src/api/v1/discovery_routes";
 import { SqliteAdapter } from "../../app/src/db/sqliteAdapter";
 import { DiscoveryService } from "../../app/src/services/discoveryService";
-import fs from "fs";
-
-const DB_PATH = "test_recs.db";
 
 describe("POST /api/v1/recommendations", () => {
   let app: express.Express;
   let dbAdapter: SqliteAdapter;
 
   beforeAll(async () => {
-    dbAdapter = new SqliteAdapter(DB_PATH);
+    // Hermetic: in-memory DB, closed in afterAll — no shared on-disk file.
+    dbAdapter = new SqliteAdapter(":memory:");
     const service = new DiscoveryService(dbAdapter, []);
     app = express();
     app.use(express.json());
@@ -26,7 +24,7 @@ describe("POST /api/v1/recommendations", () => {
   });
 
   afterAll(() => {
-    if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
+    dbAdapter.db.close();
   });
 
   it("should return recommended assets", async () => {

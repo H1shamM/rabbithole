@@ -1,20 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { SqliteAdapter } from "../../../app/src/db/sqliteAdapter";
 import crypto from "crypto";
-import fs from "fs";
 
+// Hermetic: each test gets a fresh in-memory DB, closed afterward — no shared
+// on-disk files (which collided/locked across parallel workers and runs).
 describe("SqliteAdapter - Auth & Profiles", () => {
   let adapter: SqliteAdapter;
-  const dbPath = "test_auth.db";
 
   beforeEach(() => {
-    adapter = new SqliteAdapter(dbPath);
+    adapter = new SqliteAdapter(":memory:");
   });
 
   afterEach(() => {
-    if (fs.existsSync(dbPath)) {
-      fs.unlinkSync(dbPath);
-    }
+    adapter.db.close();
   });
 
   it("should save and find a local user by email", async () => {
@@ -65,16 +63,13 @@ describe("SqliteAdapter - Auth & Profiles", () => {
 
 describe("SqliteAdapter - Asset Search", () => {
   let adapter: SqliteAdapter;
-  const dbPath = "test_search.db";
 
   beforeEach(() => {
-    adapter = new SqliteAdapter(dbPath);
+    adapter = new SqliteAdapter(":memory:");
   });
 
   afterEach(() => {
-    if (fs.existsSync(dbPath)) {
-      fs.unlinkSync(dbPath);
-    }
+    adapter.db.close();
   });
 
   it("should search assets by title, description, and URL", async () => {
