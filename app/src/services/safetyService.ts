@@ -133,3 +133,35 @@ export function createSafetyClassifier(llm?: SafetyLLM): SafetyClassifier {
     },
   };
 }
+
+/**
+ * Re-classify every asset and persist a real verdict (#336). Gives the
+ * curated seed library actual safety verdicts (rather than the trusted-by-
+ * default `pass` from the #333 migration) and flags anything bad — flagged
+ * assets drop out of every serve query. Run before launch and after large
+ * library changes. Returns a tally for logging.
+ */
+export async function backfillSafety(
+  storage: {
+    getAllAssetsUnfiltered(): Promise<(SafetyInput & { id: string })[]>;
+    setAssetSafety(
+      id: string,
+      status: "pending" | "pass" | "flag",
+      reason?: string,
+    ): Promise<void>;
+  },
+  classifier: SafetyClassifier,
+): Promise<{ pass: number; flag: number; pending: number }> {
+  const assets = await storage.getAllAssetsUnfiltered();
+  const tally = { pass: 0, flag: 0, pending: 0 };
+  for (const asset of assets) {
+    const verdict = await classifier.classify(asset);
+    await storage.setAssetSafety(
+      asset.id,
+      verdict.status,
+      verdict.status === "pass" ? undefined : verdict.reason,
+    );
+    tally[verdict.status]++;
+  }
+  return tally;
+}
