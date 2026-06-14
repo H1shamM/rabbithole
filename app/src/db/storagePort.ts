@@ -16,13 +16,15 @@ export interface IStoragePort {
   getAllCategories(): Promise<string[]>;
   searchAssets(query: string): Promise<StumbleAsset[]>;
 
-  // Content safety (#332): set a verdict; list assets awaiting classification.
+  // Content safety (#332): set a verdict; list assets awaiting classification;
+  // read every asset regardless of verdict (for the backfill audit, #336).
   setAssetSafety(
     id: string,
     status: "pending" | "pass" | "flag",
     reason?: string,
   ): Promise<void>;
   getAssetsNeedingSafety(limit: number): Promise<StumbleAsset[]>;
+  getAllAssetsUnfiltered(): Promise<StumbleAsset[]>;
 
   // Rating & History
   saveRating(

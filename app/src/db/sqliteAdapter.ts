@@ -254,6 +254,13 @@ export class SqliteAdapter implements IStoragePort {
     return rows.map((r) => this.mapRowToAsset(r as AssetRow));
   }
 
+  // Every asset regardless of safety verdict — for the backfill audit (#336),
+  // which must re-classify even the trusted-by-default 'pass' seeds.
+  async getAllAssetsUnfiltered(): Promise<StumbleAsset[]> {
+    const rows = this.db.prepare("SELECT * FROM assets").all();
+    return rows.map((r) => this.mapRowToAsset(r as AssetRow));
+  }
+
   async getAllAssets(category: string): Promise<StumbleAsset[]> {
     // Fail-closed: only safety-passed assets ever enter the stumble pool (#333).
     let query = "SELECT * FROM assets WHERE safety_status = 'pass' ";

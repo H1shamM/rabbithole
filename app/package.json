@@ -10,7 +10,8 @@
     "dev": "tsx watch src/main.ts",
     "test": "vitest run tests",
     "test:watch": "vitest tests",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "backfill:safety": "tsx scripts/backfill-safety.ts"
   },
   "keywords": [],
   "author": "",
