@@ -37,6 +37,7 @@ describe("DiscoveryService Cooldown", () => {
     const storage: IStoragePort = {
       getAllAssets: vi.fn().mockResolvedValue(assets),
       getUserPreferences: vi.fn().mockResolvedValue([]),
+      getBlockedUrls: vi.fn().mockResolvedValue([]),
     } as any;
     const discoveryService = new DiscoveryService(storage, []);
 
@@ -70,6 +71,7 @@ describe("DiscoveryService Cooldown", () => {
     const storage: IStoragePort = {
       getAllAssets: vi.fn().mockResolvedValue(assets),
       getUserPreferences: vi.fn().mockResolvedValue([]),
+      getBlockedUrls: vi.fn().mockResolvedValue([]),
     } as any;
     const discoveryService = new DiscoveryService(storage, []);
 

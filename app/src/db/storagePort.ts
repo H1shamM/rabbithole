@@ -26,6 +26,17 @@ export interface IStoragePort {
   getAssetsNeedingSafety(limit: number): Promise<StumbleAsset[]>;
   getAllAssetsUnfiltered(): Promise<StumbleAsset[]>;
 
+  // Report & block (#337): record a user report; block a URL for a user; list
+  // a user's blocked URLs (filtered out of their stumble pool).
+  saveReport(
+    userId: string,
+    assetId: string | null,
+    url: string,
+    reason?: string,
+  ): Promise<void>;
+  blockUrl(userId: string, url: string): Promise<void>;
+  getBlockedUrls(userId: string): Promise<string[]>;
+
   // Rating & History
   saveRating(
     user_id: string,

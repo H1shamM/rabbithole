@@ -34,6 +34,7 @@ describe("DiscoveryService eager growth + quality gate", () => {
     storage = {
       getAllAssets: vi.fn(),
       getUserPreferences: vi.fn().mockResolvedValue([]),
+      getBlockedUrls: vi.fn().mockResolvedValue([]),
       saveAsset: vi.fn().mockResolvedValue(undefined),
     };
     source = { fetchStumble: vi.fn() };
