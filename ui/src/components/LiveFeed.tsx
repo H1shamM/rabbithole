@@ -10,6 +10,7 @@ import {
   BookOpen,
   Globe,
   Loader2,
+  AlertTriangle,
 } from "lucide-react";
 import { getFaviconUrl } from "../utils/contentHelpers";
 import { useHaptics } from "../hooks/useHaptics";
@@ -17,6 +18,7 @@ import { useReader } from "../hooks/useReader";
 import { ReaderView } from "./ReaderView";
 import type { StumbleResult } from "../hooks/useStumble";
 import type { AuthenticatedFetch } from "../types";
+import { useToast } from "../hooks/useToast";
 
 type Overlay =
   (typeof import("@teamhive/capacitor-webview-overlay"))["WebviewOverlay"];
@@ -112,6 +114,20 @@ export function LiveFeed({
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const { impact } = useHaptics();
+  const { addToast } = useToast();
+
+  const handleReport = async () => {
+    if (!current) return;
+    try {
+      await authenticatedFetch("/report", {
+        method: "POST",
+        body: JSON.stringify({ assetId: current.id }),
+      });
+      addToast("Reported for review");
+    } catch {
+      addToast("Failed to report");
+    }
+  };
 
   // Reader mode is keyed on the url it was turned on for, so advancing to the
   // next stumble (a different url) auto-exits reader — no reset effect needed.
@@ -406,6 +422,16 @@ export function LiveFeed({
                 className="grid size-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <ThumbsUp className="size-5" />
+              </button>
+              <button
+                onClick={() => {
+                  impact("light");
+                  handleReport();
+                }}
+                aria-label="Report"
+                className="grid size-11 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
+              >
+                <AlertTriangle className="size-5" />
               </button>
             </div>
             <button
