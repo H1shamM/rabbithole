@@ -36,14 +36,20 @@ export class DiscoveryService {
     userId: string,
   ): Promise<StumbleAsset> {
     const preferences = await this.storage.getUserPreferences(userId);
-    let assets = await this.storage.getAllAssets(category);
+    // URLs this user reported/blocked are never served back to them (#337).
+    const blocked = new Set(await this.storage.getBlockedUrls(userId));
+    let assets = (await this.storage.getAllAssets(category)).filter(
+      (a) => !blocked.has(a.url),
+    );
 
     if (assets.length < MIN_POOL) {
       // Cold start: block once so the user always has something to stumble to.
       const newAsset = await this.fetchFromLiveSources(category);
       if (newAsset) {
         await this.storage.saveAsset(newAsset);
-        assets = await this.storage.getAllAssets(category);
+        assets = (await this.storage.getAllAssets(category)).filter(
+          (a) => !blocked.has(a.url),
+        );
       }
     } else if (assets.length < TARGET_POOL) {
       // Warm pool: grow the corpus in the background without blocking the serve.
@@ -60,7 +66,9 @@ export class DiscoveryService {
       const fresh = await this.fetchFromLiveSources(category);
       if (fresh) {
         await this.storage.saveAsset(fresh);
-        assets = await this.storage.getAllAssets(category);
+        assets = (await this.storage.getAllAssets(category)).filter(
+          (a) => !blocked.has(a.url),
+        );
         availableAssets = assets.filter(
           (a: StumbleAsset) => !history.includes(a.id),
         );

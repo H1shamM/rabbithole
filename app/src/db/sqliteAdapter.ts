@@ -107,6 +107,20 @@ export class SqliteAdapter implements IStoragePort {
         created_at TEXT NOT NULL,
         FOREIGN KEY(user_id) REFERENCES users(id)
       );
+      CREATE TABLE IF NOT EXISTS reports (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        asset_id TEXT,
+        url TEXT NOT NULL,
+        reason TEXT,
+        created_at TEXT NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS blocked_urls (
+        user_id TEXT NOT NULL,
+        url TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY(user_id, url)
+      );
     `);
     this.migrate();
   }
@@ -259,6 +273,42 @@ export class SqliteAdapter implements IStoragePort {
   async getAllAssetsUnfiltered(): Promise<StumbleAsset[]> {
     const rows = this.db.prepare("SELECT * FROM assets").all();
     return rows.map((r) => this.mapRowToAsset(r as AssetRow));
+  }
+
+  // Report & block (#337)
+  async saveReport(
+    userId: string,
+    assetId: string | null,
+    url: string,
+    reason?: string,
+  ): Promise<void> {
+    this.db
+      .prepare(
+        "INSERT INTO reports (id, user_id, asset_id, url, reason, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+      )
+      .run(
+        crypto.randomUUID(),
+        userId,
+        assetId,
+        url,
+        reason ?? null,
+        new Date().toISOString(),
+      );
+  }
+
+  async blockUrl(userId: string, url: string): Promise<void> {
+    this.db
+      .prepare(
+        "INSERT OR IGNORE INTO blocked_urls (user_id, url, created_at) VALUES (?, ?, ?)",
+      )
+      .run(userId, url, new Date().toISOString());
+  }
+
+  async getBlockedUrls(userId: string): Promise<string[]> {
+    const rows = this.db
+      .prepare("SELECT url FROM blocked_urls WHERE user_id = ?")
+      .all(userId) as { url: string }[];
+    return rows.map((r) => r.url);
   }
 
   async getAllAssets(category: string): Promise<StumbleAsset[]> {

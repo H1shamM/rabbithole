@@ -8,6 +8,7 @@ import { DiscoveryService } from "./services/discoveryService.js";
 import { AuthController } from "./controllers/authController.js";
 import { DiscoveryController } from "./controllers/discoveryController.js";
 import { SubmissionController } from "./controllers/submissionController.js";
+import { ReportController } from "./controllers/reportController.js";
 import { ProxyController } from "./controllers/proxyController.js";
 import { ReaderController } from "./controllers/readerController.js";
 import { PreviewController } from "./controllers/previewController.js";
@@ -126,6 +127,7 @@ export async function createApp() {
     storage,
   );
   const submissionController = new SubmissionController(storage);
+  const reportController = new ReportController(storage);
   const proxyController = new ProxyController();
   const readerController = new ReaderController();
   const previewController = new PreviewController();
@@ -244,6 +246,9 @@ export async function createApp() {
     authenticateJWT,
     submissionController.getAllSubmissions,
   );
+
+  // Report + block (#337)
+  v1Router.post("/report", authenticateJWT, reportController.report);
 
   // Health
   v1Router.get("/health", healthCheck);
