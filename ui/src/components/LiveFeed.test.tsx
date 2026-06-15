@@ -14,6 +14,7 @@ vi.mock("@teamhive/capacitor-webview-overlay", () => ({
 }));
 
 import { LiveFeed } from "./LiveFeed";
+import { ToastProvider } from "../contexts/ToastContext";
 
 const current = {
   id: "1",
@@ -36,6 +37,9 @@ const baseProps = {
   authenticatedFetch,
 };
 
+const renderWithToast = (ui: React.ReactElement) =>
+  render(<ToastProvider>{ui}</ToastProvider>);
+
 describe("LiveFeed", () => {
   afterEach(() => {
     cleanup();
@@ -44,16 +48,19 @@ describe("LiveFeed", () => {
 
   it("shows an install hint on the web (non-native)", () => {
     isNative.mockReturnValue(false);
-    render(<LiveFeed {...baseProps} />);
+    renderWithToast(<LiveFeed {...baseProps} />);
     expect(screen.getByText(/runs in the android app/i)).toBeInTheDocument();
     expect(open).not.toHaveBeenCalled();
   });
+  // ... (and update other render calls)
 
   it("wires the actions on native (Next + Like)", () => {
     isNative.mockReturnValue(true);
     const onNext = vi.fn();
     const onRate = vi.fn();
-    render(<LiveFeed {...baseProps} onNext={onNext} onRate={onRate} />);
+    renderWithToast(
+      <LiveFeed {...baseProps} onNext={onNext} onRate={onRate} />,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: /next stumble/i }));
     expect(onNext).toHaveBeenCalled();
@@ -65,7 +72,9 @@ describe("LiveFeed", () => {
   it("enters immersive via the expand control", () => {
     isNative.mockReturnValue(true);
     const onToggleImmersive = vi.fn();
-    render(<LiveFeed {...baseProps} onToggleImmersive={onToggleImmersive} />);
+    renderWithToast(
+      <LiveFeed {...baseProps} onToggleImmersive={onToggleImmersive} />,
+    );
 
     fireEvent.click(
       screen.getByRole("button", { name: /expand to full screen/i }),
@@ -76,7 +85,7 @@ describe("LiveFeed", () => {
   it("in immersive mode hides the action bar and shows a restore strip", () => {
     isNative.mockReturnValue(true);
     const onToggleImmersive = vi.fn();
-    render(
+    renderWithToast(
       <LiveFeed
         {...baseProps}
         immersive
@@ -96,14 +105,14 @@ describe("LiveFeed", () => {
   it("shows the Reader toggle only for article stumbles", () => {
     isNative.mockReturnValue(true);
     // Non-article: no Reader control.
-    const { unmount } = render(<LiveFeed {...baseProps} />);
+    const { unmount } = renderWithToast(<LiveFeed {...baseProps} />);
     expect(
       screen.queryByRole("button", { name: /read article/i }),
     ).not.toBeInTheDocument();
     unmount();
 
     // Article: Reader control present.
-    render(
+    renderWithToast(
       <LiveFeed {...baseProps} current={{ ...current, type: "article" }} />,
     );
     expect(
@@ -113,7 +122,7 @@ describe("LiveFeed", () => {
 
   it("toggling Reader fetches the reader view for the article", () => {
     isNative.mockReturnValue(true);
-    render(
+    renderWithToast(
       <LiveFeed {...baseProps} current={{ ...current, type: "article" }} />,
     );
 
