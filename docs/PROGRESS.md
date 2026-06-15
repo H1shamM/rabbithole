@@ -283,7 +283,7 @@ which conflicts). Prefer a clean `adb uninstall` + `install` when swapping build
 
 ---
 
-### ⏯️ RESUME HERE — Browse v2 reels-first, core loop SHIPPED (all on master)
+### ⏯️ RESUME HERE — Reels-first + M4 safety SHIPPED; app renamed **Rabbithole**; pre-launch (all on master)
 
 The mobile model (tester-confirmed): **on native there is NO separate "reel mode" — mobile _is_ the full
 app, and the live website renders INLINE in the content area.** The header (search / ☰ menu / dark /
@@ -312,13 +312,32 @@ card + reader view is **web-only**. **All merged to master** — there is no ope
   `ReaderView` (`useReader`) inline; the overlay is hidden (`toggleSnapshot`) while reader shows. State is
   keyed on the current url so Next auto-exits reader; lazy fetch; graceful "reader unavailable" card.
 
-**Bot (`H1shamM-bot`):** on **#268** — re-scoped to a strictly **append-only** curated-library expansion
-(10 entries to the thin channels Videos/Indie + a new Science & Space channel; hard no-delete guard +
-count/dedup test) after #290 was closed for deleting entries.
+**Content-safety gate (epic #332, M4) — SHIPPED (was the launch blocker).** `app/src/services/safetyService.ts`.
+Every asset has a `safety_status` (`pending|pass|flag`); **only `pass` is served** (fail-closed filter on all
+discovery queries). Cheapest-first: `screenHeuristics` (blocklist `config/safetyBlocklist.ts`) → LLM
+(`SafetyLLM` port + `adapters/claudeSafety.ts`, Haiku + structured outputs) flagging sexual/violence/spam/hate.
+Wired into ingest (only `pass` saved; LLM error → `pending`; no key → heuristics-only). Sub-issues:
+#333 schema+filter, #334 heuristics, #335 LLM classifier, #336 backfill (`npm run backfill:safety`),
+#337 report+block backend (`POST /api/v1/report`, `blocked_urls`), #338 report button (web + mobile).
 
-**Next program-level:** **M4** content-safety gate (NSFW/spam classification + report/block — a **launch
-blocker** before any store/public release) → **M5** store readiness. Optional: **M3.3** swipe-rate
-gestures. Open issues: #267, #268, #275, #286, + security backlog #138/#130.
+**Engineering-hardening sprint — SHIPPED.** An audit hardened the repo to production bar, all enforced by CI
+(see `docs/WORKFLOW.md`, the contract): split CI into `lint`/`tests`/`guards`; **coverage gated** in both
+packages (vitest thresholds — must not drop); **Prettier format gate** + pre-commit; `guards` fails on a
+committed `*.log`; **hermetic in-memory DB test fixtures** (#306 — the suite was failing locally while green
+in CI); branch protection requires all 5 checks. Audit findings tracked as issues; dead root scratch removed;
+e2e zombie removed; `docs/PRD.md` + `docs/SPRINT_REPORTS.md` added.
+
+**Rename — SHIPPED.** App + repo are **Rabbithole** (was "StumbleClone"); display/brand + docs + GitHub repo.
+The Android `appId` (`com.stumbleclone.app`) is deferred to store-prep (#331) — invisible to users.
+
+**Bot (`H1shamM-bot`):** #268 (curated library) done as a senior PR after the bot attempt was closed; test
+tasks #321/#322 merged; #338 report button merged after two review iterations. Currently idle — assign
+`gemini-ready` issues as needed (one issue off current master).
+
+**Next program-level: pre-launch.** Before any store/public release: run `npm run backfill:safety` with
+`ANTHROPIC_API_KEY` set (give seeds real verdicts) → **M5** store readiness (#331 appId rename, store assets,
+privacy/moderation policy, account deletion, beta channel). Housekeeping: #309 TODO triage, #311 admin-bypass,
+#312 backlog triage, #326 .gitattributes, README↔PRD alignment. Open backlog: #267, #275, #286, security #138/#130.
 
 ### Backlog
 
