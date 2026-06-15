@@ -12,23 +12,26 @@ prototype; the real target ships via **Capacitor** (Android; iOS deferred, no Ma
 #172) and the **Explainer Mode epic (#215)** are **fully merged** (B1–B4, F1–F4, P1, P2 — the LLM
 "re-tell a article as a scene reel", Haiku 4.5, hexagonal per `docs/EXPLAINER_BUILD_PLAN.md`).
 
-**Current focus — Browse v2 / Reels-first mobile (epic #295/#278) — core loop SHIPPED to master.** Each
-stumble's live site renders in a native WebView (`@teamhive/capacitor-webview-overlay`,
-`ui/src/components/LiveFeed.tsx`); swipe/Next through live sites. The model (tester-confirmed): **on
-native there is no separate "reel mode" — mobile _is_ the full app, the live site renders inline in the
-content area with the header always above it** (card + reader view is web-only). Merged so far:
-reels-default inline + swipe handle + haptics + scroll fix + menu/modal layering (**#296**); an
-**immersive (hide-chrome) toggle** that full-screens the live site (header + action bar hide, the
-overlay's `ResizeObserver` resizes the native view, a thin restore strip brings chrome back); a
-**page-enhancement injection** (`ENHANCE_PAGE` in LiveFeed) — mobile-friendly normalization
-(text-size-adjust, max-width media, no h-overflow) + _conservative_ cosmetic ad/cookie-wall/popup hiding
-(precise selectors only, never broad `*=ad*`, never body scroll-lock classes, force scroll back on); and
-the **reader toggle for articles (#284)** — flips an article's live site to our clean `ReaderView`
-inline, keyed on url so it auto-resets on Next. **Next:** **M4** content-safety gate (launch blocker,
-senior-heavy), optional M3.3 swipe-rate gestures. Device build/install loop + the LAN-IP/`CAP_BUILD=1`
-gotchas live in the [[mobile-device-dev-setup]] memory and `docs/PROGRESS.md`. The junior bot's mission
-is **#268** (append-only curated-library expansion — re-scoped with a hard no-delete guard after #290);
-keep bot PRs to one issue off current master (recurring pitfall: stale branches + mixed/deletion PRs).
+**Browse v2 / Reels-first mobile (epic #295/#278) — SHIPPED.** Each stumble's live site renders in a
+native WebView (`@teamhive/capacitor-webview-overlay`, `ui/src/components/LiveFeed.tsx`); swipe/Next
+through live sites. Tester-confirmed model: **on native there is no separate "reel mode" — mobile _is_ the
+full app, the live site renders inline with the header always above it** (card + reader view is web-only).
+Shipped: reels-default inline + swipe handle + haptics + layering fix (**#296**); an **immersive toggle**
+(full-screens the site; overlay `ResizeObserver` resizes the native view; restore strip); **page-enhancement
+injection** (`ENHANCE_PAGE`) — mobile-friendly normalization + _conservative_ cosmetic ad/cookie-wall/popup
+hiding; and the **reader toggle for articles (#284)**.
+
+**Content-safety gate (epic #332, M4) — SHIPPED (was the launch blocker).** Every asset has a
+`safety_status` and only `pass` is served (fail-closed). See "Content safety" under the discovery section.
+
+**Current state: pre-launch.** The product is **Rabbithole** (renamed from "StumbleClone"; appId rename
+deferred to store-prep #331). The engineering bar is **enforced by CI** — see `docs/WORKFLOW.md` (the
+contract) and Build/CI health below. **Next / remaining:** run `npm run backfill:safety` with
+`ANTHROPIC_API_KEY` set (verifies the seed library); **M5 store readiness**; #331 appId rename; plus
+housekeeping (#309 TODO triage, #311 admin-bypass, #312 backlog, #326 .gitattributes, README↔PRD align).
+Device build/install loop + the LAN-IP/`CAP_BUILD=1` gotchas live in the [[mobile-device-dev-setup]] memory
+and `docs/PROGRESS.md`. The junior bot picks up `gemini-ready` issues; keep bot PRs to one issue off current
+master (recurring pitfalls: stale branches, mixed/deletion PRs, out-of-allowlist edits — catch on review).
 
 ## Layout (monorepo)
 
@@ -88,6 +91,18 @@ pages must extract (`extractReadable`) to be servable. This replaced the old art
 gate that flattened everything into a reading list. The cold-start pool is a **curated library**
 (`bootstrap.ts` `DEFAULT_SEED_ASSETS`): 24 hand-picked items across 8 **channels** (nullable
 `channel` column) — source-capped (≤2) and format-diverse (eval-session 3/4 lessons).
+
+**Content safety** (epic #332, the launch-blocker gate — `app/src/services/safetyService.ts`): every asset
+has a `safety_status` (`pending | pass | flag`) and **only `pass` is ever served** (fail-closed filter on
+all discovery queries in `sqliteAdapter`). Classification is cheapest-first: `screenHeuristics` (domain
+blocklist in `config/safetyBlocklist.ts`, zero cost) → an LLM (`SafetyLLM` port + `adapters/claudeSafety.ts`,
+`claude-haiku-4-5` + structured outputs, mirrors `claudeExplainer`) for the rest; flags
+sexual/violence/spam/hate. Wired into ingest (`discoveryService.fetchFromLiveSources` only saves `pass`); an
+LLM error → `pending` (never a false pass); missing `ANTHROPIC_API_KEY` → heuristics-only. Seeds default to
+`pass` (so fresh installs aren't empty) and are verified by **`npm run backfill:safety`** (`backfillSafety`,
+re-classifies the whole library). **Report + block**: `POST /api/v1/report` (`reportController`) records a
+report and blocks that URL for the user (`blocked_urls`, filtered out of their pool); report button on web
+`ActionButtons` + mobile `LiveFeed`.
 
 **Reader** (`readerService.ts` + `readerController.ts`): `GET /api/v1/reader?url=` extracts the main
 article with `@mozilla/readability` (jsdom), **sanitizes** (`sanitize-html`), in-memory cached,
